@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
+<!-- Language requirement: This specification MUST be written in Traditional Chinese (zh-TW). -->
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--

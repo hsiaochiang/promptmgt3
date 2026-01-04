@@ -8,6 +8,8 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
+<!-- Language requirement: Tasks and user-facing documentation MUST be written in Traditional Chinese (zh-TW). -->
+
 **Tests**: 範例測試任務包含在下方。建議採用 Test-First 和契約測試策略，
 但具體是否為必須（MANDATORY）應依專案/feature 的風險評估而定。
 
