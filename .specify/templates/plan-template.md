@@ -31,7 +31,26 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Code Quality & Maintainability**:
+- [ ] 架構設計遵循單一職責原則
+- [ ] 命名規範清晰（無縮寫、描述性名稱）
+- [ ] TypeScript 嚴格模式（如使用 TypeScript）或相應型別檢查啟用
+- [ ] 錯誤處理策略已定義（非同步、API 呼叫）
+
+**Testing Standards**:
+- [ ] Test-First 策略已納入計畫（測試先行）
+- [ ] 如變更 contracts，已建立契約測試計畫
+- [ ] 核心功能測試覆蓋率目標已設定（建議 ≥ 80%）
+
+**User Experience Consistency**:
+- [ ] 設計與現有設計系統一致（參考 ui_prototype_v3.jsx）
+- [ ] 互動模式與快捷鍵定義
+- [ ] 回饋機制（200ms 內）已定義
+
+**Performance Requirements**:
+- [ ] 響應時間目標已列出（API / UI / 搜尋）
+- [ ] 資源限制（檔案大小、記憶體）已列出
+- [ ] 如涉及大量資料處理，已包含效能基準測試計畫
 
 ## Project Structure
 

@@ -113,3 +113,13 @@
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
 - **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
 - **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+
+### Constitution Compliance
+
+請在此區回覆並勾選下列與本功能相關的憲法檢查項目：
+
+- [ ] Performance Requirements（API / UI 響應目標已定義）
+- [ ] UX Consistency（遵循設計系統、互動與回饋機制）
+- [ ] Test-First（測試已先寫且會失敗）
+- [ ] Contract Tests（如變更 contracts，已列出契約測試）
+- [ ] Code Quality（TypeScript 嚴格模式、錯誤處理、命名規範）
