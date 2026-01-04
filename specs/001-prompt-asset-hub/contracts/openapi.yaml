@@ -1,0 +1,297 @@
+openapi: 3.0.3
+info:
+  title: Prompt Asset Hub API
+  version: 0.1.0
+  description: "本機單人模式 API（REST）"
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/settings:
+    get:
+      summary: 取得設定
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
+    post:
+      summary: 更新設定
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingsUpdate' }
+      responses:
+        '200': { description: 已更新, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
+  /api/projects:
+    get:
+      summary: 列出專案（支援篩選/搜尋）
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Project' } } } } }
+    post:
+      summary: 新增專案
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectInput' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Project' } } } }
+  /api/prompts:
+    get:
+      summary: 列出提示詞（支援篩選/搜尋/看板）
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: priority
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Prompt' } } } } }
+    post:
+      summary: 新增提示詞
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PromptInput' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Prompt' } } } }
+  /api/prompts/{id}:
+    get:
+      summary: 取得提示詞詳情
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Prompt' } } } }
+    put:
+      summary: 更新提示詞（正文 + 中繼資料）
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PromptInput' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Prompt' } } } }
+  /api/files/read:
+    get:
+      summary: 讀取檔案
+      parameters:
+        - in: query
+          name: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: string } } } }
+  /api/files/write:
+    post:
+      summary: 寫入檔案（自動保存）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path: { type: string }
+                content: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/files/attach:
+    post:
+      summary: 上傳附件並回傳引用路徑
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                targetPath: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Attachment' } } } }
+  /api/inbox:
+    get:
+      summary: 取得暫存區項目
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/InboxItem' } } } } }
+    post:
+      summary: 匯入暫存項
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InboxImport' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
+  /api/inbox/{id}/update:
+    post:
+      summary: 編輯暫存項（標題/備註/刪減）
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                notes: { type: string }
+                trimmedContent: { type: string }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
+  /api/search:
+    get:
+      summary: 搜尋資產（title/tags/body）
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SearchResult' } } } } }
+  /api/snapshots:
+    post:
+      summary: 建立版本節點或立即備份（含附件完整複本）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: { type: string }
+                scope: { type: string, enum: [workspace, project, prompt] }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/VersionEvent' } } } }
+    get:
+      summary: 列出歷史版本/快照
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/VersionEvent' } } } } }
+
+components:
+  schemas:
+    Settings:
+      type: object
+      properties:
+        rootPath: { type: string }
+        attachmentPath: { type: string }
+        tagsDict: { type: object }
+        commonOptions: { type: object }
+        backup: { $ref: '#/components/schemas/BackupSettings' }
+    SettingsUpdate:
+      allOf:
+        - $ref: '#/components/schemas/Settings'
+    BackupSettings:
+      type: object
+      properties:
+        dailySnapshot: { type: boolean }
+        schedule: { type: string }
+        remote: { type: string }
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        status: { type: string }
+        tags: { type: array, items: { type: string } }
+        archived: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    ProjectInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        status: { type: string }
+        tags: { type: array, items: { type: string } }
+    Prompt:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        title: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        tags: { type: array, items: { type: string } }
+        body: { type: string }
+        notes: { type: string }
+        attachments: { type: array, items: { $ref: '#/components/schemas/Attachment' } }
+        updatedAt: { type: string, format: date-time }
+    PromptInput:
+      type: object
+      required: [title]
+      properties:
+        projectId: { type: string }
+        title: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        tags: { type: array, items: { type: string } }
+        body: { type: string }
+        notes: { type: string }
+    Attachment:
+      type: object
+      properties:
+        id: { type: string }
+        filename: { type: string }
+        mimeType: { type: string }
+        storagePath: { type: string }
+    InboxItem:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        sourcePlatform: { type: string }
+        sourceLink: { type: string }
+        importedAt: { type: string, format: date-time }
+        rawContent: { type: string }
+        cleanedState: { type: string }
+        notes: { type: string }
+    InboxImport:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        sourcePlatform: { type: string }
+        sourceLink: { type: string }
+        rawContent: { type: string }
+        suggestedTags: { type: array, items: { type: string } }
+    SearchResult:
+      type: object
+      properties:
+        id: { type: string }
+        entityType: { type: string }
+        title: { type: string }
+        tags: { type: array, items: { type: string } }
+        bodyExcerpt: { type: string }
+        updatedAt: { type: string, format: date-time }
+    VersionEvent:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        scope: { type: string }
+        message: { type: string }
+        createdAt: { type: string, format: date-time }
+        snapshotPath: { type: string }
