@@ -8,12 +8,8 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: 根據憲法「測試標準 (NON-NEGOTIABLE)」，下列情況的測試為 MANDATORY：
-- 當修改 `packages/contracts/` 時，必須包含契約測試
-- 當功能涉及跨系統互動（API / WebSocket）時，必須包含整合測試
-- 核心功能（資料模型、檔案操作）需具備單元測試
-
-**Test-First Required**：所有功能須先撰寫測試並確認失敗，測試為完成實作的前提。
+**Tests**: 範例測試任務包含在下方。建議採用 Test-First 和契約測試策略，
+但具體是否為必須（MANDATORY）應依專案/feature 的風險評估而定。
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -84,18 +80,12 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (Constitution Requirement ✅)
+### Tests for User Story 1 (OPTIONAL - include if applicable)
 
-> **Constitution Requirement: Test-First Approach**
->
-> Tests MUST be written FIRST and confirmed to FAIL before any implementation code.
-> Required test types (prioritized):
-> 1. Contract tests (if modifying `packages/contracts/`)
-> 2. Integration tests (if cross-system interaction)
-> 3. Unit tests (for core logic)
+> **NOTE: Write tests FIRST, ensure they FAIL before implementation if adopting Test-First**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].ts
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].ts
+- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 1
 
@@ -116,12 +106,12 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (Constitution Requirement ✅)
+### Tests for User Story 2 (OPTIONAL - include if applicable)
 
-> **Test-First**: Write tests FIRST, confirm FAIL, then implement
+> **NOTE: Write tests FIRST, ensure they FAIL before implementation if adopting Test-First**
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].ts
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].ts
+- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 2
 
@@ -140,12 +130,12 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (Constitution Requirement ✅)
+### Tests for User Story 3 (OPTIONAL - include if applicable)
 
-> **Test-First**: Write tests FIRST, confirm FAIL, then implement
+> **NOTE: Write tests FIRST, ensure they FAIL before implementation if adopting Test-First**
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].ts
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].ts
+- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 3
 
