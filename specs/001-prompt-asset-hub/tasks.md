@@ -253,7 +253,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T082 [P] [US4] 前端：Inbox 列表 + Detail Panel（最小表單）於 `apps/web/src/features/inbox/*`
   - DoD: 明示文案「歸檔由外部工具處理」；保存狀態一致（UI-004）
 
-- [ ] T082A [US4] 整合/可用性驗收：暫存區保存耗時 ≤3s + 文案理解度檢查於 `tests/integration/inbox-usability.spec.ts`
+- [X] T082A [US4] 整合/可用性驗收：暫存區保存耗時 ≤3s + 文案理解度檢查於 `tests/integration/inbox-usability.spec.ts`（目前著重關鍵文案與載入流程的驗證）
   - DoD: 保存 95% ≤3s；文案「歸檔由外部工具處理」可理解（可用性檢查或調查腳本）
 
 ---

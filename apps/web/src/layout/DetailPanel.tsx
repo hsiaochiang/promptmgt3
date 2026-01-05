@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAutosave } from '../hooks/useAutosave';
 import { MarkdownEditor } from '../components/MarkdownEditor';
 import type { PromptEntity } from '@pah/contracts';
+import { useSyncStatus } from '../features/sync/SyncProvider';
+import { ConflictBanner } from '../features/conflict/ConflictBanner';
 
 interface DetailPanelProps {
   prompt: PromptEntity;

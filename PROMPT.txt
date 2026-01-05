@@ -1,1 +1,1 @@
-/speckit.implement continue with US2 websocket sync, US3 snapshots, and US4 inbox UI.
+yes

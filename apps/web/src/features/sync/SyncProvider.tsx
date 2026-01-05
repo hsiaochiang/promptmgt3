@@ -8,6 +8,7 @@ export type SyncStatus = {
 
 interface SyncContextValue {
   lastStatus: SyncStatus;
+  setStatus: (status: SyncStatus) => void;
 }
 
 const SyncContext = createContext<SyncContextValue | undefined>(undefined);
