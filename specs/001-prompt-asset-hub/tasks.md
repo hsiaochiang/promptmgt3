@@ -158,10 +158,10 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Contract tests（US2）
 
-- [ ] T050 [P] [US2] Contract test：Search DTO + endpoint shape 於 `tests/contract/api-search.spec.ts`
+- [X] T050 [P] [US2] Contract test：Search DTO + endpoint shape 於 `tests/contract/api-search.spec.ts`
   - DoD: filters/sort/viewScope 有覆蓋
 
-- [ ] T051 [P] [US2] Contract test：WS `file.changed`/`sync.status` payload 於 `tests/contract/ws-sync.spec.ts`
+- [X] T051 [P] [US2] Contract test：WS `file.changed`/`sync.status` payload 於 `tests/contract/ws-sync.spec.ts`
   - DoD: event name + payload schema 不一致會 fail
 
 ### Integration tests（US2）

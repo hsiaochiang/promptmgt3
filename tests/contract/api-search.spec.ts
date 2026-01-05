@@ -55,6 +55,19 @@ describe('Contract - Search API', () => {
         expect(result.data.viewScope).toBe('active');
         expect(result.data.page).toBe(1);
         expect(result.data.perPage).toBe(20);
+        expect(result.data.sort).toBeUndefined();
+      }
+    });
+
+    it('should apply defaults for sort fields when sort object is provided', () => {
+      const requestWithSort = {
+        query: '',
+        sort: {},
+      };
+
+      const result = SearchRequestSchema.safeParse(requestWithSort);
+      expect(result.success).toBe(true);
+      if (result.success) {
         expect(result.data.sort?.field).toBe('relevance');
         expect(result.data.sort?.order).toBe('desc');
       }
@@ -136,7 +149,7 @@ describe('Contract - Search API', () => {
       const validPage = { query: '', page: 1 };
       expect(SearchRequestSchema.safeParse(validPage).success).toBe(true);
 
-      const zeroPag = { query: '', page: 0 };
+      const zeroPage = { query: '', page: 0 };
       expect(SearchRequestSchema.safeParse(zeroPage).success).toBe(false);
 
       const negativePage = { query: '', page: -1 };
