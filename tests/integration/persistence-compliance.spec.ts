@@ -26,6 +26,9 @@ describe('INV-003: Persistence Compliance', () => {
     // Setup: Create a complete workspace with project and prompt
     const projectSlug = 'test-project';
     const promptSlug = 'test-prompt';
+    const projectId = '550e8400-e29b-41d4-a716-446655440000';
+    const promptId = '660e8400-e29b-41d4-a716-446655440001';
+    const inboxId = '770e8400-e29b-41d4-a716-446655440002';
     
     // Create project directory structure: projects/test-project/
     const projectsDir = path.join(testRoot, 'projects');
@@ -34,13 +37,15 @@ describe('INV-003: Persistence Compliance', () => {
 
     // Create project.md with frontmatter
     const projectContent = `---
-id: proj-001
+id: ${projectId}
 slug: ${projectSlug}
 title: 測試專案
 description: 測試用專案
-tags: [test, demo]
-createdAt: 2024-01-01T00:00:00Z
-updatedAt: 2024-01-02T00:00:00Z
+tags:
+  - test
+  - demo
+createdAt: "2024-01-01T00:00:00Z"
+updatedAt: "2024-01-02T00:00:00Z"
 ---
 
 專案正文內容
@@ -52,15 +57,16 @@ updatedAt: 2024-01-02T00:00:00Z
     await fs.mkdir(promptsDir, { recursive: true });
     
     const promptContent = `---
-id: prompt-001
-projectId: proj-001
+id: ${promptId}
+projectId: ${projectId}
 slug: ${promptSlug}
 title: 測試提示詞
-status: active
-priority: high
-tags: [important]
-createdAt: 2024-01-01T00:00:00Z
-updatedAt: 2024-01-02T00:00:00Z
+status: ready
+priority: P0
+tags:
+  - important
+createdAt: "2024-01-01T00:00:00Z"
+updatedAt: "2024-01-02T00:00:00Z"
 ---
 
 提示詞正文內容
@@ -91,12 +97,11 @@ updatedAt: 2024-01-02T00:00:00Z
     await fs.mkdir(inboxDir, { recursive: true });
     
     const inboxContent = `---
-id: inbox-001
+id: ${inboxId}
 title: 測試 Inbox 項目
-status: pending
+importedAt: "2024-01-01T00:00:00Z"
 suggestedTarget:
-  projectId: proj-001
-createdAt: 2024-01-01T00:00:00Z
+  projectId: ${projectId}
 ---
 
 Inbox 項目內容
@@ -116,13 +121,13 @@ Inbox 項目內容
     expect(entities.prompts).toHaveLength(1);
     expect(entities.prompts[0].slug).toBe(promptSlug);
     expect(entities.prompts[0].title).toBe('測試提示詞');
-    expect(entities.prompts[0].status).toBe('active');
-    expect(entities.prompts[0].priority).toBe('high');
-    expect(entities.prompts[0].projectId).toBe('proj-001');
+    expect(entities.prompts[0].status).toBe('ready');
+    expect(entities.prompts[0].priority).toBe('P0');
+    expect(entities.prompts[0].projectId).toBe(projectId);
 
     expect(entities.inbox).toHaveLength(1);
     expect(entities.inbox[0].title).toBe('測試 Inbox 項目');
-    expect(entities.inbox[0].suggestedTarget?.projectId).toBe('proj-001');
+    expect(entities.inbox[0].suggestedTarget?.projectId).toBe(projectId);
 
     // Verify workspace settings can be loaded
     const { loadWorkspaceSettings } = await import('../../apps/server/src/routes/workspace.js');

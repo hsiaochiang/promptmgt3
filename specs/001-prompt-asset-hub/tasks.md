@@ -303,11 +303,22 @@ description: "Task list: 001-prompt-asset-hub"
 - [ ] T095 [P] 設定頁整合測試（FR-009）於 `tests/integration/settings-page.spec.ts`
   - DoD: 驗證權限不足/路徑衝突時阻擋寫入並提示；成功保存後重新載入仍一致
 
-- [ ] T096 [P] INV-003 Gate：定義「可持久化狀態」白名單與回歸檢查點
+- [X] T096 [P] INV-003 Gate：定義「可持久化狀態」白名單與回歸檢查點
   - DoD: 明確列出允許落在 localStorage 的僅「展示偏好」項（例如視圖模式/欄位寬度）；任何權威欄位不得只存在於前端 store；並新增至少 1 個回歸檢查點（可為整合測試或 checklist）驗證重啟/重掃描後權威欄位皆可重建
+  - 實作：
+    - 測試檔案：`tests/integration/persistence-compliance.spec.ts`（INV-003 完整驗證）
+    - 白名單規則：僅允許 `pah.ui.*` 前綴用於 localStorage（viewMode、columnWidths、sidebarExpanded、theme、sortPreference）
+    - 靜態程式碼掃描：自動檢測未授權的 localStorage 使用
+    - 重建測試：模擬重啟後從檔案系統完整重建所有權威狀態（專案、提示詞、inbox、workspace 設定）
 
-- [ ] T097 [P] SC-003 可量測化：備份/快照成功率定義與統計輸出
+- [X] T097 [P] SC-003 可量測化：備份/快照成功率定義與統計輸出
   - DoD: 定義成功/失敗標準（manifest 寫入、root/attachments 複製完成、錯誤分類）；提供最近 7/30 天統計輸出（可為 API、CLI 或 log 摘要），並新增至少 1 個測試驗證統計輸出格式與基本準確性
+  - 實作：
+    - 統計服務：`apps/server/src/backup/statistics.ts`（getBackupStatistics、formatBytes、printStatisticsSummary）
+    - API 路由：`apps/server/src/routes/snapshots.ts` (GET /api/backups/statistics?period=7d|30d)
+    - 測試檔案：`tests/integration/backup-statistics.spec.ts`（SC-003 完整驗證，8 個測試案例）
+    - 成功/失敗定義：manifest.json 中的 status 欄位（'success' | 'failed' | 'partial'）與 errors/warnings 陣列
+    - 統計輸出：totalSnapshots、successRate、totalSize、averageSize、lastSnapshotAt、lastSuccessAt、recentSnapshots（最近 10 筆）
 
 ---
 
