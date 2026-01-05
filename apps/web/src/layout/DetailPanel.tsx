@@ -16,44 +16,98 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [unsavedSnapshot, setUnsavedSnapshot] = useState<PromptEntity | null>(null);
+  const [lastKnownUpdatedAt, setLastKnownUpdatedAt] = useState<string | null>(prompt.updatedAt ?? null);
+  const [serverPrompt, setServerPrompt] = useState<PromptEntity | null>(prompt);
+
+  const { lastStatus, setStatus } = useSyncStatus();
+  const hasConflict = lastStatus.status === 'conflict';
 
   // Update form data when prompt changes
   useEffect(() => {
     setFormData(prompt);
-  }, [prompt.id]);
+    setServerPrompt(prompt);
+    setLastKnownUpdatedAt(prompt.updatedAt ?? null);
+    setLastSaved(null);
+    setSaveError(null);
+    setHasUnsavedChanges(false);
+    setUnsavedSnapshot(null);
+  }, [prompt]);
 
   // Autosave handler
-  const saveToServer = useCallback(async (data: PromptEntity) => {
-    setIsSaving(true);
-    setSaveError(null);
+  const saveToServer = useCallback(
+    async (data: PromptEntity, options?: { skipConflictCheck?: boolean }) => {
+      setIsSaving(true);
+      setSaveError(null);
 
-    try {
-      const response = await fetch(`http://localhost:3001/api/prompts/${data.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      try {
+        // Optional conflict check based on updatedAt
+        if (!options?.skipConflictCheck) {
+          const currentResponse = await fetch(`http://localhost:3001/api/prompts/${data.id}`);
+          if (currentResponse.ok) {
+            const current = (await currentResponse.json()) as PromptEntity;
+            const currentUpdatedAt = current.updatedAt ?? null;
+            const knownUpdatedAt = lastKnownUpdatedAt;
 
-      if (!response.ok) {
-        throw new Error(`保存失敗: ${response.statusText}`);
+            if (knownUpdatedAt && currentUpdatedAt && currentUpdatedAt !== knownUpdatedAt) {
+              setUnsavedSnapshot(data);
+              setHasUnsavedChanges(true);
+              setStatus({
+                status: 'conflict',
+                message:
+                  '偵測到檔案已在其他地方更新，請選擇「重新整理」或「覆寫儲存」。',
+              });
+              setSaveError('偵測到外部修改，已進入衝突狀態，請先處理衝突。');
+              return;
+            }
+
+            // Keep server snapshot and known updatedAt in sync
+            setServerPrompt(current);
+            setLastKnownUpdatedAt(currentUpdatedAt);
+          }
+        }
+
+        setStatus({ status: 'saving', message: '保存中…' });
+
+        const response = await fetch(`http://localhost:3001/api/prompts/${data.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error(`保存失敗: ${response.statusText}`);
+        }
+
+        const updated = (await response.json()) as PromptEntity;
+        setLastSaved(new Date());
+        setServerPrompt(updated);
+        setLastKnownUpdatedAt(updated.updatedAt ?? null);
+        setHasUnsavedChanges(false);
+        setUnsavedSnapshot(null);
+        onUpdate(updated);
+        setStatus({ status: 'idle' });
+      } catch (error) {
+        setSaveError(error instanceof Error ? error.message : '保存失敗');
+        console.error('Save error:', error);
+        setStatus({
+          status: 'error',
+          message: error instanceof Error ? error.message : '保存失敗',
+        });
+      } finally {
+        setIsSaving(false);
       }
-
-      const updated = await response.json();
-      setLastSaved(new Date());
-      onUpdate(updated);
-    } catch (error) {
-      setSaveError(error instanceof Error ? error.message : '保存失敗');
-      console.error('Save error:', error);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [onUpdate]);
+    },
+    [lastKnownUpdatedAt, onUpdate, setStatus],
+  );
 
   // Use autosave hook with 2-second debounce
   useAutosave(formData, saveToServer, 2000);
 
   const handleFieldChange = (field: keyof PromptEntity, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
   };
 
   const handleRetry = () => {
@@ -61,9 +115,52 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   };
 
   const handleCopyUnsaved = () => {
-    const text = `Title: ${formData.title}\n\nBody:\n${formData.body}\n\nNotes:\n${formData.notes}`;
+    const source = unsavedSnapshot ?? formData;
+    const text = `Title: ${source.title}\n\nBody:\n${source.body}\n\nNotes:\n${source.notes}`;
     navigator.clipboard.writeText(text);
     alert('未保存內容已複製到剪貼簿');
+  };
+
+  const handleRefresh = async () => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm(
+        '重新整理會捨棄目前未保存的變更並載入檔案的最新版本，確定要繼續嗎？',
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/prompts/${prompt.id}`);
+      if (!response.ok) {
+        throw new Error(`重新整理失敗: ${response.statusText}`);
+      }
+
+      const latest = (await response.json()) as PromptEntity;
+      setFormData(latest);
+      setServerPrompt(latest);
+      setLastKnownUpdatedAt(latest.updatedAt ?? null);
+      setLastSaved(new Date());
+      setSaveError(null);
+      setHasUnsavedChanges(false);
+      setUnsavedSnapshot(null);
+      setStatus({ status: 'idle' });
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : '重新整理失敗');
+    }
+  };
+
+  const handleOverwrite = async () => {
+    const confirmed = window.confirm(
+      '這個動作會覆寫檔案上的外部變更且無法復原，確定要繼續嗎？',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    const dataToSave = unsavedSnapshot ?? formData;
+    await saveToServer(dataToSave, { skipConflictCheck: true });
   };
 
   return (

@@ -1,1 +1,1 @@
-yes
+/speckit.implement write ConflictBanner.tsx and update SyncProvider.tsx and DetailPanel.tsx to show it on conflict.

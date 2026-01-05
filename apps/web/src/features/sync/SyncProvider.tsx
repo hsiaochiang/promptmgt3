@@ -45,7 +45,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <SyncContext.Provider value={{ lastStatus }}>
+    <SyncContext.Provider value={{ lastStatus, setStatus: setLastStatus }}>
       {children}
     </SyncContext.Provider>
   );
