@@ -173,7 +173,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Implementation（US2）
 
-- [ ] T054 [P] [US2] 後端：檔案監控（chokidar）→ 解析變更 → WS 推播於 `apps/server/src/watch/*`
+- [X] T054 [P] [US2] 後端：檔案監控（chokidar）→ 解析變更 → WS 推播於 `apps/server/src/watch/*`（實作於 `apps/server/src/watch/fileWatcher.ts` + `/ws` route）
   - DoD: add/modify/delete/move 皆可推播；避免抖動重複事件
 
 - [X] T055 [US2] 後端：搜尋（MVP in-memory index）於 `apps/server/src/search/*`（實作於 `apps/server/src/routes/search.ts`）
@@ -185,7 +185,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T057 [US2] 前端：搜尋/篩選 UI + 狀態保留於 `apps/web/src/features/search/*`（實作於 `apps/web/src/layout/MainContent.tsx` + `ListView.tsx`）
   - DoD: 搜尋無結果顯示 empty state；可一鍵清除
 
-- [ ] T058 [US2] 前端：WS 客戶端 + 同步狀態提示（sync.status）於 `apps/web/src/features/sync/*`
+- [X] T058 [US2] 前端：WS 客戶端 + 同步狀態提示（sync.status）於 `apps/web/src/features/sync/*`（實作於 `SyncProvider`）
   - DoD: saving/idle/conflict/error 狀態一致呈現
 
 - [ ] T059 [US2] 前端：衝突處置 UI（重新整理/覆寫）於 `apps/web/src/features/conflict/*`
@@ -250,7 +250,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T081 [US4] 後端：InboxItem CRUD（限簡修）於 `apps/server/src/routes/inbox.ts`
   - DoD: 不提供「歸檔寫入」操作；僅維持 cleanedState 與 notes/title 等
 
-- [ ] T082 [P] [US4] 前端：Inbox 列表 + Detail Panel（最小表單）於 `apps/web/src/features/inbox/*`
+- [X] T082 [P] [US4] 前端：Inbox 列表 + Detail Panel（最小表單）於 `apps/web/src/features/inbox/*`
   - DoD: 明示文案「歸檔由外部工具處理」；保存狀態一致（UI-004）
 
 - [ ] T082A [US4] 整合/可用性驗收：暫存區保存耗時 ≤3s + 文案理解度檢查於 `tests/integration/inbox-usability.spec.ts`
