@@ -125,7 +125,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T034 [US1] 後端：Project/Prompt 檔案 CRUD（含 frontmatter/body）於 `apps/server/src/routes/projects.ts`, `apps/server/src/routes/prompts.ts`
   - DoD: 檔案為唯一權威（INV-001），slug rename 不破壞引用（id 不變）
 
-- [ ] T035 [P] [US1] 後端：附件落盤與命名策略於 `apps/server/src/attachments/*`
+- [X] T035 [P] [US1] 後端：附件落盤與命名策略於 `apps/server/src/attachments/*`
   - DoD: 避免同名覆蓋；回傳可引用路徑
 
 - [X] T036 [P] [US1] 前端：Sidebar + 主內容佈局骨架（sidebar → list/board → right detail panel）於 `apps/web/src/layout/*`
