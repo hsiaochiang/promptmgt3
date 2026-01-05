@@ -182,7 +182,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T056 [P] [US2] 前端：看板視圖於 `apps/web/src/features/library/BoardView/*`（實作內嵌於 `apps/web/src/features/library/ListView.tsx`）
   - DoD: 與列表共享同一資料集合；切換不改變 selection
 
-- [ ] T057 [US2] 前端：搜尋/篩選 UI + 狀態保留於 `apps/web/src/features/search/*`
+- [X] T057 [US2] 前端：搜尋/篩選 UI + 狀態保留於 `apps/web/src/features/search/*`（實作於 `apps/web/src/layout/MainContent.tsx` + `ListView.tsx`）
   - DoD: 搜尋無結果顯示 empty state；可一鍵清除
 
 - [ ] T058 [US2] 前端：WS 客戶端 + 同步狀態提示（sync.status）於 `apps/web/src/features/sync/*`

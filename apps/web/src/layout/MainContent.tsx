@@ -30,7 +30,7 @@ export function MainContent({
       <div className="border-b border-subtle p-4 bg-white">
         <div className="flex items-center justify-between gap-4">
           {/* Search */}
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-md flex items-center gap-2">
             <input
               type="text"
               placeholder="搜尋提示詞..."
@@ -38,6 +38,15 @@ export function MainContent({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="px-2 py-1 text-xs text-secondary hover:text-primary hover:bg-hover rounded-md border border-transparent hover:border-subtle"
+              >
+                清除
+              </button>
+            )}
           </div>
 
           {/* View Mode Toggle */}
