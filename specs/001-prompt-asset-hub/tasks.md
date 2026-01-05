@@ -34,19 +34,19 @@ description: "Task list: 001-prompt-asset-hub"
 
 ## Phase 1: Setup（專案骨架與工具）
 
-- [ ] T001 建立 monorepo 目錄結構（apps/web, apps/server, packages/contracts, tests/*）
+- [X] T001 建立 monorepo 目錄結構（apps/web, apps/server, packages/contracts, tests/*）
   - DoD: 目錄存在且可被工具鏈辨識
 
-- [ ] T002 [P] 初始化前端（React 18 + Vite + TS + Tailwind + CodeMirror 6）於 `apps/web/`
+- [X] T002 [P] 初始化前端（React 18 + Vite + TS + Tailwind + CodeMirror 6）於 `apps/web/`
   - DoD: `apps/web` 可啟動、可 build、TypeScript strict 啟用
 
-- [ ] T003 [P] 初始化後端（Node 20 + Fastify + ws + chokidar）於 `apps/server/`
+- [X] T003 [P] 初始化後端（Node 20 + Fastify + ws + chokidar）於 `apps/server/`
   - DoD: `apps/server` 可啟動，提供健康檢查 endpoint
 
-- [ ] T004 [P] 初始化共享 contracts 套件於 `packages/contracts/`（zod/JSON schema + 型別輸出）
+- [X] T004 [P] 初始化共享 contracts 套件於 `packages/contracts/`（zod/JSON schema + 型別輸出）
   - DoD: 前後端能以同一套 schema/型別編譯
 
-- [ ] T005 [P] 建立測試框架（Vitest/Jest 擇一一致）與資料夾（contract/integration/unit）
+- [X] T005 [P] 建立測試框架（Vitest/Jest 擇一一致）與資料夾（contract/integration/unit）
   - DoD: `tests/*` 可跑起來且有 1 個範例測試
 
 ---
