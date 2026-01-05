@@ -15,8 +15,8 @@ interface TestComponentProps {
 }
 
 function TestComponent({ data, delay = 2000, onSave }: TestComponentProps) {
-  useAutosave<TestData>(data, onSave, delay);
-  return null;
+  const { status } = useAutosave<TestData>(data, onSave, delay);
+  return React.createElement('div', { 'data-status': status });
 }
 
 describe('Integration - autosave debounce success', () => {

@@ -140,7 +140,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T039 [US1] 前端：Autosave（≤2s）+ 失敗狀態 + 重試/複製未保存內容於 `apps/web/src/features/prompt/autosave/*`
   - DoD: Autosave 失敗不阻塞繼續編輯；可一鍵重試；可複製內容（對應 spec Edge Case #2）
 
-- [ ] T039A [P] [US1] 整合測試：回饋時延 SLA（保存/狀態提示 ≤200ms）於 `tests/integration/feedback-latency.spec.ts`
+- [X] T039A [P] [US1] 整合測試：回饋時延 SLA（保存/狀態提示 ≤200ms）於 `tests/integration/feedback-latency.spec.ts`
   - DoD: 測量保存/同步 UI 回饋時間，200ms 內通過；失敗輸出原因
 
 - [ ] T040 [US1] UI 驗收對照（L1/L2）— 以 `0resource/ui_prototype_v3.jsx` 對照 sidebar/list/detail 的視覺與互動語彙
