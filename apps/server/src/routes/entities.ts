@@ -1,0 +1,404 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs/promises';
+import {
+  type ProjectEntity,
+  type PromptEntity,
+  ProjectFrontmatterSchema,
+  PromptFrontmatterSchema,
+} from '@pah/contracts';
+import {
+  getProjectFilePath,
+  getPromptFilePath,
+  getProjectsDir,
+  getProjectPromptsDir,
+} from '../fs-layout/index.js';
+import {
+  parseProjectFile,
+  parsePromptFile,
+  writeProjectFile,
+  writePromptFile,
+  scanWorkspace,
+} from '../indexing/index.js';
+
+/**
+ * Register project routes
+ */
+export async function registerProjectRoutes(server: FastifyInstance, rootPath: string) {
+  // GET /api/projects - List all projects
+  server.get('/api/projects', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const scanResult = await scanWorkspace(rootPath);
+      return scanResult.projects;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to list projects',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // GET /api/projects/:id - Get a specific project
+  server.get<{
+    Params: { id: string };
+  }>('/api/projects/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const scanResult = await scanWorkspace(rootPath);
+      const project = scanResult.projects.find((p) => p.id === id);
+
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      return project;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to get project',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // POST /api/projects - Create a new project
+  server.post<{
+    Body: Partial<ProjectEntity>;
+  }>('/api/projects', async (request, reply) => {
+    try {
+      const { title, summary, status, tags, type } = request.body;
+
+      if (!title) {
+        return reply.code(400).send({ error: 'Title is required' });
+      }
+
+      // Generate ID and slug
+      const id = uuidv4();
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const now = new Date().toISOString();
+
+      // Create project entity
+      const project: ProjectEntity = {
+        id,
+        slug,
+        title,
+        summary: summary || '',
+        status: status || 'planning',
+        type: type || '',
+        tags: tags || [],
+        archived: false,
+        createdAt: now,
+        updatedAt: now,
+        body: request.body.body || '',
+      };
+
+      // Validate against schema
+      ProjectFrontmatterSchema.parse(project);
+
+      // Write to file
+      const filePath = getProjectFilePath(rootPath, slug);
+
+      // Check if project already exists
+      try {
+        await fs.access(filePath);
+        return reply.code(409).send({ error: 'Project with this slug already exists' });
+      } catch {
+        // File doesn't exist, we can create it
+      }
+
+      await writeProjectFile(filePath, project);
+
+      return reply.code(201).send(project);
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to create project',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // PUT /api/projects/:id - Update a project
+  server.put<{
+    Params: { id: string };
+    Body: Partial<ProjectEntity>;
+  }>('/api/projects/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+
+      // Find existing project
+      const scanResult = await scanWorkspace(rootPath);
+      const existing = scanResult.projects.find((p) => p.id === id);
+
+      if (!existing) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      // Update fields
+      const updated: ProjectEntity = {
+        ...existing,
+        ...request.body,
+        id, // ID cannot be changed
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Validate against schema
+      ProjectFrontmatterSchema.parse(updated);
+
+      // Handle slug rename
+      let filePath = getProjectFilePath(rootPath, existing.slug);
+      
+      if (request.body.slug && request.body.slug !== existing.slug) {
+        // Rename directory if slug changed
+        const oldDir = getProjectFilePath(rootPath, existing.slug).replace('/project.md', '');
+        const newDir = getProjectFilePath(rootPath, request.body.slug).replace('/project.md', '');
+        
+        await fs.rename(oldDir, newDir);
+        filePath = getProjectFilePath(rootPath, request.body.slug);
+      }
+
+      await writeProjectFile(filePath, updated);
+
+      return updated;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to update project',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // DELETE /api/projects/:id - Delete a project (archive)
+  server.delete<{
+    Params: { id: string };
+  }>('/api/projects/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+
+      // Find existing project
+      const scanResult = await scanWorkspace(rootPath);
+      const existing = scanResult.projects.find((p) => p.id === id);
+
+      if (!existing) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      // Archive instead of deleting
+      const updated: ProjectEntity = {
+        ...existing,
+        archived: true,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const filePath = getProjectFilePath(rootPath, existing.slug);
+      await writeProjectFile(filePath, updated);
+
+      return { message: 'Project archived successfully' };
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to delete project',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+}
+
+/**
+ * Register prompt routes
+ */
+export async function registerPromptRoutes(server: FastifyInstance, rootPath: string) {
+  // GET /api/prompts - List all prompts
+  server.get('/api/prompts', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const scanResult = await scanWorkspace(rootPath);
+      return scanResult.prompts;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to list prompts',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // GET /api/prompts/:id - Get a specific prompt
+  server.get<{
+    Params: { id: string };
+  }>('/api/prompts/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const scanResult = await scanWorkspace(rootPath);
+      const prompt = scanResult.prompts.find((p) => p.id === id);
+
+      if (!prompt) {
+        return reply.code(404).send({ error: 'Prompt not found' });
+      }
+
+      return prompt;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to get prompt',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // POST /api/prompts - Create a new prompt
+  server.post<{
+    Body: Partial<PromptEntity>;
+  }>('/api/prompts', async (request, reply) => {
+    try {
+      const { title, projectId, body, status, priority, tags, notes } = request.body;
+
+      if (!title || !projectId) {
+        return reply.code(400).send({ error: 'Title and projectId are required' });
+      }
+
+      // Find project to get slug
+      const scanResult = await scanWorkspace(rootPath);
+      const project = scanResult.projects.find((p) => p.id === projectId);
+
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      // Generate ID and slug
+      const id = uuidv4();
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const now = new Date().toISOString();
+
+      // Create prompt entity
+      const prompt: PromptEntity = {
+        id,
+        slug,
+        projectId,
+        title,
+        status: status || 'draft',
+        priority: priority || 'P1',
+        tags: tags || [],
+        notes: notes || '',
+        archived: false,
+        createdAt: now,
+        updatedAt: now,
+        body: body || '',
+      };
+
+      // Validate against schema
+      PromptFrontmatterSchema.parse(prompt);
+
+      // Write to file
+      const filePath = getPromptFilePath(rootPath, project.slug, slug);
+
+      // Check if prompt already exists
+      try {
+        await fs.access(filePath);
+        return reply.code(409).send({ error: 'Prompt with this slug already exists' });
+      } catch {
+        // File doesn't exist, we can create it
+      }
+
+      await writePromptFile(filePath, prompt);
+
+      return reply.code(201).send(prompt);
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to create prompt',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // PUT /api/prompts/:id - Update a prompt
+  server.put<{
+    Params: { id: string };
+    Body: Partial<PromptEntity>;
+  }>('/api/prompts/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+
+      // Find existing prompt
+      const scanResult = await scanWorkspace(rootPath);
+      const existing = scanResult.prompts.find((p) => p.id === id);
+
+      if (!existing) {
+        return reply.code(404).send({ error: 'Prompt not found' });
+      }
+
+      // Find project
+      const project = scanResult.projects.find((p) => p.id === existing.projectId);
+      if (!project) {
+        return reply.code(404).send({ error: 'Parent project not found' });
+      }
+
+      // Update fields
+      const updated: PromptEntity = {
+        ...existing,
+        ...request.body,
+        id, // ID cannot be changed
+        projectId: existing.projectId, // ProjectId cannot be changed
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Validate against schema
+      PromptFrontmatterSchema.parse(updated);
+
+      // Handle slug rename
+      let filePath = getPromptFilePath(rootPath, project.slug, existing.slug);
+      
+      if (request.body.slug && request.body.slug !== existing.slug) {
+        // Rename file if slug changed
+        const oldPath = getPromptFilePath(rootPath, project.slug, existing.slug);
+        const newPath = getPromptFilePath(rootPath, project.slug, request.body.slug);
+        
+        await fs.rename(oldPath, newPath);
+        filePath = newPath;
+      }
+
+      await writePromptFile(filePath, updated);
+
+      return updated;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to update prompt',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // DELETE /api/prompts/:id - Delete a prompt (archive)
+  server.delete<{
+    Params: { id: string };
+  }>('/api/prompts/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+
+      // Find existing prompt
+      const scanResult = await scanWorkspace(rootPath);
+      const existing = scanResult.prompts.find((p) => p.id === id);
+
+      if (!existing) {
+        return reply.code(404).send({ error: 'Prompt not found' });
+      }
+
+      // Find project
+      const project = scanResult.projects.find((p) => p.id === existing.projectId);
+      if (!project) {
+        return reply.code(404).send({ error: 'Parent project not found' });
+      }
+
+      // Archive instead of deleting
+      const updated: PromptEntity = {
+        ...existing,
+        archived: true,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const filePath = getPromptFilePath(rootPath, project.slug, existing.slug);
+      await writePromptFile(filePath, updated);
+
+      return { message: 'Prompt archived successfully' };
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to delete prompt',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+}
