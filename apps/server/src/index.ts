@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { registerWorkspaceRoutes } from './routes/workspace.js';
 import { registerProjectRoutes, registerPromptRoutes } from './routes/entities.js';
+import { registerInboxRoutes } from './routes/inbox.js';
+import { registerSearchRoutes } from './routes/search.js';
 
 // Get root path from environment or use default
 const ROOT_PATH = process.env.PAH_ROOT_PATH || path.join(process.cwd(), 'data');
@@ -37,6 +39,8 @@ server.get('/health', async () => {
 await registerWorkspaceRoutes(server, ROOT_PATH);
 await registerProjectRoutes(server, ROOT_PATH);
 await registerPromptRoutes(server, ROOT_PATH);
+await registerInboxRoutes(server, ROOT_PATH);
+await registerSearchRoutes(server, ROOT_PATH);
 
 // Start server
 const start = async () => {
