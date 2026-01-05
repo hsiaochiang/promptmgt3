@@ -114,7 +114,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T031 [P] [US1] Integration test：檔案掃描可重建（建立檔案樹→重啟 server→列出一致）於 `tests/integration/rebuild-from-scan.spec.ts`
   - DoD: 符合 INV-002
 
-- [ ] T032 [P] [US1] Integration test：autosave debounce + 成功狀態於 `tests/integration/autosave-success.spec.ts`
+- [X] T032 [P] [US1] Integration test：autosave debounce + 成功狀態於 `tests/integration/autosave-success.spec.ts`
   - DoD: 停筆 ≤2s 觸發寫入；狀態可查
 
 ### Implementation（US1）
