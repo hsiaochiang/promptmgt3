@@ -1,0 +1,31 @@
+{
+  "name": "@pah/server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.5.0",
+    "@fastify/websocket": "^9.0.0",
+    "@pah/contracts": "*",
+    "chokidar": "^3.5.3",
+    "date-fns": "^3.0.6",
+    "fastify": "^4.25.2",
+    "gray-matter": "^4.0.3",
+    "nanoid": "^5.0.4",
+    "simple-git": "^3.22.0",
+    "ws": "^8.16.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
