@@ -166,7 +166,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Integration tests（US2）
 
-- [ ] T052 [P] [US2] Integration test：列表/看板切換結果集一致（UI-002）於 `tests/integration/view-toggle-consistency.spec.ts`
+- [X] T052 [P] [US2] Integration test：列表/看板切換結果集一致（UI-002）於 `tests/integration/view-toggle-consistency.spec.ts`
 
 - [ ] T053 [P] [US2] Integration test：外部檔案修改衝突流程（spec Edge Case #1）於 `tests/integration/conflict-resolution.spec.ts`
   - DoD: 不靜默覆蓋；提供 rebase actions（重新整理/覆寫）
@@ -260,7 +260,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 ## Phase 7: Cross-cutting（品質、回歸、文件）
 
-- [ ] T090 [P] 建立 UI regression checklist（L1/L2）文件範本於 `specs/001-prompt-asset-hub/checklists/ui-regression.md`
+- [X] T090 [P] 建立 UI regression checklist（L1/L2）文件範本於 `specs/001-prompt-asset-hub/checklists/ui-regression.md`
   - DoD: 可直接貼到 PR；對照 constitution 的要求；含 Happy path + 1 error/edge 路徑
 
 - [ ] T091 [P] 補齊 quickstart.md（本機啟動、設定 rootPath、示例資料）於 `specs/001-prompt-asset-hub/quickstart.md`

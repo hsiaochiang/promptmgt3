@@ -120,12 +120,22 @@ describe('Integration - View Toggle Consistency', () => {
 
       // When: Search query changes to "API"
       const searchQuery = 'API';
-      const listViewSearched = mockSearchResults.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const boardViewSearched = mockSearchResults.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const listViewSearched = mockSearchResults.filter(item => {
+        const query = searchQuery.toLowerCase();
+        const titleMatch = item.title.toLowerCase().includes(query);
+        const tagMatch = Array.isArray(item.tags)
+          ? item.tags.some((tag: string) => tag.toLowerCase().includes(query))
+          : false;
+        return titleMatch || tagMatch;
+      });
+      const boardViewSearched = mockSearchResults.filter(item => {
+        const query = searchQuery.toLowerCase();
+        const titleMatch = item.title.toLowerCase().includes(query);
+        const tagMatch = Array.isArray(item.tags)
+          ? item.tags.some((tag: string) => tag.toLowerCase().includes(query))
+          : false;
+        return titleMatch || tagMatch;
+      });
 
       // Then: Both views should show same filtered results
       expect(listViewSearched.length).toBe(boardViewSearched.length);
