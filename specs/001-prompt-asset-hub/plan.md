@@ -11,6 +11,14 @@
 
 打造單人本機的提示詞資產管理主系統，使用 React 18 + Vite + TypeScript 前端與 Node.js 20 Fastify 後端，檔案系統作為唯一真實來源。MVP 涵蓋專案/提示詞 CRUD、看板/列表、全文搜尋、附件拖曳、自動保存、暫存區簡修、每日快照與版本節點（含附件完整複本），以 WebSocket 即時同步。升級路徑預留 SQLite FTS5 搜尋與擴充外部工具匯入。
 
+## Milestones → Deliverables（對映 P1 / P2 / P3）
+
+| Milestone | Priority | 可驗收交付物（Deliverables） |
+|---|---|---|
+| M1 核心資產 CRUD + Detail Panel + Autosave | P1 | Sidebar 導航（專案/提示詞/暫存/封存/設定）；列表視圖；右側 Detail Panel（正文+中繼資料同頁編輯）；autosave（≤2s）與保存狀態提示；檔案掃描可重建（重啟後可還原 UI 所需資料） |
+| M2 列表/看板 + 搜尋/篩選 + 即時同步 | P2 | 列表/看板切換且結果集一致；全文搜尋 + 標籤/狀態/優先級篩選；WS 推播檔案變更與狀態回饋；外部檔案異動衝突提示與處置（重新整理/覆寫） |
+| M3 版本節點 + 每日快照 + 暫存區簡修 | P3 | 版本節點（手動建立）+ 歷史列表；每日快照排程與失敗重試；快照/版本包含正文+frontmatter+附件完整複本；暫存區列表與最小編修（明示歸檔由外部工具處理）；保留策略（Retention）與清理機制 |
+
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x（前後端共用），Node.js 20 LTS  
@@ -82,6 +90,67 @@ tests/
 ```
 
 **Structure Decision**: 採前後端分離 + 共享契約套件，檔案系統為權威，server 暴露 REST/WS，web 僅透過 API/契約互動。
+
+## Contracts（產物具體化）
+
+本功能採 contracts-first：所有跨邊界資料形狀先定義契約，再實作。
+
+**Deliverables（最小集合）**：
+
+- **Frontmatter Schema（檔案中繼資料）**
+	- Project frontmatter schema（required/optional/default、id vs slug）
+	- Prompt frontmatter schema（required/optional/default、id vs slug、projectId）
+	- InboxItem frontmatter schema（含 suggestedTarget 引用型）
+
+- **REST DTO / OpenAPI**（specs/001-prompt-asset-hub/contracts/openapi.yaml）
+	- Workspace 設定（讀/寫）
+	- Project/Prompt/Inbox 基本 CRUD（或最小必要讀寫）
+	- Search DTO：SearchRequest（query/filters/sort/viewScope）、SearchResultItem（type/id/title/snippet/tags/path）
+	- Snapshot/Version：建立/列出/讀取 manifest
+
+- **WebSocket Payload**（packages/contracts 或等效共享位置）
+	- `file.changed`：{ path, entityType, entityId?, changeType(add|modify|delete|move), timestamp }
+	- `entity.updated`：{ entityType, id, updatedAt }
+	- `sync.status`：{ status(idle|saving|conflict|error), entityType?, id?, message?, updatedAt? }
+	- `snapshot.created|snapshot.failed`：{ snapshotId, scope, path, stats, error? }
+
+（實際檔名/目錄由 repo 結構決定，但 contracts 必須能被前後端與測試共用。）
+
+## Snapshots / Versions（路徑、命名、保留）
+
+### Path & Naming（單一權威）
+
+- 系統資料目錄：`<rootPath>/.pah/`
+- 版本節點（單一實體）：`<rootPath>/.pah/versions/<entityType>/<entityId>/<YYYYMMDD-HHmmss>-<eventType>-<shortId>/`
+- 每日快照（workspace）：`<rootPath>/.pah/snapshots/daily/<YYYY-MM-DD>/`
+
+### Snapshot Layout（可被測試驗證）
+
+- `manifest.json`：snapshotId、createdAt、scope、counts、errors（含附件複製錯誤）
+- `root/`：資料根目錄內容的鏡像（不含 `.pah/` 與非權威 cache）
+- `attachments/`：附件目錄內容的鏡像（完整複本）
+
+### Retention Policy（保留策略）
+
+- Daily snapshots：保留最近 30 天（可設定），超出者依日期由舊到新刪除。
+- Manual version nodes：每個實體至少保留最近 50 個或最近 90 天（以較大者為準，可設定）；超出則由舊到新刪除。
+- 永不自動刪除：標記 `pinned=true` 的快照/版本（由 manifest 設定）。
+- 空間不足時：優先清理未 pinned 的最舊 daily snapshots，再清理最舊 version nodes。
+
+## Test Strategy（哪些是 contract / integration test）
+
+### Contract Tests（tests/contract/）
+
+- OpenAPI：request/response shape 與錯誤碼（例如 409 conflict、507/507-ish disk full、403 permission）
+- WS payload：事件名稱與 payload schema（zod/JSON schema 驗證），確保前後端同步更新
+- Frontmatter schema：針對 Project/Prompt/InboxItem 的 required/optional/default、id/slug 規則
+
+### Integration Tests（tests/integration/）
+
+- 檔案掃描可重建：建立檔案樹 → 重啟 server → UI 取得的列表/詳情資料一致
+- Autosave：debounce、成功/失敗狀態提示、重試
+- 外部異動衝突：同檔外部修改 → 觸發 conflict → 驗證「重新整理/覆寫」流程與不靜默覆蓋
+- Snapshot/Version：建立快照/版本 → 驗證 layout（manifest/root/attachments）與 retention 清理規則
 
 ## Complexity Tracking
 

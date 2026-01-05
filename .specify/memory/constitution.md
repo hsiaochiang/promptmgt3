@@ -48,10 +48,24 @@ MUST:
 - Visual and Interaction Consistency: Keep state cues, controls, and notifications consistent across surfaces (Web/Extension/Editor).
 - Timely Feedback: Provide visible feedback within 200ms of user actions.
 
-Rationale: Consistency and responsiveness lower user learning costs and improve efficiency.
+### UI Golden Reference & Regression
+
+MUST:
+- UI Golden Reference: `0resource/ui_prototype_v3.jsx` is the reference for UI vocabulary (visual + interaction).
+	- It is NOT a complete feature inventory; it defines the intended vocabulary and feel.
+- L1 Visual Vocabulary Consistency: New or changed UI MUST match the reference vocabulary for:
+	- layout density, spacing rhythm, typography hierarchy, borders/dividers, surface/background, and state cues.
+	- exceptions require an explicit rationale in the PR ("why diverge" + screenshots).
+- L2 Interaction Vocabulary Consistency: New or changed interactions MUST match the reference vocabulary for:
+	- navigation patterns (sidebar → list/board → right detail panel), selection states, edit/save affordances,
+		empty/loading/error states, and notification/toast behaviors.
+- Regression Evidence (PR Required): Any UI/interaction change PR MUST include:
+	- screenshots or a short screen recording (happy path + 1 error/edge path when applicable)
+	- a completed UI regression checklist (link or pasted checklist items)
+
+Rationale: A single golden reference reduces UX drift; consistency and responsiveness lower user learning costs and improve efficiency.
 
 ---
-
 ## IV. Performance Requirements
 
 MUST:
@@ -79,3 +93,13 @@ artifacts keeps alignment while serving users effectively.
 - Amendments: Changes are proposed via PR, referencing affected sections. Approval from project maintainers is required before merging.
 - Versioning: Follow semantic versioning for governance documents (MAJOR for incompatible removals/redefinitions, MINOR for new or expanded principles, PATCH for clarifications).
 - Compliance Reviews: Apply Constitution Check during planning; reviewers block merges if non-compliant. Conduct periodic retro checks to ensure performance and testing targets remain tracked.
+
+### Contracts-first Governance
+
+MUST:
+- Any DTO/schema change (REST, WebSocket payloads, frontmatter schemas) MUST be updated in the contracts artifacts (e.g., OpenAPI + shared schema package).
+- Any DTO/schema change MUST ship with matching contract tests that validate:
+	- request/response and event payload shapes
+	- backward/forward compatibility rules when applicable
+- PRs that change DTO/schema are blocked unless both contracts and contract tests are updated in the same PR.
+
