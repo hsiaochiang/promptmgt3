@@ -106,12 +106,12 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Contract tests（US1）
 
-- [ ] T030 [P] [US1] Contract test：Project/Prompt CRUD endpoints（request/response shape）於 `tests/contract/api-project-prompt.spec.ts`
+- [X] T030 [P] [US1] Contract test：Project/Prompt CRUD endpoints（request/response shape）於 `tests/contract/api-project-prompt.spec.ts`
   - DoD: 變更 DTO 會 fail；錯誤碼（400/404/409/403）有覆蓋
 
 ### Integration tests（US1）
 
-- [ ] T031 [P] [US1] Integration test：檔案掃描可重建（建立檔案樹→重啟 server→列出一致）於 `tests/integration/rebuild-from-scan.spec.ts`
+- [X] T031 [P] [US1] Integration test：檔案掃描可重建（建立檔案樹→重啟 server→列出一致）於 `tests/integration/rebuild-from-scan.spec.ts`
   - DoD: 符合 INV-002
 
 - [ ] T032 [P] [US1] Integration test：autosave debounce + 成功狀態於 `tests/integration/autosave-success.spec.ts`
@@ -128,16 +128,16 @@ description: "Task list: 001-prompt-asset-hub"
 - [ ] T035 [P] [US1] 後端：附件落盤與命名策略於 `apps/server/src/attachments/*`
   - DoD: 避免同名覆蓋；回傳可引用路徑
 
-- [ ] T036 [P] [US1] 前端：Sidebar + 主內容佈局骨架（sidebar → list/board → right detail panel）於 `apps/web/src/layout/*`
+- [X] T036 [P] [US1] 前端：Sidebar + 主內容佈局骨架（sidebar → list/board → right detail panel）於 `apps/web/src/layout/*`
   - DoD: UI-001 / UI-003 的結構可操作；選取狀態一致
 
-- [ ] T037 [P] [US1] 前端：列表（最小可用）於 `apps/web/src/features/library/ListView/*`
+- [X] T037 [P] [US1] 前端：列表（最小可用）於 `apps/web/src/features/library/ListView/*`
   - DoD: 能顯示 prompts，點選開啟 Detail Panel
 
-- [ ] T038 [US1] 前端：Detail Panel（正文 + metadata 表單）於 `apps/web/src/features/prompt/DetailPanel/*`
+- [X] T038 [US1] 前端：Detail Panel（正文 + metadata 表單）於 `apps/web/src/features/prompt/DetailPanel/*`
   - DoD: 顯示 Saving/Saved/Failed + timestamp；支援拖曳附件插入引用
 
-- [ ] T039 [US1] 前端：Autosave（≤2s）+ 失敗狀態 + 重試/複製未保存內容於 `apps/web/src/features/prompt/autosave/*`
+- [X] T039 [US1] 前端：Autosave（≤2s）+ 失敗狀態 + 重試/複製未保存內容於 `apps/web/src/features/prompt/autosave/*`
   - DoD: Autosave 失敗不阻塞繼續編輯；可一鍵重試；可複製內容（對應 spec Edge Case #2）
 
 - [ ] T039A [P] [US1] 整合測試：回饋時延 SLA（保存/狀態提示 ≤200ms）於 `tests/integration/feedback-latency.spec.ts`
