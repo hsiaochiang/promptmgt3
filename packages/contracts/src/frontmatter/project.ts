@@ -38,4 +38,5 @@ export interface AttachmentRef {
   id: string;
   filename: string;
   storagePath: string;
+  mimeType?: string;
 }

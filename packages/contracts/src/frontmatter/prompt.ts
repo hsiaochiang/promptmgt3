@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { AttachmentRef } from './project';
 
 /**
  * Prompt frontmatter schema
@@ -32,10 +33,4 @@ export type PromptFrontmatter = z.infer<typeof PromptFrontmatterSchema>;
 export interface PromptEntity extends PromptFrontmatter {
   body: string;
   attachments?: AttachmentRef[];
-}
-
-export interface AttachmentRef {
-  id: string;
-  filename: string;
-  storagePath: string;
 }

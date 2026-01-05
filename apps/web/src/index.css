@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  color-scheme: light dark;
+  color: rgba(37, 37, 37, 0.9);
+  background-color: #ffffff;
+  
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Low-contrast Notion-style colors */
+.border-subtle {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.bg-subtle {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.bg-hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.text-secondary {
+  color: rgba(37, 37, 37, 0.65);
+}
+
+.text-tertiary {
+  color: rgba(37, 37, 37, 0.45);
+}
