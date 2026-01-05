@@ -122,7 +122,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T033 [P] [US1] 後端：Workspace 設定讀寫（rootPath/attachmentPath/backupSettings）於 `apps/server/src/routes/workspace.ts`
   - DoD: 路徑權限檢查；不可寫時阻擋寫入並回傳可理解錯誤
 
-- [X] T034 [US1] 後端：Project/Prompt 檔案 CRUD（含 frontmatter/body）於 `apps/server/src/routes/projects.ts`, `apps/server/src/routes/prompts.ts`
+- [X] T034 [US1] 後端：Project/Prompt 檔案 CRUD（含 frontmatter/body）於 `apps/server/src/routes/entities.ts`
   - DoD: 檔案為唯一權威（INV-001），slug rename 不破壞引用（id 不變）
 
 - [X] T035 [P] [US1] 後端：附件落盤與命名策略於 `apps/server/src/attachments/*`
@@ -200,8 +200,8 @@ description: "Task list: 001-prompt-asset-hub"
       - 當 `lastStatus.status === 'conflict'` 時顯示 ConflictBanner
     - `apps/web/src/features/sync/SyncProvider.tsx`：提供 SyncContext 與 setStatus API，透過 WS 同步狀態更新
 
-- [ ] T059A [P] [US2] 整合測試：搜尋/列表/看板回饋時延 SLA（200ms UI 回應）於 `tests/integration/view-feedback-latency.spec.ts`
-  - DoD: 互動後 200ms 內顯示 loading/狀態；結果集一致
+- [ ] T059A [P] [US2] 整合測試：搜尋/列表/看板回饋時延 SLA（200ms UI 回應）於 `tests/integration/feedback-latency.spec.ts`
+  - DoD: 互動後 200ms 內顯示 loading/狀態（搜尋、切換視圖、套用篩選）；並驗證結果集一致性不被破壞
 
 **Checkpoint**: US2 可獨立 demo + 測試通過。
 
@@ -302,6 +302,12 @@ description: "Task list: 001-prompt-asset-hub"
 
 - [ ] T095 [P] 設定頁整合測試（FR-009）於 `tests/integration/settings-page.spec.ts`
   - DoD: 驗證權限不足/路徑衝突時阻擋寫入並提示；成功保存後重新載入仍一致
+
+- [ ] T096 [P] INV-003 Gate：定義「可持久化狀態」白名單與回歸檢查點
+  - DoD: 明確列出允許落在 localStorage 的僅「展示偏好」項（例如視圖模式/欄位寬度）；任何權威欄位不得只存在於前端 store；並新增至少 1 個回歸檢查點（可為整合測試或 checklist）驗證重啟/重掃描後權威欄位皆可重建
+
+- [ ] T097 [P] SC-003 可量測化：備份/快照成功率定義與統計輸出
+  - DoD: 定義成功/失敗標準（manifest 寫入、root/attachments 複製完成、錯誤分類）；提供最近 7/30 天統計輸出（可為 API、CLI 或 log 摘要），並新增至少 1 個測試驗證統計輸出格式與基本準確性
 
 ---
 

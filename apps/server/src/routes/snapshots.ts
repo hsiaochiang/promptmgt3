@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createSnapshot, listSnapshots } from '../backup/snapshot.js';
 import { createVersionNode, listVersionNodes, listAllVersionNodes } from '../backup/version-node/index.js';
+import { getBackupStatistics } from '../backup/statistics.js';
 import { getPromptFilePath, getProjectDir } from '../fs-layout/index.js';
 import type { VersionEvent, SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
 
@@ -158,6 +159,22 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to list version nodes for entity',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // GET /api/backups/statistics - get backup statistics for 7 or 30 days
+  server.get<{
+    Querystring: { period?: '7d' | '30d' };
+  }>('/api/backups/statistics', async (request, reply) => {
+    try {
+      const period = request.query.period === '30d' ? 30 : 7;
+      const stats = await getBackupStatistics(rootPath, period);
+      return stats;
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to get backup statistics',
         message: error instanceof Error ? error.message : String(error),
       });
     }

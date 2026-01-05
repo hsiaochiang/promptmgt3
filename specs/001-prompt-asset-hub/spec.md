@@ -45,6 +45,8 @@
 1. **Given** 列表已載入多筆提示詞，**When** 搜尋關鍵字或標籤，**Then** 結果只包含符合標題/標籤/正文的項目並高亮匹配片段。
 2. **Given** 使用者位於列表視圖，**When** 切換至看板，**Then** 資產依狀態/優先級泳道呈現，並保留已套用的篩選條件；返回列表後條件仍生效。
 
+> 註：UI-002 為 FR-002 的「可驗收化」描述（同一需求，不是額外功能）。
+
 ---
 
 ### User Story 3 - 版本備份與歷史檢視 (Priority: P3)
@@ -137,6 +139,8 @@
 	- 失敗：顯示可理解錯誤訊息 + 可重試入口
 	- **驗收**：任一保存/備份失敗都不會靜默；使用者能在 1 步內重試。
 
+> 註：UI-004 為 FR-010 的 UI 層可驗收化條款（同一需求，不是額外功能）。
+
 ### Key Entities *(include if feature involves data)*
 
 - **Workspace**: 根目錄、附件目錄、全域標籤字典、常用選項、備份設定、外部整合授權資訊。
@@ -161,11 +165,15 @@
 - **SC-001**: 使用者可在 2 分鐘內完成「建立專案＋新增提示詞＋編輯正文與中繼資料」並成功自動保存；重新開啟後內容無遺失。
 - **SC-002**: 搜尋/篩選在 5,000 筆資產內 95% 查詢於 1 秒內返回並允許直接開啟結果。
 - **SC-003**: 每日自動快照成功率每週 ≥ 99%，手動/立即備份成功率 100%；歷史列表可開啟任一近 30 天版本。
+	- **量測定義（必須可操作）**：
+		- 成功：產生對應 snapshot/version 目錄，且 `manifest.json` 寫入成功；`root/` 與 `attachments/` 複製流程完成。
+		- 失敗：任一必要步驟未完成（例如 manifest 無法寫入、root/attachments 複製中止），需記錄錯誤原因並可重試。
+		- 部分失敗：允許將「附件缺失/單一檔案複製失敗」記為 warning，但不得讓整體狀態靜默；必須在 manifest 中可追溯。
 - **SC-004**: 暫存區檢視與簡修操作 95% 在 3 秒內完成保存；提示文案讓 90% 使用者明確理解歸檔由外部工具處理（以可用性測試量表 ≥ 4/5）。
 
 ### Constitution Compliance
 
-- [ ] Performance Requirements (e.g., API / UI response targets)
-- [ ] UX Consistency (design system, interaction feedback)
-- [ ] Test Plan included (unit/integration/contract as applicable)
-- [ ] Contract impact noted (if modifying shared contracts)
+- [x] Performance Requirements (e.g., API / UI response targets)
+- [x] UX Consistency (design system, interaction feedback)
+- [x] Test Plan included (unit/integration/contract as applicable)
+- [x] Contract impact noted (if modifying shared contracts)

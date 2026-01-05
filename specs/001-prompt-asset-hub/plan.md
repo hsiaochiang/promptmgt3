@@ -31,6 +31,13 @@
 **Constraints**: 單人本機模式，無登入/權限；需處理檔案監控抖動與衝突；附件完整複本於快照/版本節點  
 **Scale/Scope**: MVP 支援數千資產、每日一次自動快照、手動版本節點；升級可接 SQLite 以支持更大搜尋規模
 
+### Performance Interpretation（對齊 Constitution）
+
+- **200ms 互動回饋（UI）是硬性門檻**：任何可能耗時的操作都必須在 200ms 內顯示可見狀態（loading/saving/queued/failed）。
+- **p95 < 100ms（典型操作）採「可細化」原則**：
+	- 典型操作：讀取列表/詳情、輕量寫入（小檔 autosave）、索引查詢等，目標 p95 < 100ms（可在 Phase 7 以 benchmarks 具體化）。
+	- 重 IO 操作（允許更長）：附件搬移/複製、快照/版本節點（包含大量檔案與附件完整複本）屬重 IO；必須不中斷編輯並提供進度/失敗重試，但不以 100ms 作為落盤完成門檻。
+
 ## Constitution Check
 
 *GATE: 必須通過方可進入研究階段；Phase 1 後再複核。*
@@ -62,6 +69,7 @@
 
 ```text
 specs/001-prompt-asset-hub/
+├── spec.md              # Feature specification
 ├── plan.md              # 本文件
 ├── research.md          # Phase 0 研究決策
 ├── data-model.md        # Phase 1 資料模型

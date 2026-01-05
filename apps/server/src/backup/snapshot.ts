@@ -80,7 +80,9 @@ export async function createSnapshot(rootPath: string, scope: 'workspace' | 'pro
       attachmentsCount: attachmentsStats.files,
       sizeBytes: rootStats.size + attachmentsStats.size,
     },
+    status: 'success' as 'success' | 'failed' | 'partial',
     errors: [] as string[],
+    warnings: [] as string[],
   };
 
   await fs.writeFile(path.join(snapshotDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8');

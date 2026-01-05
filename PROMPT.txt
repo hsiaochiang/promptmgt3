@@ -1,1 +1,1 @@
-/speckit.implement finalize with US3 History/Backup UI (T074, T076, T077) and Settings page (T094).
+/speckit.implement continue with remaining Phase 7 tasks: T096 (Persistence whitelist) and T097 (Backup statistics).
