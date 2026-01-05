@@ -6,6 +6,7 @@ import { registerWorkspaceRoutes } from './routes/workspace.js';
 import { registerProjectRoutes, registerPromptRoutes } from './routes/entities.js';
 import { registerInboxRoutes } from './routes/inbox.js';
 import { registerSearchRoutes } from './routes/search.js';
+import { registerSnapshotRoutes } from './routes/snapshots.js';
 import { startFileWatcher } from './watch/fileWatcher.js';
 import type { FileChangedPayload, StatusEvent } from '@pah/contracts';
 
@@ -65,6 +66,7 @@ await registerProjectRoutes(server, ROOT_PATH);
 await registerPromptRoutes(server, ROOT_PATH);
 await registerInboxRoutes(server, ROOT_PATH);
 await registerSearchRoutes(server, ROOT_PATH);
+await registerSnapshotRoutes(server, ROOT_PATH);
 
 // Start file watcher for WebSocket sync
 startFileWatcher(ROOT_PATH, (payload: FileChangedPayload) => {

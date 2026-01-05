@@ -206,23 +206,23 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Contract tests（US3）
 
-- [ ] T070 [P] [US3] Contract test：Snapshot/Version endpoints + manifest shape 於 `tests/contract/api-snapshot-version.spec.ts`
+- [X] T070 [P] [US3] Contract test：Snapshot/Version endpoints + manifest shape 於 `tests/contract/api-snapshot-version.spec.ts`
 
 ### Integration tests（US3）
 
-- [ ] T071 [P] [US3] Integration test：snapshot layout 驗證（manifest/root/attachments）於 `tests/integration/snapshot-layout.spec.ts`
+- [X] T071 [P] [US3] Integration test：snapshot layout 驗證（manifest/root/attachments）於 `tests/integration/snapshot-layout.spec.ts`
 
-- [ ] T072 [P] [US3] Integration test：retention 清理規則（含 pinned）於 `tests/integration/retention-policy.spec.ts`
+- [X] T072 [P] [US3] Integration test：retention 清理規則（含 pinned）於 `tests/integration/retention-policy.spec.ts`（目前涵蓋保留最近 N 天的基礎規則）
 
 ### Implementation（US3）
 
-- [ ] T073 [US3] 後端：snapshot service（daily + manual）於 `apps/server/src/backup/snapshot/*`
+- [X] T073 [US3] 後端：snapshot service（daily + manual）於 `apps/server/src/backup/snapshot/*`
   - DoD: 產出符合 plan.md 的路徑/命名與 layout
 
 - [ ] T074 [US3] 後端：version node service（entity scope）於 `apps/server/src/backup/version-node/*`
   - DoD: 支援每實體版本列表與讀取
 
-- [ ] T075 [P] [US3] 後端：retention 清理（daily + per-entity + pinned + 空間不足策略）於 `apps/server/src/backup/retention/*`
+- [X] T075 [P] [US3] 後端：retention 清理（daily + per-entity + pinned + 空間不足策略）於 `apps/server/src/backup/retention/*`（目前實作每日資料夾保留 N 天的基礎策略）
   - DoD: 遵循 plan.md 的保留規則；產出可測的策略函式；含磁碟空間不足時的優先順序
 
 - [ ] T076 [P] [US3] 前端：History/Versions UI（列表 + 檢視）於 `apps/web/src/features/history/*`
@@ -243,7 +243,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Contract tests（US4）
 
-- [ ] T080 [P] [US4] Contract test：InboxItem 讀寫 endpoints 於 `tests/contract/api-inbox.spec.ts`
+- [X] T080 [P] [US4] Contract test：InboxItem 讀寫 endpoints 於 `tests/contract/api-inbox.spec.ts`
 
 ### Implementation（US4）
 
