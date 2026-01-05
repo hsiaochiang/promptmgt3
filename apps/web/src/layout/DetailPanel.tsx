@@ -116,7 +116,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
 
   const handleCopyUnsaved = () => {
     const source = unsavedSnapshot ?? formData;
-    const text = `Title: ${source.title}\n\nBody:\n${source.body}\n\nNotes:\n${source.notes}`;
+    const text = `標題：${source.title}\n\n正文：\n${source.body}\n\n備註：\n${source.notes}`;
     navigator.clipboard.writeText(text);
     alert('未保存內容已複製到剪貼簿');
   };
@@ -175,6 +175,16 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
           ×
         </button>
       </div>
+
+      {/* Conflict Banner */}
+      {hasConflict && (
+        <ConflictBanner
+          message={lastStatus.message || '偵測到檔案已在其他地方更新，請選擇處理方式。'}
+          onRefresh={handleRefresh}
+          onOverwrite={handleOverwrite}
+          onCopyUnsaved={handleCopyUnsaved}
+        />
+      )}
 
       {/* Save Status */}
       <div className="px-4 py-2 border-b border-subtle bg-subtle text-xs">

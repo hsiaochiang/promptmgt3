@@ -1,1 +1,1 @@
-/speckit.implement write ConflictBanner.tsx and update SyncProvider.tsx and DetailPanel.tsx to show it on conflict.
+/speckit.implement finalize with US3 History/Backup UI (T074, T076, T077) and Settings page (T094).

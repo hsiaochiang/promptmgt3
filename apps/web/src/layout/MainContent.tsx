@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { ListView } from '../features/library/ListView';
 import { InboxView } from '../features/inbox/InboxView';
 import { SettingsView } from '../features/settings/SettingsView';
+import { HistoryView } from '../features/history/HistoryView';
 import type { PromptEntity } from '@pah/contracts';
 
 type ViewMode = 'list' | 'board';
-type SidebarSection = 'library' | 'inbox' | 'archive' | 'settings';
+type SidebarSection = 'library' | 'inbox' | 'archive' | 'history' | 'settings';
 
 interface MainContentProps {
   section: SidebarSection;
@@ -93,6 +94,7 @@ export function MainContent({
             封存功能開發中...
           </div>
         )}
+        {section === 'history' && <HistoryView />}
         {section === 'settings' && <SettingsView />}
       </div>
     </div>

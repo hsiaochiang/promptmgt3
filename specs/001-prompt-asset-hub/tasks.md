@@ -188,8 +188,17 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T058 [US2] 前端：WS 客戶端 + 同步狀態提示（sync.status）於 `apps/web/src/features/sync/*`（實作於 `SyncProvider`）
   - DoD: saving/idle/conflict/error 狀態一致呈現
 
-- [ ] T059 [US2] 前端：衝突處置 UI（重新整理/覆寫）於 `apps/web/src/features/conflict/*`
+- [X] T059 [US2] 前端：衝突處置 UI（重新整理/覆寫）於 `apps/web/src/features/conflict/*`
   - DoD: 覆寫失敗可重試；重新整理會丟棄未保存內容但需二次確認
+  - 實作於：
+    - `apps/web/src/features/conflict/ConflictBanner.tsx`：zh-TW 橫幅元件，提供 3 個按鈕（複製未保存、重新整理、覆寫）
+    - `apps/web/src/layout/DetailPanel.tsx`：整合衝突處理邏輯，包含：
+      - 偵測外部修改（比對 updatedAt），自動進入 conflict 狀態並保留 unsavedSnapshot
+      - handleRefresh()：二次確認後丟棄本地變更，重新載入最新檔案
+      - handleOverwrite()：警告確認後強制覆寫，跳過 conflict 檢查
+      - handleCopyUnsaved()：複製未保存內容到剪貼簿
+      - 當 `lastStatus.status === 'conflict'` 時顯示 ConflictBanner
+    - `apps/web/src/features/sync/SyncProvider.tsx`：提供 SyncContext 與 setStatus API，透過 WS 同步狀態更新
 
 - [ ] T059A [P] [US2] 整合測試：搜尋/列表/看板回饋時延 SLA（200ms UI 回應）於 `tests/integration/view-feedback-latency.spec.ts`
   - DoD: 互動後 200ms 內顯示 loading/狀態；結果集一致

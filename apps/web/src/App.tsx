@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Sidebar } from './layout/Sidebar';
 import { MainContent } from './layout/MainContent';
 import { DetailPanel } from './layout/DetailPanel';
+import { BackupStatusBanner } from './features/backup/BackupStatusBanner';
 import type { PromptEntity } from '@pah/contracts';
 
 type ViewMode = 'list' | 'board';
-type SidebarSection = 'library' | 'inbox' | 'archive' | 'settings';
+type SidebarSection = 'library' | 'inbox' | 'archive' | 'history' | 'settings';
 
 export interface AppState {
   currentSection: SidebarSection;
@@ -51,23 +52,30 @@ function App() {
         onSectionChange={handleSectionChange}
       />
 
-      {/* Main Content Area */}
-      <MainContent
-        section={state.currentSection}
-        viewMode={state.viewMode}
-        onViewModeChange={handleViewModeChange}
-        onSelectPrompt={handleSelectPrompt}
-        selectedPromptId={state.selectedPromptId}
-      />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Backup Status Banner */}
+        <BackupStatusBanner />
 
-      {/* Detail Panel - Right Side */}
-      {state.selectedPrompt && (
-        <DetailPanel
-          prompt={state.selectedPrompt}
-          onClose={() => handleSelectPrompt(null)}
-          onUpdate={(updated) => setState(prev => ({ ...prev, selectedPrompt: updated }))}
-        />
-      )}
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          <MainContent
+            section={state.currentSection}
+            viewMode={state.viewMode}
+            onViewModeChange={handleViewModeChange}
+            onSelectPrompt={handleSelectPrompt}
+            selectedPromptId={state.selectedPromptId}
+          />
+
+          {/* Detail Panel - Right Side */}
+          {state.selectedPrompt && (
+            <DetailPanel
+              prompt={state.selectedPrompt}
+              onClose={() => handleSelectPrompt(null)}
+              onUpdate={(updated) => setState(prev => ({ ...prev, selectedPrompt: updated }))}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
