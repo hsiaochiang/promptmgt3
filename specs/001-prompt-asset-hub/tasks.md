@@ -55,43 +55,43 @@ description: "Task list: 001-prompt-asset-hub"
 
 **Gate**: 未通過本階段，禁止進入任何 US 實作。
 
-- [ ] T010 定義 Project frontmatter schema 於 `packages/contracts/src/frontmatter/project.ts`
+- [X] T010 定義 Project frontmatter schema 於 `packages/contracts/src/frontmatter/project.ts`
   - DoD: 必填/選填/預設、id vs slug 規則符合 data-model.md；產出型別可供前後端共用
 
-- [ ] T011 定義 Prompt frontmatter schema 於 `packages/contracts/src/frontmatter/prompt.ts`
+- [X] T011 定義 Prompt frontmatter schema 於 `packages/contracts/src/frontmatter/prompt.ts`
   - DoD: 含 projectId 參照、status/priority 預設；型別可共用
 
-- [ ] T012 定義 InboxItem frontmatter schema 於 `packages/contracts/src/frontmatter/inbox.ts`
+- [X] T012 定義 InboxItem frontmatter schema 於 `packages/contracts/src/frontmatter/inbox.ts`
   - DoD: suggestedTarget 為引用型 { projectId?, promptId?, pathHint? }
 
-- [ ] T013 定義 Search DTO（SearchRequest/SearchResultItem）於 `packages/contracts/src/dto/search.ts`
+- [X] T013 定義 Search DTO（SearchRequest/SearchResultItem）於 `packages/contracts/src/dto/search.ts`
   - DoD: 支援 query + filters（tags/status/priority/archived）+ sort + viewScope；型別輸出
 
-- [ ] T014 定義 WS payload schemas（file.changed, entity.updated）於 `packages/contracts/src/ws/files.ts`
+- [X] T014 定義 WS payload schemas（file.changed, entity.updated）於 `packages/contracts/src/ws/files.ts`
   - DoD: 事件名稱與欄位形狀明確；型別輸出
 
-- [ ] T015 定義 WS payload schemas（sync.status, snapshot.created, snapshot.failed）於 `packages/contracts/src/ws/status.ts`
+- [X] T015 定義 WS payload schemas（sync.status, snapshot.created, snapshot.failed）於 `packages/contracts/src/ws/status.ts`
   - DoD: 狀態枚舉、必填欄位完整；型別輸出
 
 - [ ] T016 更新 OpenAPI（specs/001-prompt-asset-hub/contracts/openapi.yaml）：Workspace 設定、Project/Prompt/Inbox CRUD、Search、Snapshot/Version manifests
   - DoD: OpenAPI 欄位與 contracts DTO 完全一致（欄位/型別/必填）；若有差異需同步修正 contracts
 
-- [ ] T017 [P] Contract tests：frontmatter schemas 驗證於 `tests/contract/frontmatter.spec.ts`
+- [X] T017 [P] Contract tests：frontmatter schemas 驗證於 `tests/contract/frontmatter.spec.ts`
   - DoD: required/optional/default、id/slug 皆被測；CI 可跑
 
-- [ ] T018 [P] Contract tests：WS payload schemas 驗證於 `tests/contract/ws-payloads.spec.ts`
+- [X] T018 [P] Contract tests：WS payload schemas 驗證於 `tests/contract/ws-payloads.spec.ts`
   - DoD: 每事件至少 1 valid + 1 invalid；event name mismatch 會 fail
 
-- [ ] T019 [P] Contract tests：Search DTO 驗證於 `tests/contract/search-dto.spec.ts`
+- [X] T019 [P] Contract tests：Search DTO 驗證於 `tests/contract/search-dto.spec.ts`
   - DoD: filters/sort/viewScope 驗證；缺欄位會 fail
 
 - [ ] T020 [P] Contract tests：OpenAPI 形狀檢查於 `tests/contract/openapi.spec.ts`
   - DoD: 解析並比對 DTO snapshot，檢出 breaking 變更
 
-- [ ] T021 建立檔案系統 layout constants/helpers（`.pah/`、versions、snapshots、events、cache）於 `apps/server/src/fs-layout/*`
+- [X] T021 建立檔案系統 layout constants/helpers（`.pah/`、versions、snapshots、events、cache）於 `apps/server/src/fs-layout/*`
   - DoD: 所有路徑集中管理；無散落字串
 
-- [ ] T022 建立掃描/解析管線（gray-matter + schemas）於 `apps/server/src/indexing/*`
+- [X] T022 建立掃描/解析管線（gray-matter + schemas）於 `apps/server/src/indexing/*`
   - DoD: 掃描 `<rootPath>` 可重建 Sidebar/列表/Detail 所需資料（符合 INV-002）
 
 **Checkpoint**: 合約 + 檔案解析完成，才能進入 US1。
@@ -119,10 +119,10 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Implementation（US1）
 
-- [ ] T033 [P] [US1] 後端：Workspace 設定讀寫（rootPath/attachmentPath/backupSettings）於 `apps/server/src/routes/workspace.ts`
+- [X] T033 [P] [US1] 後端：Workspace 設定讀寫（rootPath/attachmentPath/backupSettings）於 `apps/server/src/routes/workspace.ts`
   - DoD: 路徑權限檢查；不可寫時阻擋寫入並回傳可理解錯誤
 
-- [ ] T034 [US1] 後端：Project/Prompt 檔案 CRUD（含 frontmatter/body）於 `apps/server/src/routes/projects.ts`, `apps/server/src/routes/prompts.ts`
+- [X] T034 [US1] 後端：Project/Prompt 檔案 CRUD（含 frontmatter/body）於 `apps/server/src/routes/projects.ts`, `apps/server/src/routes/prompts.ts`
   - DoD: 檔案為唯一權威（INV-001），slug rename 不破壞引用（id 不變）
 
 - [ ] T035 [P] [US1] 後端：附件落盤與命名策略於 `apps/server/src/attachments/*`
