@@ -1,14 +1,14 @@
 # quickstart.md — 檔案為核心的提示詞資產管理主系統
 
 ## 先決條件
-- Node.js 20 LTS、pnpm 或 npm
+- Node.js 20 LTS、npm
 - 已設定資料根目錄與附件目錄的讀寫權限
 
 ## 安裝與啟動
 ```bash
-pnpm install
-pnpm --filter apps/server dev   # 啟動本機 Fastify + WS
-pnpm --filter apps/web dev      # 啟動前端 Vite 開發伺服器
+npm install
+npm run dev:server   # 啟動本機 Fastify 伺服器
+npm run dev:web      # 啟動前端 Vite 開發伺服器
 ```
 
 ## 基本設定
@@ -24,9 +24,7 @@ pnpm --filter apps/web dev      # 啟動前端 Vite 開發伺服器
 
 ## 測試建議
 ```bash
-pnpm test --filter contracts   # 契約/DTO 測試
-pnpm test --filter server      # 後端單元/整合
-pnpm test --filter web         # 前端單元/RTL
+npm test   # 執行 Vitest 測試（含 contracts/server/web）
 ```
 - 覆蓋率目標：核心模組 ≥ 80%（儲存、搜尋、同步、備份）。
 

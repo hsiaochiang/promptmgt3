@@ -168,7 +168,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 - [X] T052 [P] [US2] Integration test：列表/看板切換結果集一致（UI-002）於 `tests/integration/view-toggle-consistency.spec.ts`
 
-- [ ] T053 [P] [US2] Integration test：外部檔案修改衝突流程（spec Edge Case #1）於 `tests/integration/conflict-resolution.spec.ts`
+- [X] T053 [P] [US2] Integration test：外部檔案修改衝突流程（spec Edge Case #1）於 `tests/integration/conflict-resolution.spec.ts`
   - DoD: 不靜默覆蓋；提供 rebase actions（重新整理/覆寫）
 
 ### Implementation（US2）
@@ -176,10 +176,10 @@ description: "Task list: 001-prompt-asset-hub"
 - [ ] T054 [P] [US2] 後端：檔案監控（chokidar）→ 解析變更 → WS 推播於 `apps/server/src/watch/*`
   - DoD: add/modify/delete/move 皆可推播；避免抖動重複事件
 
-- [ ] T055 [US2] 後端：搜尋（MVP in-memory index）於 `apps/server/src/search/*`
+- [X] T055 [US2] 後端：搜尋（MVP in-memory index）於 `apps/server/src/search/*`（實作於 `apps/server/src/routes/search.ts`）
   - DoD: 5,000 筆資料 95% < 1s（可用簡單 benchmark 任務記錄）
 
-- [ ] T056 [P] [US2] 前端：看板視圖於 `apps/web/src/features/library/BoardView/*`
+- [X] T056 [P] [US2] 前端：看板視圖於 `apps/web/src/features/library/BoardView/*`（實作內嵌於 `apps/web/src/features/library/ListView.tsx`）
   - DoD: 與列表共享同一資料集合；切換不改變 selection
 
 - [ ] T057 [US2] 前端：搜尋/篩選 UI + 狀態保留於 `apps/web/src/features/search/*`
@@ -247,7 +247,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Implementation（US4）
 
-- [ ] T081 [US4] 後端：InboxItem CRUD（限簡修）於 `apps/server/src/routes/inbox.ts`
+- [X] T081 [US4] 後端：InboxItem CRUD（限簡修）於 `apps/server/src/routes/inbox.ts`
   - DoD: 不提供「歸檔寫入」操作；僅維持 cleanedState 與 notes/title 等
 
 - [ ] T082 [P] [US4] 前端：Inbox 列表 + Detail Panel（最小表單）於 `apps/web/src/features/inbox/*`
@@ -263,7 +263,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T090 [P] 建立 UI regression checklist（L1/L2）文件範本於 `specs/001-prompt-asset-hub/checklists/ui-regression.md`
   - DoD: 可直接貼到 PR；對照 constitution 的要求；含 Happy path + 1 error/edge 路徑
 
-- [ ] T091 [P] 補齊 quickstart.md（本機啟動、設定 rootPath、示例資料）於 `specs/001-prompt-asset-hub/quickstart.md`
+- [X] T091 [P] 補齊 quickstart.md（本機啟動、設定 rootPath、示例資料）於 `specs/001-prompt-asset-hub/quickstart.md`
 
 - [ ] T092 [P] 效能基準任務（搜尋/掃描/快照）於 `tests/integration/benchmarks/*` 或 `apps/server/scripts/*`
   - DoD: 可重跑、輸出 p95 指標
