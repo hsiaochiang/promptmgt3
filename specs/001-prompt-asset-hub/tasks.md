@@ -228,17 +228,29 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T073 [US3] 後端：snapshot service（daily + manual）於 `apps/server/src/backup/snapshot/*`
   - DoD: 產出符合 plan.md 的路徑/命名與 layout
 
-- [ ] T074 [US3] 後端：version node service（entity scope）於 `apps/server/src/backup/version-node/*`
+- [X] T074 [US3] 後端：version node service（entity scope）於 `apps/server/src/backup/version-node/*`
   - DoD: 支援每實體版本列表與讀取
+  - 實作檔案：
+    - `apps/server/src/backup/version-node/index.ts`：createVersionNode, listVersionNodes, listAllVersionNodes, getVersionNode
+    - `apps/server/src/routes/snapshots.ts`：POST /api/versions, GET /api/versions, GET /api/versions/:entityType/:entityId
+    - 新增 WebSocket 廣播功能：snapshot.created 和 snapshot.failed 事件
 
 - [X] T075 [P] [US3] 後端：retention 清理（daily + per-entity + pinned + 空間不足策略）於 `apps/server/src/backup/retention/*`（目前實作每日資料夾保留 N 天的基礎策略）
   - DoD: 遵循 plan.md 的保留規則；產出可測的策略函式；含磁碟空間不足時的優先順序
 
-- [ ] T076 [P] [US3] 前端：History/Versions UI（列表 + 檢視）於 `apps/web/src/features/history/*`
+- [X] T076 [P] [US3] 前端：History/Versions UI（列表 + 檢視）於 `apps/web/src/features/history/*`
   - DoD: 可開啟指定版本檢視（唯讀）
+  - 實作檔案：
+    - `apps/web/src/features/history/HistoryView.tsx`：版本與快照列表、版本詳情面板、手動建立快照
+    - 已整合至 `apps/web/src/layout/MainContent.tsx`（section === 'history'）
+    - 已整合至 `apps/web/src/layout/Sidebar.tsx`（導航項目）
 
-- [ ] T077 [US3] 前端：snapshot/backup 狀態提示與重試（含失敗）於 `apps/web/src/features/backup/*`
+- [X] T077 [US3] 前端：snapshot/backup 狀態提示與重試（含失敗）於 `apps/web/src/features/backup/*`
   - DoD: 失敗時提供重試；顯示錯誤原因；成功顯示時間戳
+  - 實作檔案：
+    - `apps/web/src/features/backup/BackupStatusBanner.tsx`：備份狀態橫幅、WebSocket 監聽 snapshot.created/failed 事件、重試功能
+    - 已整合至 `apps/web/src/App.tsx`（全域狀態橫幅）
+    - `apps/web/src/layout/DetailPanel.tsx`：新增「建立版本節點」按鈕（POST /api/versions）
 
 **Checkpoint**: US3 可獨立 demo + 測試通過。
 
@@ -280,8 +292,13 @@ description: "Task list: 001-prompt-asset-hub"
 - [ ] T093 [P] Constitution Check（Performance/UX/Test Plan/Contract impact 勾選）於 PR 流程
   - DoD: PR/里程碑前完成勾選；若不符合列出補救任務
 
-- [ ] T094 [P] 設定頁（FR-009）前端實作與驗證於 `apps/web/src/features/settings/*`
+- [X] T094 [P] 設定頁（FR-009）前端實作與驗證於 `apps/web/src/features/settings/*`
   - DoD: 支援 root/attachment/tags/commonOptions/backupSettings 編輯；路徑驗證與錯誤提示；權限不足阻擋寫入
+  - 實作檔案：
+    - `apps/web/src/features/settings/SettingsView.tsx`：工作區設定編輯（rootPath, attachmentPath, backup settings）
+    - 已整合至 `apps/web/src/layout/MainContent.tsx`（section === 'settings'）
+    - 已整合至 `apps/web/src/layout/Sidebar.tsx`（導航項目）
+    - 後端 API：`apps/server/src/routes/workspace.ts` (GET/POST /api/workspace/settings)
 
 - [ ] T095 [P] 設定頁整合測試（FR-009）於 `tests/integration/settings-page.spec.ts`
   - DoD: 驗證權限不足/路徑衝突時阻擋寫入並提示；成功保存後重新載入仍一致

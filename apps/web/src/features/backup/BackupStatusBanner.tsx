@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { SyncContext } from '../sync/SyncProvider';
+import type { SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
 
 interface BackupStatus {
   isBackingUp: boolean;
@@ -13,35 +14,45 @@ export function BackupStatusBanner() {
     isBackingUp: false,
   });
   const [retrying, setRetrying] = useState(false);
-  const syncContext = useContext(SyncContext);
 
   useEffect(() => {
-    // Listen for snapshot status events via WebSocket
-    const handleStatusEvent = (event: any) => {
-      if (event.type === 'snapshot.created') {
-        setStatus({
-          isBackingUp: false,
-          lastSuccess: new Date().toISOString(),
-          lastError: undefined,
-          errorMessage: undefined,
-        });
-      } else if (event.type === 'snapshot.failed') {
-        setStatus({
-          isBackingUp: false,
-          lastSuccess: status.lastSuccess,
-          lastError: new Date().toISOString(),
-          errorMessage: event.error || '備份失敗',
-        });
+    // Connect to WebSocket
+    if (typeof window === 'undefined' || typeof WebSocket === 'undefined') {
+      return;
+    }
+
+    const ws = new WebSocket('ws://localhost:3001/ws');
+
+    ws.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        
+        if (parsed.event === 'snapshot.created') {
+          const data = parsed as SnapshotCreatedPayload;
+          setStatus({
+            isBackingUp: false,
+            lastSuccess: new Date().toISOString(),
+            lastError: undefined,
+            errorMessage: undefined,
+          });
+        } else if (parsed.event === 'snapshot.failed') {
+          const data = parsed as SnapshotFailedPayload;
+          setStatus({
+            isBackingUp: false,
+            lastSuccess: status.lastSuccess,
+            lastError: new Date().toISOString(),
+            errorMessage: data.data.error || '備份失敗',
+          });
+        }
+      } catch {
+        // Ignore malformed messages
       }
     };
 
-    // In a real implementation, this would be connected via SyncProvider's WebSocket
-    // For now, this is a placeholder structure
-    
     return () => {
-      // Cleanup
+      ws.close();
     };
-  }, [status.lastSuccess]);
+  }, []);
 
   const handleRetrySnapshot = async () => {
     try {
@@ -61,13 +72,7 @@ export function BackupStatusBanner() {
         throw new Error('Failed to create snapshot');
       }
 
-      const event = await response.json();
-      setStatus({
-        isBackingUp: false,
-        lastSuccess: event.createdAt,
-        lastError: undefined,
-        errorMessage: undefined,
-      });
+      // Success will be handled by WebSocket event
     } catch (error) {
       setStatus({
         isBackingUp: false,

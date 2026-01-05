@@ -6,7 +6,7 @@ import { registerWorkspaceRoutes } from './routes/workspace.js';
 import { registerProjectRoutes, registerPromptRoutes } from './routes/entities.js';
 import { registerInboxRoutes } from './routes/inbox.js';
 import { registerSearchRoutes } from './routes/search.js';
-import { registerSnapshotRoutes } from './routes/snapshots.js';
+import { registerSnapshotRoutes, setBroadcastFunction } from './routes/snapshots.js';
 import { startFileWatcher } from './watch/fileWatcher.js';
 import type { FileChangedPayload, StatusEvent } from '@pah/contracts';
 
@@ -59,6 +59,9 @@ function broadcast(event: FileChangedPayload | StatusEvent): void {
 server.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
+
+// Set broadcast function for snapshot routes
+setBroadcastFunction(broadcast);
 
 // Register routes
 await registerWorkspaceRoutes(server, ROOT_PATH);

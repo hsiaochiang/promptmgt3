@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { getDailySnapshotPath, getSnapshotsDir, isSystemPath, getPahDir } from '../fs-layout/index.js';
+import { getDailySnapshotPath, getSnapshotsDir, isSystemPath } from '../fs-layout/index.js';
 import type { VersionEvent } from '@pah/contracts';
 
 async function copyDir(src: string, dest: string, filter?: (fullPath: string) => boolean): Promise<{ files: number; size: number; }>{

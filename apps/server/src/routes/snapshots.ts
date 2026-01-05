@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createSnapshot, listSnapshots } from '../backup/snapshot.js';
 import { createVersionNode, listVersionNodes, listAllVersionNodes } from '../backup/version-node/index.js';
-import { getProjectFilePath, getPromptFilePath, getProjectDir } from '../fs-layout/index.js';
-import type { VersionEvent } from '@pah/contracts';
+import { getPromptFilePath, getProjectDir } from '../fs-layout/index.js';
+import type { VersionEvent, SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
 
 interface CreateSnapshotBody {
   message?: string;
@@ -17,6 +17,13 @@ interface CreateVersionNodeBody {
   message?: string;
 }
 
+// Global broadcast function reference (will be set by server)
+let broadcastFn: ((event: any) => void) | undefined;
+
+export function setBroadcastFunction(fn: (event: any) => void) {
+  broadcastFn = fn;
+}
+
 export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: string) {
   // POST /api/snapshots - create snapshot/version event
   server.post<{
@@ -25,9 +32,41 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
     try {
       const { message, scope = 'workspace' } = request.body || {};
       const event = await createSnapshot(rootPath, scope, message);
+      
+      // Broadcast snapshot.created event
+      if (broadcastFn) {
+        const snapshotEvent: SnapshotCreatedPayload = {
+          event: 'snapshot.created',
+          data: {
+            snapshotId: event.id,
+            scope,
+            path: event.snapshotPath || '',
+            stats: {
+              filesCount: 0,
+              attachmentsCount: 0,
+              sizeBytes: 0,
+            },
+          },
+        };
+        broadcastFn(snapshotEvent);
+      }
+      
       reply.code(201);
       return event satisfies VersionEvent;
     } catch (error) {
+      // Broadcast snapshot.failed event
+      if (broadcastFn) {
+        const failedEvent: SnapshotFailedPayload = {
+          event: 'snapshot.failed',
+          data: {
+            snapshotId: `snapshot-failed-${Date.now()}`,
+            scope: 'workspace',
+            error: error instanceof Error ? error.message : String(error),
+          },
+        };
+        broadcastFn(failedEvent);
+      }
+      
       reply.code(500).send({
         error: 'Failed to create snapshot',
         message: error instanceof Error ? error.message : String(error),

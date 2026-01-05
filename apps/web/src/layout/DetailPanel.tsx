@@ -20,6 +20,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   const [unsavedSnapshot, setUnsavedSnapshot] = useState<PromptEntity | null>(null);
   const [lastKnownUpdatedAt, setLastKnownUpdatedAt] = useState<string | null>(prompt.updatedAt ?? null);
   const [serverPrompt, setServerPrompt] = useState<PromptEntity | null>(prompt);
+  const [creatingVersion, setCreatingVersion] = useState(false);
 
   const { lastStatus, setStatus } = useSyncStatus();
   const hasConflict = lastStatus.status === 'conflict';
@@ -121,6 +122,42 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
     alert('未保存內容已複製到剪貼簿');
   };
 
+  const handleCreateVersion = async () => {
+    if (!prompt.projectSlug || !prompt.slug) {
+      alert('無法建立版本節點：缺少必要的專案或提示詞資訊');
+      return;
+    }
+
+    const message = window.prompt('請輸入版本節點的說明（選填）：');
+    if (message === null) return; // User cancelled
+
+    try {
+      setCreatingVersion(true);
+      
+      const response = await fetch('http://localhost:3001/api/versions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entityType: 'prompt',
+          entityId: prompt.id,
+          projectSlug: prompt.projectSlug,
+          promptSlug: prompt.slug,
+          message: message || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create version node');
+      }
+
+      alert('版本節點建立成功！');
+    } catch (error) {
+      alert(`建立版本節點失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
+    } finally {
+      setCreatingVersion(false);
+    }
+  };
+
   const handleRefresh = async () => {
     if (hasUnsavedChanges) {
       const confirmed = window.confirm(
@@ -168,12 +205,22 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
       {/* Header */}
       <div className="border-b border-subtle p-4 flex items-center justify-between">
         <h2 className="font-semibold">編輯提示詞</h2>
-        <button
-          onClick={onClose}
-          className="text-secondary hover:text-gray-900 text-xl leading-none"
-        >
-          ×
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCreateVersion}
+            disabled={creatingVersion || hasUnsavedChanges}
+            className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={hasUnsavedChanges ? '請先保存變更再建立版本節點' : '建立版本節點'}
+          >
+            {creatingVersion ? '建立中...' : '📌 版本節點'}
+          </button>
+          <button
+            onClick={onClose}
+            className="text-secondary hover:text-gray-900 text-xl leading-none"
+          >
+            ×
+          </button>
+        </div>
       </div>
 
       {/* Conflict Banner */}
