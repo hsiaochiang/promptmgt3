@@ -6,13 +6,13 @@ info:
 servers:
   - url: http://localhost:3000
 paths:
-  /api/settings:
+  /api/workspace/settings:
     get:
-      summary: 取得設定
+      summary: 取得工作空間設定
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
     post:
-      summary: 更新設定
+      summary: 更新工作空間設定
       requestBody:
         required: true
         content:
@@ -20,6 +20,17 @@ paths:
             schema: { $ref: '#/components/schemas/SettingsUpdate' }
       responses:
         '200': { description: 已更新, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
+  /api/workspace/permissions:
+    get:
+      summary: 檢查路徑讀寫權限
+      parameters:
+        - in: query
+          name: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PathPermissions' } } } }
+        '400': { description: Bad Request }
   /api/projects:
     get:
       summary: 列出專案（支援篩選/搜尋）
@@ -162,14 +173,15 @@ paths:
       responses:
         '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
   /api/search:
-    get:
+    post:
       summary: 搜尋資產（title/tags/body）
-      parameters:
-        - in: query
-          name: q
-          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SearchRequest' }
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SearchResult' } } } } }
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SearchResponse' } } } }
   /api/snapshots:
     post:
       summary: 建立版本節點或立即備份（含附件完整複本）
@@ -295,3 +307,26 @@ components:
         message: { type: string }
         createdAt: { type: string, format: date-time }
         snapshotPath: { type: string }
+    SearchRequest:
+      type: object
+      properties:
+        query: { type: string }
+        viewScope: { type: string }
+        page: { type: integer }
+        perPage: { type: integer }
+    SearchResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/SearchResult' }
+        total: { type: integer }
+        page: { type: integer }
+        perPage: { type: integer }
+        hasMore: { type: boolean }
+    PathPermissions:
+      type: object
+      properties:
+        readable: { type: boolean }
+        writable: { type: boolean }
+        error: { type: string }
