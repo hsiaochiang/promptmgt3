@@ -73,7 +73,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T015 定義 WS payload schemas（sync.status, snapshot.created, snapshot.failed）於 `packages/contracts/src/ws/status.ts`
   - DoD: 狀態枚舉、必填欄位完整；型別輸出
 
-- [ ] T016 更新 OpenAPI（specs/001-prompt-asset-hub/contracts/openapi.yaml）：Workspace 設定、Project/Prompt/Inbox CRUD、Search、Snapshot/Version manifests
+- [X] T016 更新 OpenAPI（specs/001-prompt-asset-hub/contracts/openapi.yaml）：Workspace 設定、Project/Prompt/Inbox CRUD、Search、Snapshot/Version manifests
   - DoD: OpenAPI 欄位與 contracts DTO 完全一致（欄位/型別/必填）；若有差異需同步修正 contracts
 
 - [X] T017 [P] Contract tests：frontmatter schemas 驗證於 `tests/contract/frontmatter.spec.ts`
@@ -85,7 +85,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [X] T019 [P] Contract tests：Search DTO 驗證於 `tests/contract/search-dto.spec.ts`
   - DoD: filters/sort/viewScope 驗證；缺欄位會 fail
 
-- [ ] T020 [P] Contract tests：OpenAPI 形狀檢查於 `tests/contract/openapi.spec.ts`
+- [X] T020 [P] Contract tests：OpenAPI 形狀檢查於 `tests/contract/openapi.spec.ts`
   - DoD: 解析並比對 DTO snapshot，檢出 breaking 變更
 
 - [X] T021 建立檔案系統 layout constants/helpers（`.pah/`、versions、snapshots、events、cache）於 `apps/server/src/fs-layout/*`
