@@ -62,7 +62,7 @@ projectId: ${projectId}
 slug: ${promptSlug}
 title: 測試提示詞
 status: ready
-priority: P0
+priority: high
 tags:
   - important
 createdAt: "2024-01-01T00:00:00Z"
@@ -122,7 +122,7 @@ Inbox 項目內容
     expect(entities.prompts[0].slug).toBe(promptSlug);
     expect(entities.prompts[0].title).toBe('測試提示詞');
     expect(entities.prompts[0].status).toBe('ready');
-    expect(entities.prompts[0].priority).toBe('P0');
+    expect(entities.prompts[0].priority).toBe('high');
     expect(entities.prompts[0].projectId).toBe(projectId);
 
     expect(entities.inbox).toHaveLength(1);

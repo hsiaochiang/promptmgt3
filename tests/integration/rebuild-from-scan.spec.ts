@@ -53,7 +53,7 @@ describe('Integration Test - File Scanning and Rebuild (INV-002)', () => {
       slug: 'test-project',
       title: 'Test Project',
       summary: 'A test project for rebuild verification',
-      status: 'in-progress',
+      status: 'in_progress',
       type: 'test',
       tags: ['test', 'integration'],
       archived: false,
@@ -68,7 +68,7 @@ describe('Integration Test - File Scanning and Rebuild (INV-002)', () => {
       projectId,
       title: 'Test Prompt',
       status: 'draft',
-      priority: 'P1',
+      priority: 'medium',
       tags: ['test'],
       notes: 'Test notes',
       archived: false,
@@ -108,7 +108,7 @@ describe('Integration Test - File Scanning and Rebuild (INV-002)', () => {
     expect(scannedProject.slug).toBe('test-project');
     expect(scannedProject.title).toBe('Test Project');
     expect(scannedProject.summary).toBe('A test project for rebuild verification');
-    expect(scannedProject.status).toBe('in-progress');
+    expect(scannedProject.status).toBe('in_progress');
     expect(scannedProject.tags).toEqual(['test', 'integration']);
     expect(scannedProject.body).toBe('This is the project description.');
     
@@ -119,7 +119,7 @@ describe('Integration Test - File Scanning and Rebuild (INV-002)', () => {
     expect(scannedPrompt.projectId).toBe(projectId);
     expect(scannedPrompt.title).toBe('Test Prompt');
     expect(scannedPrompt.status).toBe('draft');
-    expect(scannedPrompt.priority).toBe('P1');
+    expect(scannedPrompt.priority).toBe('medium');
     expect(scannedPrompt.body).toBe('This is the prompt content.');
     
     // Step 6: Verify inbox data integrity

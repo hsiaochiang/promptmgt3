@@ -31,7 +31,7 @@ describe('Contract Tests - Frontmatter Schemas', () => {
       
       const result = ProjectFrontmatterSchema.parse(project);
       expect(result.summary).toBe('');
-      expect(result.status).toBe('planning');
+      expect(result.status).toBe('planned');
       expect(result.type).toBe('');
       expect(result.tags).toEqual([]);
       expect(result.archived).toBe(false);
@@ -103,7 +103,7 @@ describe('Contract Tests - Frontmatter Schemas', () => {
       
       const result = PromptFrontmatterSchema.parse(prompt);
       expect(result.status).toBe('draft');
-      expect(result.priority).toBe('P1');
+      expect(result.priority).toBe('medium');
       expect(result.tags).toEqual([]);
       expect(result.archived).toBe(false);
       expect(result.notes).toBe('');
@@ -123,7 +123,7 @@ describe('Contract Tests - Frontmatter Schemas', () => {
     });
 
     it('should validate status enum', () => {
-      const validStatuses = ['draft', 'tuning', 'ready', 'disabled'];
+      const validStatuses = ['draft', 'needs_review', 'ready', 'deprecated'];
       validStatuses.forEach(status => {
         const prompt = {
           id: '123e4567-e89b-12d3-a456-426614174000',
@@ -154,7 +154,7 @@ describe('Contract Tests - Frontmatter Schemas', () => {
     });
 
     it('should validate priority enum', () => {
-      const validPriorities = ['P0', 'P1', 'P2'];
+      const validPriorities = ['high', 'medium', 'low'];
       validPriorities.forEach(priority => {
         const prompt = {
           id: '123e4567-e89b-12d3-a456-426614174000',

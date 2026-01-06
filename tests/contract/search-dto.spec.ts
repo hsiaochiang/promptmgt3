@@ -34,7 +34,7 @@ describe('Contract Tests - Search DTO', () => {
         filters: {
           tags: ['tag1', 'tag2'],
           status: ['draft', 'ready'],
-          priority: ['P0', 'P1'],
+          priority: ['high', 'medium'],
           archived: false,
           entityType: ['prompt', 'project'] as const,
         },
@@ -130,7 +130,7 @@ describe('Contract Tests - Search DTO', () => {
         tags: ['test', 'example'],
         path: '/projects/test/prompts/test-prompt.md',
         status: 'draft',
-        priority: 'P1',
+        priority: 'medium',
         updatedAt: '2024-01-01T00:00:00.000Z',
         relevance: 0.95,
       };

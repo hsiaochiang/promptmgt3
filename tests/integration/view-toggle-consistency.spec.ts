@@ -17,7 +17,7 @@ describe('Integration - View Toggle Consistency', () => {
         title: 'Test Project 1',
         tags: ['api', 'backend'],
         path: 'projects/test-project-1/project.md',
-        status: 'in-progress',
+        status: 'in_progress',
         updatedAt: '2024-01-01T00:00:00.000Z',
       },
       {
@@ -27,7 +27,7 @@ describe('Integration - View Toggle Consistency', () => {
         tags: ['api'],
         path: 'projects/test-project-1/prompts/api-prompt.md',
         status: 'ready',
-        priority: 'P1',
+        priority: 'medium',
         updatedAt: '2024-01-02T00:00:00.000Z',
       },
       {
@@ -37,7 +37,7 @@ describe('Integration - View Toggle Consistency', () => {
         tags: ['frontend', 'react'],
         path: 'projects/test-project-2/prompts/frontend.md',
         status: 'draft',
-        priority: 'P2',
+        priority: 'low',
         updatedAt: '2024-01-03T00:00:00.000Z',
       },
     ];
@@ -218,8 +218,8 @@ describe('Integration - View Toggle Consistency', () => {
         title: `Prompt ${i}`,
         tags: [`tag-${i % 10}`],
         path: `projects/project-${i % 100}/prompts/prompt-${i}.md`,
-        status: ['draft', 'ready', 'disabled'][i % 3],
-        priority: ['P0', 'P1', 'P2'][i % 3],
+        status: ['draft', 'needs_review', 'ready'][i % 3],
+        priority: ['high', 'medium', 'low'][i % 3],
         updatedAt: new Date(2024, 0, (i % 31) + 1).toISOString(),
       }));
 

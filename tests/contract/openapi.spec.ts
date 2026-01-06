@@ -43,6 +43,8 @@ describe('Contract Tests - OpenAPI spec', () => {
       '/api/trash/{trashId}/restore:',
       '/api/inbox:',
       '/api/inbox/{id}:',
+      '/api/snippets:',
+      '/api/snippets/{id}:',
       '/api/files/read:',
       '/api/files/write:',
       '/api/search:',
@@ -181,6 +183,9 @@ describe('Contract Tests - OpenAPI spec', () => {
       'SearchResponse',
       'VersionEvent',
       'Attachment',
+      'Snippet',
+      'SnippetInput',
+      'SnippetList',
     ];
 
     const componentsIndex = specText.indexOf('components:');
@@ -223,6 +228,8 @@ describe('Contract Tests - OpenAPI spec', () => {
       '/api/trash/{trashId}/restore',
       '/api/inbox',
       '/api/inbox/{id}',
+      '/api/snippets',
+      '/api/snippets/{id}',
       '/api/files/read',
       '/api/files/write',
       '/api/files/attach',

@@ -23,7 +23,7 @@ describe('Contract - Search API', () => {
         filters: {
           tags: ['javascript', 'react'],
           status: ['ready', 'draft'],
-          priority: ['P0', 'P1'],
+          priority: ['high', 'medium'],
           archived: false,
           entityType: ['project', 'prompt'],
         },
@@ -201,7 +201,7 @@ describe('Contract - Search API', () => {
         tags: ['api', 'testing'],
         path: 'projects/test-project/prompts/test-prompt.md',
         status: 'ready',
-        priority: 'P1',
+        priority: 'medium',
         updatedAt: '2024-01-01T00:00:00.000Z',
         relevance: 0.95,
       };

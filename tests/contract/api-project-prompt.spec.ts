@@ -11,7 +11,7 @@ describe('Contract Tests - API Project/Prompt CRUD Endpoints', () => {
       const validRequest = {
         title: 'New Project',
         summary: 'Project summary',
-        status: 'planning',
+        status: 'planned',
         tags: ['tag1', 'tag2'],
       };
       
@@ -26,7 +26,7 @@ describe('Contract Tests - API Project/Prompt CRUD Endpoints', () => {
         slug: 'new-project',
         title: 'New Project',
         summary: '',
-        status: 'planning',
+        status: 'planned',
         type: '',
         tags: [],
         archived: false,
@@ -61,7 +61,7 @@ describe('Contract Tests - API Project/Prompt CRUD Endpoints', () => {
         projectId: '123e4567-e89b-12d3-a456-426614174000',
         body: 'Prompt content',
         status: 'draft',
-        priority: 'P1',
+        priority: 'medium',
         tags: ['tag1'],
       };
       
@@ -76,7 +76,7 @@ describe('Contract Tests - API Project/Prompt CRUD Endpoints', () => {
         projectId: '123e4567-e89b-12d3-a456-426614174000',
         title: 'New Prompt',
         status: 'draft',
-        priority: 'P1',
+        priority: 'medium',
         tags: [],
         notes: '',
         archived: false,
@@ -106,7 +106,7 @@ describe('Contract Tests - API Project/Prompt CRUD Endpoints', () => {
     });
     
     it('should validate priority enum values', () => {
-      const validPriorities = ['P0', 'P1', 'P2'];
+      const validPriorities = ['high', 'medium', 'low'];
       
       validPriorities.forEach(priority => {
         const prompt = {
@@ -128,7 +128,7 @@ describe('Contract Tests - API Project/Prompt CRUD Endpoints', () => {
         slug: 'test',
         projectId: '123e4567-e89b-12d3-a456-426614174000',
         title: 'Test',
-        priority: 'P3',
+        priority: 'invalid',
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
       };

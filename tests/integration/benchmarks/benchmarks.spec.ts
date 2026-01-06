@@ -10,6 +10,7 @@
  * 1. scanWorkspace performance on small/medium fixtures
  * 2. createSnapshot + enforceSnapshotRetention timing and correctness
  * 3. /api/search latency with SearchResponseSchema validation
+ * 4. listTrash latency with TrashListResponse correctness
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -19,9 +20,11 @@ import os from 'os';
 import crypto from 'node:crypto';
 import { scanWorkspace } from '../../../apps/server/src/indexing/index.js';
 import { createSnapshot } from '../../../apps/server/src/backup/snapshot.js';
-import { SearchRequestSchema, SearchResponseSchema } from '@pah/contracts';
+import { SearchRequestSchema, SearchResponseSchema, TrashListResponseSchema } from '@pah/contracts';
 import { createTestFastify } from '../../../apps/server/src/testkit/fastify.js';
 import { registerSearchRoutes } from '../../../apps/server/src/routes/search.js';
+import { listTrash } from '../../../apps/server/src/trash/trashStore.js';
+import { getTrashItemManifestPath, getTrashItemsDir } from '../../../apps/server/src/fs-layout/index.js';
 
 describe('Performance Benchmarks', () => {
   let tempDir: string;
@@ -39,6 +42,9 @@ describe('Performance Benchmarks', () => {
 
     // Create medium fixture: 100 projects, 500 prompts
     await createFixture(mediumFixtureDir, 100, 5);
+
+    // Create trash fixture for list performance
+    await createTrashFixture(smallFixtureDir, 500);
   });
 
   afterEach(async () => {
@@ -245,6 +251,22 @@ describe('Performance Benchmarks', () => {
       await server.close();
     });
   });
+
+  describe('Trash List Performance', () => {
+    it('should list 500 trash items (page=1, perPage=50) in < 200ms with valid schema', async () => {
+      const startTime = performance.now();
+      const response = await listTrash({ rootPath: smallFixtureDir, page: 1, perPage: 50 });
+      const elapsed = performance.now() - startTime;
+
+      const validation = TrashListResponseSchema.safeParse(response);
+      expect(validation.success).toBe(true);
+      expect(response.total).toBe(500);
+      expect(response.items.length).toBe(50);
+      expect(elapsed).toBeLessThan(200);
+
+      console.log(`✓ Trash list: ${elapsed.toFixed(2)}ms for total ${response.total}`);
+    });
+  });
 });
 
 /**
@@ -273,7 +295,7 @@ async function createFixture(
       `slug: ${projectSlug}`,
       `title: Test Project ${i}`,
       `summary: This is test project number ${i}`,
-      'status: in-progress',
+      'status: in_progress',
       'type: benchmark',
       'tags: [test, benchmark, automation]',
       'archived: false',
@@ -302,7 +324,7 @@ async function createFixture(
         `projectId: ${projectId}`,
         `title: Test Prompt ${i}-${j}`,
         'status: draft',
-        'priority: P1',
+        'priority: medium',
         `tags: [test, prompt-${j}]`,
         `notes: Test note for prompt ${i}-${j}`,
         'archived: false',
@@ -318,5 +340,35 @@ async function createFixture(
 
       await fs.writeFile(path.join(promptsDir, `${promptSlug}.md`), promptContent, 'utf-8');
     }
+  }
+}
+
+async function createTrashFixture(rootDir: string, itemCount: number): Promise<void> {
+  const itemsDir = getTrashItemsDir(rootDir);
+  await fs.mkdir(itemsDir, { recursive: true });
+
+  const now = new Date();
+  const retentionMs = 30 * 24 * 60 * 60 * 1000;
+
+  for (let i = 0; i < itemCount; i++) {
+    const trashId = crypto.randomUUID();
+    const entityId = crypto.randomUUID();
+    const deletedAt = new Date(now.getTime() - i * 1000);
+    const purgeAfter = new Date(deletedAt.getTime() + retentionMs);
+
+    const manifest = {
+      trashId,
+      entityType: 'prompt',
+      entityId,
+      titleSnapshot: `Bench Item ${i + 1}`,
+      deletedAt: deletedAt.toISOString(),
+      purgeAfter: purgeAfter.toISOString(),
+      originalRelativePath: `projects/bench-${i}/prompts/prompt-${i}.md`,
+      attachmentsMoved: false,
+    };
+
+    const manifestPath = getTrashItemManifestPath(rootDir, trashId);
+    await fs.mkdir(path.dirname(manifestPath), { recursive: true });
+    await fs.writeFile(manifestPath, JSON.stringify(manifest), 'utf-8');
   }
 }

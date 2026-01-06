@@ -12,6 +12,7 @@
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:server": "npm run dev --workspace=apps/server",
     "build": "npm run build --workspaces --if-present",
+    "pretest": "tsc -p packages/contracts/tsconfig.json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage -c vitest.coverage.contracts.config.ts",
     "test:watch": "vitest",

@@ -32,7 +32,7 @@ describe('Integration: Trash Flow', () => {
       projectId: '123e4567-e89b-12d3-a456-426614174000',
       title: 'Test Prompt',
       status: 'draft',
-      priority: 'P1',
+      priority: 'medium',
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-15T10:00:00.000Z',
     };
