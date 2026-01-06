@@ -31,4 +31,28 @@ describe('Contract Tests - OpenAPI spec', () => {
     expect(slice).toContain('SearchRequest');
     expect(slice).toContain('SearchResponse');
   });
+
+  it('should include core API routes in the OpenAPI spec', () => {
+    const expectedPaths = [
+      '/api/projects:',
+      '/api/projects/{id}:',
+      '/api/prompts:',
+      '/api/prompts/{id}:',
+      '/api/trash:',
+      '/api/trash/{trashId}:',
+      '/api/trash/{trashId}/restore:',
+      '/api/inbox:',
+      '/api/inbox/{id}:',
+      '/api/files/read:',
+      '/api/files/write:',
+      '/api/search:',
+      '/api/snapshots:',
+      '/api/versions:',
+      '/api/versions/{entityType}/{entityId}:',
+    ];
+
+    for (const p of expectedPaths) {
+      expect(specText).toContain(p);
+    }
+  });
 });

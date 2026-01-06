@@ -226,8 +226,18 @@ paths:
             schema: { $ref: '#/components/schemas/InboxImport' }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
-  /api/inbox/{id}/update:
-    post:
+  /api/inbox/{id}:
+    get:
+      summary: 取得單一暫存項目
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
+        '404': { description: Not Found }
+    put:
       summary: 編輯暫存項（標題/備註/刪減）
       parameters:
         - in: path
@@ -243,9 +253,20 @@ paths:
               properties:
                 title: { type: string }
                 notes: { type: string }
-                trimmedContent: { type: string }
+                rawContent: { type: string }
       responses:
         '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
+        '404': { description: Not Found }
+    delete:
+      summary: 刪除暫存項
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not Found }
   /api/search:
     post:
       summary: 搜尋資產（title/tags/body）

@@ -166,13 +166,13 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Tests（US4）
 
-- [ ] T056 [P] [US4] 擴充 inbox contract tests 於 `tests/contract/api-inbox.spec.ts`
-- [ ] T057 [P] [US4] 擴充 inbox 可用性/延遲整合測試於 `tests/integration/inbox-usability.spec.ts`
+- [x] T056 [P] [US4] 擴充 inbox contract tests 於 `tests/contract/api-inbox.spec.ts`
+- [x] T057 [P] [US4] 擴充 inbox 可用性/延遲整合測試於 `tests/integration/inbox-usability.spec.ts`
 
 ### Implementation（US4）
 
-- [ ] T058 [US4] 後端：Inbox routes（讀取 + 簡修更新）於 `apps/server/src/routes/inbox.ts`
-- [ ] T059 [P] [US4] 前端：InboxView（列表 + 最小編修）於 `apps/web/src/features/inbox/InboxView.tsx`
+- [x] T058 [US4] 後端：Inbox routes（讀取 + 簡修更新）於 `apps/server/src/routes/inbox.ts`
+- [x] T059 [P] [US4] 前端：InboxView（列表 + 最小編修）於 `apps/web/src/features/inbox/InboxView.tsx`
 
 ---
 
@@ -180,21 +180,21 @@ description: "Task list: 001-prompt-asset-hub"
 
 目標：把 constitution gates（UI regression evidence、效能基準、契約一致性）落地為可重跑的工件。
 
-- [ ] T060 [P] 建立/更新 UI regression checklist 與 evidence 準備 於 `specs/001-prompt-asset-hub/checklists/ui-regression.md`
-- [ ] T061 完成 UI 對照驗收（對照 golden reference）並記錄 evidence 於 `0resource/ui_prototype_v3.jsx`
-- [ ] T062 [P] 新增效能基準（掃描/搜尋/快照/回收站 list）於 `tests/integration/benchmarks/benchmarks.spec.ts`
-- [ ] T063 [P] 強化 OpenAPI contract tests：確認所有實作 routes 都在 spec 中（避免漂移）於 `tests/contract/openapi.spec.ts`
-- [ ] T064 [P] 更新 quickstart 驗收流程（含回收站/衝突/retention）於 `specs/001-prompt-asset-hub/quickstart.md`
+- [x] T060 [P] 建立/更新 UI regression checklist 與 evidence 準備 於 `specs/001-prompt-asset-hub/checklists/ui-regression.md`
+- [x] T061 完成 UI 對照驗收（對照 golden reference）並記錄 evidence 於 `0resource/ui_prototype_v3.jsx`
+- [x] T062 [P] 新增效能基準（掃描/搜尋/快照/回收站 list）於 `tests/integration/benchmarks/benchmarks.spec.ts`
+- [x] T063 [P] 強化 OpenAPI contract tests：確認所有實作 routes 都在 spec 中（避免漂移）於 `tests/contract/openapi.spec.ts`
+- [x] T064 [P] 更新 quickstart 驗收流程（含回收站/衝突/retention）於 `specs/001-prompt-asset-hub/quickstart.md`
 
 ### Settings（補齊 FR-009 範圍）
 
 - [x] T065 [P] Contracts：擴充 Workspace Settings DTO + zod schema（`tagsDict`, `commonOptions`, `backup`）並更新匯出於 `packages/contracts/src/dto/workspace.ts`、`packages/contracts/src/dto/index.ts`（驗收：`tests/contract/workspace-settings-dto.spec.ts` 覆蓋新欄位）
-- [ ] T066 [P] Web UI：SettingsView 支援 tagsDict CRUD（新增/改名/刪除）與最小合併策略（rename 視為 merge）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：可在 UI 操作並觸發 settings 更新）
-- [ ] T067 [P] Web UI：SettingsView 支援 commonOptions 編輯（新增/刪除/去重）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：refresh 後仍保留）
-- [ ] T068 [P] Web UI：SettingsView 支援 backup 編輯（至少 dailySnapshot + schedule 字串）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：invalid schedule 顯示錯誤）
-- [ ] T069 Server：workspace settings 更新與驗證（對 tagsDict/commonOptions/backup 做 schema 驗證、預設值與向後相容）於 `apps/server/src/routes/workspace.ts`
-- [ ] T070 [P] Integration：擴充設定頁整合測試矩陣（tagsDict rename/merge、commonOptions 去重、backup roundtrip、invalid input）於 `tests/integration/settings-page.spec.ts`
-- [ ] T071 [P] Contract：擴充/對齊 workspace permissions contract tests（GET `/api/workspace/permissions`；success + missing path 400 + error format）於 `tests/contract/api-workspace-permissions.spec.ts`
+- [x] T066 [P] Web UI：SettingsView 支援 tagsDict CRUD（新增/改名/刪除）與最小合併策略（rename 視為 merge）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：可在 UI 操作並觸發 settings 更新）
+- [x] T067 [P] Web UI：SettingsView 支援 commonOptions 編輯（新增/刪除/去重）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：refresh 後仍保留）
+- [x] T068 [P] Web UI：SettingsView 支援 backup 編輯（至少 dailySnapshot + schedule 字串）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：invalid schedule 顯示錯誤）
+- [x] T069 Server：workspace settings 更新與驗證（對 tagsDict/commonOptions/backup 做 schema 驗證、預設值與向後相容）於 `apps/server/src/routes/workspace.ts`
+- [x] T070 [P] Integration：擴充設定頁整合測試矩陣（tagsDict rename/merge、commonOptions 去重、backup roundtrip、invalid input）於 `tests/integration/settings-page.spec.ts`
+- [x] T071 [P] Contract：擴充/對齊 workspace permissions contract tests（GET `/api/workspace/permissions`；success + missing path 400 + error format）於 `tests/contract/api-workspace-permissions.spec.ts`
 
 ---
 

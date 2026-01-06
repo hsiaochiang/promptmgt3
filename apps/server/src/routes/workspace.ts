@@ -134,8 +134,18 @@ export async function registerWorkspaceRoutes(server: FastifyInstance, rootPath:
   server.post<{
     Body: unknown;
   }>('/api/workspace/settings', async (request, reply) => {
+    const result = WorkspaceSettingsUpdateSchema.safeParse(request.body);
+
+    if (!result.success) {
+      return reply.code(400).send({
+        error: 'Invalid workspace settings',
+        message: result.error.message,
+      });
+    }
+
+    const update = result.data as WorkspaceSettingsUpdate;
+
     try {
-      const update = WorkspaceSettingsUpdateSchema.parse(request.body) as WorkspaceSettingsUpdate;
       const currentSettings = await loadWorkspaceSettings(rootPath);
 
       const updatedSettings: WorkspaceSettings = {
