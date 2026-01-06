@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { persist } from 'zustand/middleware';
 
 export type ActiveSection = 'projects' | 'prompts' | 'clipboard' | 'settings';
 export type SubView = 'list' | 'board' | 'archive';

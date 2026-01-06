@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import { Kanban, List as ListIcon, Search, X } from 'lucide-react';
-import { ProjectView } from '../features/projects/ProjectView';
-import { PromptView } from '../features/prompts/PromptView';
-import { InboxView } from '../features/inbox/InboxView';
+import { ProjectView } from './ProjectView';
+import { PromptView } from './PromptView';
 import { SettingsView } from '../features/settings/SettingsView';
-import { HistoryView } from '../features/history/HistoryView';
-import { TrashView } from '../features/trash/TrashView';
-import { ArchiveView } from '../features/archive/ArchiveView';
 import type { ActiveSection } from '../state/uiStore';
 import { useUiStore } from '../state/uiStore';
 
@@ -173,7 +169,7 @@ export function MainContent({ activeSection }: MainContentProps) {
       >
         {activeSection === 'projects' && <ProjectView />}
         {activeSection === 'prompts' && <PromptView />}
-        {section === 'settings' && <SettingsView />}
+        {activeSection === 'settings' && <SettingsView />}
       </div>
     </div>
   );
