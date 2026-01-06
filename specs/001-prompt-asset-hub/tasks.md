@@ -79,12 +79,12 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Tests（US1）
 
-- [ ] T013 [P] [US1] 擴充 Project/Prompt CRUD contract tests（含 delete=trash 回傳 TrashItem）於 `tests/contract/api-project-prompt.spec.ts`
-- [ ] T014 [P] [US1] 新增 Trash endpoints contract tests（list/purge/restore + 409 conflict）於 `tests/contract/api-trash.spec.ts`
-- [ ] T015 [P] [US1] 新增回收站整合測試（delete→list→restore→purge）於 `tests/integration/trash-flow.spec.ts`
-- [ ] T016 [P] [US1] 新增復原衝突整合測試（409 + overwrite/rename 路徑）於 `tests/integration/trash-restore-conflict.spec.ts`
-- [ ] T017 [P] [US1] 新增回收站清理整合測試（到期 purge + 失敗可重試）於 `tests/integration/trash-retention.spec.ts`
-- [ ] T018 [P] [US1] 擴充 autosave 成功/失敗路徑整合測試於 `tests/integration/autosave-success.spec.ts`、`tests/integration/autosave-failure.spec.ts`
+- [x] T013 [P] [US1] 擴充 Project/Prompt CRUD contract tests（含 delete=trash 回傳 TrashItem）於 `tests/contract/api-project-prompt.spec.ts`
+- [x] T014 [P] [US1] 新增 Trash endpoints contract tests（list/purge/restore + 409 conflict）於 `tests/contract/api-trash.spec.ts`
+- [x] T015 [P] [US1] 新增回收站整合測試（delete→list→restore→purge）於 `tests/integration/trash-flow.spec.ts`
+- [x] T016 [P] [US1] 新增復原衝突整合測試（409 + overwrite/rename 路徑）於 `tests/integration/trash-restore-conflict.spec.ts`
+- [x] T017 [P] [US1] 新增回收站清理整合測試（到期 purge + 失敗可重試）於 `tests/integration/trash-retention.spec.ts`
+- [x] T018 [P] [US1] 擴充 autosave 成功/失敗路徑整合測試於 `tests/integration/autosave-success.spec.ts`、`tests/integration/autosave-failure.spec.ts`
 
 ### Implementation（US1）
 
