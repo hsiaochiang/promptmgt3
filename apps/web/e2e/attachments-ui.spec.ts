@@ -23,9 +23,7 @@ test('Attachments UI: upload file via editor drop and verify insertion', async (
   const editor = page.locator('.cm-editor');
   await editor.first().waitFor({ state: 'visible', timeout: 2000 });
 
-  // Create a file in the test runner and dispatch a drop event
-  const filePath = require('path').join(__dirname, 'fixtures', 'test-file.txt');
-  // Ensure file exists; Playwright supports setInputFiles on hidden inputs, but here we simulate drop
+  // Simulate drop by dispatching a DataTransfer with an in-memory file
   await page.evaluate(async ({ fileName, content }) => {
     const data = new DataTransfer();
     const blob = new Blob([content], { type: 'text/plain' });
