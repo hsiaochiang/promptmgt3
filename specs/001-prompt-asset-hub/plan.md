@@ -1,76 +1,82 @@
 # Implementation Plan: 001-prompt-asset-hub
 
-**Branch**: `001-prompt-asset-hub` | **Date**: 2026-01-05 | **Spec**: `specs/001-prompt-asset-hub/spec.md`
+**Branch**: `001-prompt-asset-hub` | **Date**: 2026-01-06 | **Spec**: `specs/001-prompt-asset-hub/spec.md`
 **Input**: `specs/001-prompt-asset-hub/spec.md`
 
 <!-- Language requirement: All specifications and plans MUST be written in Traditional Chinese (zh-TW). -->
 
-**Note**: 本檔由 `/speckit.plan` 工作流產出並補齊內容；需符合 Project Constitution 的 gate。
+**Note**: 本檔由 `/speckit.plan` 工作流維護；需符合 Project Constitution gate（contracts-first、測試先行、200ms 回饋、效能目標）。
 
 ## Summary
 
-此功能以「磁碟檔案為唯一權威（INV-001）」建立本機單人提示詞資產管理系統：
+此功能打造一套「以檔案為唯一權威（INV-001）」的提示詞資產管理系統，使用者可在同一處完成：
 
-- 前端：React + Vite + TypeScript + Tailwind，採 sidebar → list/board → detail panel 的互動架構
-- 後端：Node.js + Fastify + WebSocket + chokidar，以掃描/監控檔案驅動索引與 UI 同步（INV-002）
-- Contracts-first：`packages/contracts` 與 OpenAPI 同步，並以契約測試阻擋破壞性漂移
-- 刪除語意：採回收站（soft delete）+ 可復原；支援 retention（預設 30 天可設定）與復原衝突提示
+- 專案/提示詞的建立、編輯、自動保存（停筆 ≤ 2 秒）、封存
+- 搜尋/篩選與列表/看板視圖切換（保留狀態）
+- 暫存區（inbox）檢視與簡修（歸檔由外部工具處理）
+- 版本節點 + 每日快照 + 立即備份（正文 + 中繼資料 + 附件完整複本）
+- 回收站（soft delete）+ 復原衝突處理（覆蓋/改名/取消）+ retention 自動清理
+
+架構採 monorepo：`apps/server`（Fastify + ws + chokidar）提供 API/監控/索引與 `apps/web`（React + Vite）互動；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 管控漂移（contracts-first governance）。
 
 ## Technical Context
 
 **Language/Version**: TypeScript（strict）+ Node.js 20 LTS  
 **Primary Dependencies**:
 - Backend: Fastify、ws、chokidar、gray-matter
-- Shared: zod（contracts）
-- Frontend: React 18、Vite、Tailwind、CodeMirror 6
+- Shared contracts: zod
+- Frontend: React、Vite、Tailwind、CodeMirror
 
-**Storage**: 檔案系統（`<rootPath>` + `<attachmentPath>` + `<rootPath>/.pah/*`）  
-**Testing**: Vitest（contract / integration / unit）  
-**Target Platform**: 本機（Windows/macOS/Linux）
-**Project Type**: Web application（monorepo：`apps/web` + `apps/server` + `packages/contracts`）  
+**Storage**: 檔案系統（`<rootPath>`、`<attachmentPath>`、`<rootPath>/.pah/*`）  
+**Testing**: Vitest（`tests/unit` / `tests/integration` / `tests/contract`）  
+**Target Platform**: 本機（Windows/macOS/Linux）  
+**Project Type**: Web application（本機 server + web UI）
+
 **Performance Goals**:
-- 互動 200ms 內可見回饋（Timely Feedback）
-- 典型 API/本機檔案操作 p95 < 100ms（baseline；特定流程可細化）
-- 搜尋：5,000 筆資產下 p95 < 1s（SC-002）
-- Autosave：停筆 ≤ 2s 觸發保存並顯示狀態（FR-003）
+- UX 回饋：使用者操作後 200ms 內顯示 loading/saving/error（Constitution III）
+- API/本機檔案操作：典型 p95 < 100ms（Constitution IV baseline；實作依 tasks 加上可量測基準）
+- 搜尋：在 5,000 筆資產下，95% 查詢 < 1s（SC-002）
 
 **Constraints**:
-- Local-first、可由掃描重建（INV-002）
-- 不允許 UI 私有真實狀態（INV-003；localStorage 僅允許展示偏好）
-- 刪除 = 回收站可復原；永久刪除需明確確認與可理解回饋
+- Local-first：磁碟檔案為唯一權威（INV-001），可掃描重建（INV-002），不得有 UI 私有真實狀態（INV-003）
+- Settings 儲存：`rootPath`/`attachmentPath` 必須已存在；不存在回 400；server 不自動 mkdir（FR-011 / Clarifications 2026-01-06）
+- tagsDict 刪除：僅更新 tagsDict（建議/選單），不批次改寫既有檔案 tags（FR-009 / Clarifications 2026-01-06）
+- backupSettings.schedule：每日時間 `HH:mm`（24 小時制，本機時區）（FR-009 / Clarifications 2026-01-06）
+- trash restore rename：`newSlug` 僅替換原本 slug（同一路徑位置復原），不支援跨專案搬移復原（FR-001 / Clarifications 2026-01-06）
+- trash retention：server 啟動先跑一次，之後每日固定時間（例如 03:00，本機時區）執行（FR-001 / Clarifications 2026-01-06）
 
 **Scale/Scope**:
-- 單人本機使用；主要資產量級：專案/提示詞總計約 5,000 筆
-- 附件可能為大檔，需避免阻塞編輯並提供失敗可重試路徑
+- 單人本機使用；資產規模目標：專案/提示詞合計約 5,000 筆
+- 附件可能為大檔；快照/版本需完整複本但不得阻塞編輯（需透過 UX 回饋與非同步策略落地）
 
 ## Constitution Check
 
-*GATE: 必須在 Phase 0 research 前通過；Phase 1 design 後需再次檢查。*
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 **Code Quality & Maintainability**:
-- [x] 架構設計遵循單一職責原則
-- [x] 命名規範清晰（無縮寫、描述性名稱）
-- [x] TypeScript strict 啟用
-- [x] 錯誤處理策略已定義（非同步、API 呼叫、檔案操作）
+- [x] 架構設計遵循單一職責原則（server 路由/索引/監控/備份分模組）
+- [x] 命名規範清晰（描述性命名，避免縮寫）
+- [x] TypeScript strict 已啟用
+- [x] 錯誤處理策略已定義（API 以可理解錯誤回應；IO/權限/衝突皆明確回報）
 
 **Testing Standards**:
-- [x] Test-First 納入計畫（不可行需在 PR 註明理由）
-- [x] Contracts-first：任何 DTO/schema 變更同步更新合約與契約測試
+- [x] Test-First 納入計畫（若例外需在 PR 註明理由）
+- [x] contracts-first：DTO/schema 變更需同步更新 OpenAPI/contracts 並新增/更新契約測試
 - [x] 核心功能測試覆蓋率目標 ≥ 80%
 
 **User Experience Consistency**:
 - [x] UI golden reference：`0resource/ui_prototype_v3.jsx`
-- [x] 互動模式（sidebar → list/board → detail panel）一致
-- [x] 200ms 內回饋機制定義並納入整合測試（latency）
+- [x] 互動模式遵循 sidebar → list/board → detail panel
+- [x] 200ms 內回饋機制已納入整合測試面向（feedback-latency 等）
 
 **Performance Requirements**:
 - [x] 響應時間目標已列出（API / UI / 搜尋）
-- [x] 資源限制與大檔/大量資料處理風險已辨識
-- [x] 大量資料處理納入 benchmarks 計畫（需由獨立任務落地）
+- [x] 資源限制與風險已辨識（大附件、快照複製、索引重建）
+- [x] 大量資料處理將以 benchmarks / perf 測試在 tasks 中落地
 
 ## Project Structure
 
-### Documentation（此 feature）
+### Documentation (this feature)
 
 ```text
 specs/001-prompt-asset-hub/
@@ -83,28 +89,36 @@ specs/001-prompt-asset-hub/
 └── tasks.md
 ```
 
-### Source Code（repo root）
+### Source Code (repository root)
 
 ```text
 apps/
 ├── server/
-│   └── src/
-│       ├── attachments/
-│       ├── backup/
-│       ├── fs-layout/
-│       ├── indexing/
-│       ├── routes/
-│       ├── search/
-│       └── watch/
+│   ├── src/
+│   │   ├── attachments/
+│   │   ├── backup/
+│   │   ├── fs-layout/
+│   │   ├── indexing/
+│   │   ├── routes/
+│   │   ├── search/
+│   │   ├── trash/
+│   │   └── watch/
+│   └── tsconfig.json
 └── web/
-  └── src/
-    ├── components/
-    ├── features/
-    ├── hooks/
-    └── layout/
+    ├── src/
+    │   ├── components/
+    │   ├── features/
+    │   ├── hooks/
+    │   └── layout/
+    └── tsconfig.json
 
 packages/
 └── contracts/
+    ├── src/
+    │   ├── dto/
+    │   ├── frontmatter/
+    │   └── ws/
+    └── tsconfig.json
 
 tests/
 ├── contract/
@@ -112,37 +126,38 @@ tests/
 └── unit/
 ```
 
-**Structure Decision**: 採 monorepo 的「Web app + local server」架構；共享 schema/DTO 置於 `packages/contracts`，以 contracts-first 管控跨層介面。
+**Structure Decision**: 採用「本機 server + web UI」的 web application monorepo；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 作為漂移 gate。
 
-## Phase 0 — Research（已更新）
+## Phase 0 — Research
 
-**輸出**: `specs/001-prompt-asset-hub/research.md`  
-**重點**: 補齊回收站（soft delete / restore / retention / conflict handling）的決策、理由與替代方案。
+**Goal**: 釐清高風險決策（同步/衝突、刪除/復原語意、快照/版本策略、搜尋策略、排程/retention）並收斂替代方案。
 
-## Phase 1 — Design & Contracts（已更新）
+**Output**: `specs/001-prompt-asset-hub/research.md`
 
-**輸出**:
-- `specs/001-prompt-asset-hub/data-model.md`：新增 TrashItem/TrashPolicy 與檔案佈局
-- `specs/001-prompt-asset-hub/contracts/openapi.yaml`：新增 trash 相關 endpoints 與 Settings 欄位
-- `specs/001-prompt-asset-hub/quickstart.md`：新增回收站使用與設定說明
+**Status**: 已完成（包含單人本機模式、完整複本、監控去抖、搜尋策略、soft delete、復原衝突、retention 等決策）。
 
-**Design Notes（回收站）**:
-- Soft delete：將實體檔案移至 `<rootPath>/.pah/trash/`，並把附件資料夾一併移入 trash（FR-001）
-- Restore：若遇到目的地衝突，後端回傳可理解的 409 + 衝突資訊；前端引導使用者選擇「覆蓋 / 改名 / 取消」
-- Retention：預設 30 天，可在 workspace settings 調整；到期清理需可觀測與可重試
+## Phase 1 — Design & Contracts
 
-## Phase 2 — Planning（下一步：由 /speckit.tasks 產出）
+**Goal**: 以 contracts-first 落地資料模型與 API 介面，確保 server/web/contracts 三者一致並可由測試保護。
 
-本計畫不直接產生/改寫 `tasks.md`（由 `/speckit.tasks` 管理），但需要新增一組「回收站」相關任務：
+**Outputs**:
+- `specs/001-prompt-asset-hub/data-model.md`
+- `specs/001-prompt-asset-hub/contracts/openapi.yaml`
+- `specs/001-prompt-asset-hub/quickstart.md`
 
-- Backend：trash move/restore/purge、retention job、衝突偵測與錯誤碼
-- Frontend：Sidebar 回收站視圖、搜尋/篩選、復原/永久刪除流程、衝突對話框
-- Tests：contract + integration 覆蓋（含 200ms feedback 與衝突路徑）
+**Status**: 已完成（並以 `tests/contract/*` 驗證）。
+
+## Phase 2 — Planning
+
+**Goal**: 將設計轉為可驗收、可測試、可分批交付的工程任務（由 `/speckit.tasks` 維護）。
+
+**Primary Source**: `specs/001-prompt-asset-hub/tasks.md`
+
+**Execution Strategy (high-level)**:
+- 先維持 contracts-first gate：每一個 API/WS/frontmatter schema 變更都同 PR 更新 contracts + contract tests
+- 以「端到端可用」的薄切片交付：Settings/Workspace → Project/Prompt CRUD + autosave → Search/Views → Inbox → Trash → Backup/Snapshots
+- 針對高風險流程（衝突、IO 失敗、retention）優先補齊 integration tests
 
 ## Complexity Tracking
 
-（無需例外；目前設計不引入額外專案或架構違規。）
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| N/A | N/A | N/A |
+（無違規需要例外；目前設計符合 constitution gate。）
