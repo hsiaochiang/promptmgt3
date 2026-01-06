@@ -56,7 +56,7 @@ export async function registerAttachmentRoutes(server: FastifyInstance, rootPath
       }
 
       // Get the uploaded file
-      const data = await request.file();
+      const data = await (request as any).file();
       
       if (!data) {
         return reply.code(400).send({ error: 'No file uploaded' });

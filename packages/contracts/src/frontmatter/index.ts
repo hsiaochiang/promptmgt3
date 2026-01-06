@@ -1,3 +1,3 @@
-export * from './project';
-export * from './prompt';
-export * from './inbox';
+export * from './project.js';
+export * from './prompt.js';
+export * from './inbox.js';

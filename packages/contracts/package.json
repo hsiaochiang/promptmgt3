@@ -2,13 +2,25 @@
   "name": "@pah/contracts",
   "version": "0.1.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./frontmatter": "./src/frontmatter/index.ts",
-    "./dto": "./src/dto/index.ts",
-    "./ws": "./src/ws/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./frontmatter": {
+      "import": "./dist/frontmatter/index.js",
+      "types": "./dist/frontmatter/index.d.ts"
+    },
+    "./dto": {
+      "import": "./dist/dto/index.js",
+      "types": "./dist/dto/index.d.ts"
+    },
+    "./ws": {
+      "import": "./dist/ws/index.js",
+      "types": "./dist/ws/index.d.ts"
+    }
   },
   "scripts": {
     "type-check": "tsc --noEmit"

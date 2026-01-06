@@ -39,7 +39,7 @@ await server.register(websocket);
 // Simple in-memory WebSocket client registry
 const wsClients = new Set<any>();
 
-server.get('/ws', { websocket: true }, (connection/*, req*/) => {
+server.get('/ws', ({ websocket: true } as any), (connection/*, req*/) => {
   const socket = connection.socket as any;
   wsClients.add(socket);
 
