@@ -105,7 +105,7 @@ description: "Task list: 001-prompt-asset-hub"
 - [x] T033 [US1] Detail Panel 增加「封存/刪除」入口（封存=更新 archived；刪除=呼叫 trash delete）於 `apps/web/src/layout/DetailPanel.tsx`
 - [x] T034 [P] [US1] 實作檔案讀寫 API（支援 autosave）於 `apps/server/src/routes/files.ts`
 - [x] T035 [P] [US1] 實作附件上傳 API（multipart；回傳 storagePath）於 `apps/server/src/routes/attachments.ts`
-- [ ] T036 [US1] 前端 MarkdownEditor 支援拖曳/貼上附件並插入引用（呼叫 attachments API）於 `apps/web/src/components/MarkdownEditor.tsx`
+- [x] T036 [US1] 前端 MarkdownEditor 支援拖曳/貼上附件並插入引用（呼叫 attachments API）於 `apps/web/src/components/MarkdownEditor.tsx`
 
 **Checkpoint**：US1 全測試通過且 quickstart 的回收站流程可操作。
 

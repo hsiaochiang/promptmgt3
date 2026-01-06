@@ -1,5 +1,4 @@
 import type {
-  TrashItem,
   TrashListResponse,
   TrashRestoreRequest,
   TrashRestoreResult,

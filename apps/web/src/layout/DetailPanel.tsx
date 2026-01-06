@@ -312,6 +312,8 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
           <MarkdownEditor
             value={formData.body}
             onChange={(value) => handleFieldChange('body', value)}
+            entityType="prompt"
+            entityId={formData.id}
           />
         </div>
 

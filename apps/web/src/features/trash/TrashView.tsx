@@ -46,7 +46,7 @@ export function TrashView() {
 
   const handleRestore = async (trashId: string) => {
     try {
-      const result = await restoreTrashItem(trashId, { strategy: 'block' });
+      const result = await restoreTrashItem(trashId, { strategy: 'rename' });
 
       if (result.conflict) {
         // Show conflict dialog
