@@ -8,14 +8,14 @@ description: "Task list: 001-prompt-asset-hub"
 **Input**: 設計文件來源 `specs/001-prompt-asset-hub/`
 
 必讀：
-1. `spec.md`（User Stories + Requirements）
-2. `plan.md`（Tech stack + monorepo 結構 + gate）
+- `spec.md`（User Stories + Requirements + Testing mandatory）
+- `plan.md`（Tech stack + monorepo 結構 + Constitution gates）
 
 可用補充：
-1. `research.md`（決策：回收站/衝突/retention）
-2. `data-model.md`（檔案佈局：`.pah/trash/items/<trashId>/...`）
-3. `contracts/openapi.yaml`（REST 合約）
-4. `quickstart.md`（驗收路徑）
+- `research.md`（決策：trash/衝突/retention/snippets 路徑）
+- `data-model.md`（檔案佈局與 enum）
+- `contracts/openapi.yaml`（REST 合約）
+- `quickstart.md`（驗收路徑）
 
 <!-- Language requirement: Tasks and user-facing documentation MUST be written in Traditional Chinese (zh-TW). -->
 
@@ -25,10 +25,8 @@ description: "Task list: 001-prompt-asset-hub"
 
 `- [ ] T### [P] [US#] 任務描述（包含檔案路徑）`
 
-（完成狀態使用 `- [x]`；未完成使用 `- [ ]`）
-
 規則：
-1. checkbox 必須是 `- [ ]` 或 `- [x]`（用於追蹤任務狀態；請勿使用 `[X]`）
+1. checkbox 必須是 `- [ ]` 或 `- [x]`
 2. TaskID 必須連號（T001, T002, ...）且依執行順序排列
 3. `[P]` 只在「可平行、低衝突（不同檔案/無未完成依賴）」時標記
 4. User Story phase 的任務必須標記 `[US1]`/`[US2]`/`[US3]`/`[US4]`
@@ -42,196 +40,219 @@ description: "Task list: 001-prompt-asset-hub"
 - Shared Contracts：`packages/contracts/src/**`
 - Tests：`tests/{contract,integration,unit}/**`
 
+---
+
 ## Phase 1: Setup（共享基礎）
 
-目標：確保 monorepo 的啟動/測試腳本、型別設定、開發體驗符合 plan.md。
+目標：確保 monorepo 的啟動/測試/型別檢查可重跑，並與 `quickstart.md` 一致。
 
-- [x] T001 確認根目錄腳本與工作區命令一致（dev/web/server/test）於 `package.json`
-- [x] T002 [P] 對齊 TypeScript 專案參考與 strict 設定（root + apps + packages），並修正「編譯輸出覆寫輸入」類問題（排除 `apps/**/dist/**`、`apps/web/postcss.config.js`、`apps/web/tailwind.config.js` 等非 TS 輸入；root 設為 noEmit 或改用 project references）；更新於 `tsconfig.json`、`apps/server/tsconfig.json`、`apps/web/tsconfig.json`、`packages/contracts/tsconfig.json`（驗收：`npm run type-check` 或 `tsc -b` 無 overwrite input 錯誤）
-- [x] T003 [P] 補齊開發環境說明與 smoke steps 於 `specs/001-prompt-asset-hub/quickstart.md`
-- [x] T004 [P] 建立最小端到端啟動檢查（server health + web render）於 `tests/integration/smoke.spec.ts`
-
----
-
-## Phase 2: Foundational（BLOCKING：Contracts-first + Workspace/Settings 基礎）
-
-目標：在任何 user story 前，先把「契約/設定/路徑與權限」打成穩固地基（符合 constitution 的 contracts-first gate）。
-
-- [x] T005 [P] 新增 Workspace Settings DTO + zod schema 於 `packages/contracts/src/dto/workspace.ts`（包含 `trashRetentionDays`）
-- [x] T006 [P] 新增 Trash DTO + zod schema 於 `packages/contracts/src/dto/trash.ts`（TrashItem/TrashListResponse/TrashRestoreRequest/TrashRestoreResult/RestoreConflict）
-- [x] T007 [P] 匯出新 DTO（workspace/trash）於 `packages/contracts/src/dto/index.ts` 與 `packages/contracts/src/index.ts`
-- [x] T008 [P] 更新/對齊 OpenAPI contract sanity checks（涵蓋 trash endpoints + Settings.trashRetentionDays）於 `tests/contract/openapi.spec.ts`
-- [x] T009 [P] 新增 Trash DTO contract tests（valid/invalid）於 `tests/contract/trash-dto.spec.ts`
-- [x] T010 更新後端 workspace 設定型別與預設值（加入 `trashRetentionDays: 30`）於 `apps/server/src/routes/workspace.ts`
-- [x] T011 更新前端設定頁顯示/編輯 trash retention days 於 `apps/web/src/features/settings/SettingsView.tsx`
-- [x] T012 [P] 新增設定頁整合測試（含路徑權限 + trashRetentionDays roundtrip）於 `tests/integration/settings-page.spec.ts`
-
-**Checkpoint**：contracts + Settings + integration test 基礎可跑，才進入 US1。
+- [ ] T001 對齊 monorepo scripts（dev:server/dev:web/type-check/test）於 package.json
+- [ ] T002 [P] 修正/強化 TS project references 與 strict/noEmit 設定於 tsconfig.json、apps/server/tsconfig.json、apps/web/tsconfig.json、packages/contracts/tsconfig.json
+- [ ] T003 [P] 驗證並更新 Playwright 設定（baseURL、trace/video）於 apps/web/playwright.config.ts
+- [ ] T004 [P] 驗證並更新 Vitest 設定（contract/integration 覆蓋與執行命令）於 vitest.config.ts、vitest.coverage.contracts.config.ts
+- [ ] T005 [P] 補齊/更新 quickstart 的 smoke steps 與驗收路徑於 specs/001-prompt-asset-hub/quickstart.md
 
 ---
 
-## Phase 3: User Story 1（Priority: P1）— 專案/提示詞管理 + 自動保存 + 回收站（MVP）
+## Phase 2: Foundational（BLOCKING：Contracts-first + Enum/Persistence 基礎）
 
-**Goal**：完成 Project/Prompt 的建立/編輯/封存/刪除（刪除=回收站可復原），並在 Detail Panel 內 autosave（≤2s）且提供一致回饋（UI-004）。
+目標：先把「契約/enum/設定落盤/檔案路徑」做成穩固地基；所有 user stories 皆依賴此 phase。
 
-**Independent Test Criteria**（可獨立驗收）：
-1. 在乾淨的 rootPath 建立 project + prompt，編輯正文/中繼資料，停筆 ≤2s 顯示保存成功。
-2. 刪除 prompt/project 後出現在回收站；可復原；若目的地衝突必須阻擋並提供「覆蓋/改名/取消」。
-3. 永久刪除需二次確認且不可復原；失敗需可理解錯誤與可重試。
+- [ ] T006 更新 OpenAPI 與契約測試同步檢查（enum/Settings 欄位）於 specs/001-prompt-asset-hub/contracts/openapi.yaml、tests/contract/openapi.spec.ts
+- [ ] T007 [P] 對齊 Project frontmatter enum（planned/in_progress/paused/done）於 packages/contracts/src/frontmatter/project.ts
+- [ ] T008 [P] 對齊 Prompt frontmatter enum（status/priority）於 packages/contracts/src/frontmatter/prompt.ts
+- [ ] T009 [P] 更新 frontmatter 契約測試以符合新 enum 於 tests/contract/frontmatter.spec.ts
+- [ ] T010 [P] 對齊 server 端 Project/Prompt 的 enum 驗證與序列化於 apps/server/src/routes/entities.ts
 
-### Tests（US1）
+- [ ] T011 [P] 擴充 WorkspaceSettings DTO：新增 UI 偏好（視圖/篩選）欄位於 packages/contracts/src/dto/workspace.ts
+- [ ] T012 [P] 對齊 WorkspaceSettings contract tests（含 UI 偏好 roundtrip）於 tests/contract/workspace-settings-dto.spec.ts、tests/contract/api-workspace-settings.spec.ts
+- [ ] T013 對齊 server workspace settings merge/落盤（含 nested UI 偏好）於 apps/server/src/routes/workspace.ts
 
-- [x] T013 [P] [US1] 擴充 Project/Prompt CRUD contract tests（含 delete=trash 回傳 TrashItem）於 `tests/contract/api-project-prompt.spec.ts`
-- [x] T014 [P] [US1] 新增 Trash endpoints contract tests（list/purge/restore + 409 conflict）於 `tests/contract/api-trash.spec.ts`
-- [x] T015 [P] [US1] 新增回收站整合測試（delete→list→restore→purge）於 `tests/integration/trash-flow.spec.ts`
-- [x] T016 [P] [US1] 新增復原衝突整合測試（409 + overwrite/rename 路徑）於 `tests/integration/trash-restore-conflict.spec.ts`
-- [x] T017 [P] [US1] 新增回收站清理整合測試（到期 purge + 失敗可重試）於 `tests/integration/trash-retention.spec.ts`
-- [x] T018 [P] [US1] 擴充 autosave 成功/失敗路徑整合測試於 `tests/integration/autosave-success.spec.ts`、`tests/integration/autosave-failure.spec.ts`
+- [ ] T014 [P] 新增 web 端 workspace settings client（get/update）於 apps/web/src/features/settings/api.ts
+- [ ] T015 將 UI 偏好改為「以 WorkspaceSettings 為權威」：調整 zustand store 與載入流程於 apps/web/src/state/uiStore.ts、apps/web/src/App.tsx
+- [ ] T016 [P] 新增設定頁整合測試：UI 偏好與設定 roundtrip 於 tests/integration/settings-page.spec.ts
+
+**Checkpoint**：`npm test` 跑完 contract + integration（至少 openapi/settings/frontmatter）後，才開始 US1。
+
+---
+
+## Phase 3: User Story 1 - 專案/提示詞管理與自動保存 (Priority: P1) 🎯 MVP
+
+**Goal**：建立/編輯/封存/刪除 Project/Prompt；Detail Panel 同頁編輯與 ≤2s autosave；刪除=回收站（可復原 + retention）；一致回饋（Saving/Saved/Failed）。
+
+**Independent Test**：在乾淨 workspace 設定 rootPath/attachmentPath 後，建立 project + prompt，編輯正文/中繼資料並停筆 ≤2 秒自動保存；刪除後可於回收站復原/永久刪除且 UI 同步更新。
+
+### Tests（US1，Test-First）
+
+- [ ] T017 [P] [US1] 擴充 Project/Prompt CRUD contract tests（含 enum + delete=trash）於 tests/contract/api-project-prompt.spec.ts
+- [ ] T018 [P] [US1] 新增/強化 Trash endpoints contract tests（list/purge/restore + 409 conflict）於 tests/contract/api-trash.spec.ts
+- [ ] T019 [P] [US1] 擴充 autosave 成功整合測試於 tests/integration/autosave-success.spec.ts
+- [ ] T020 [P] [US1] 擴充 autosave 失敗整合測試（IO/權限/鎖檔）於 tests/integration/autosave-failure.spec.ts
+- [ ] T021 [P] [US1] 新增回收站整合測試（delete→list→restore→purge）於 tests/integration/trash-flow.spec.ts
+- [ ] T022 [P] [US1] 新增復原衝突整合測試（409 + overwrite/rename）於 tests/integration/trash-restore-conflict.spec.ts
+- [ ] T023 [P] [US1] 新增回收站 retention 整合測試（到期清理 + 失敗可重試）於 tests/integration/trash-retention.spec.ts
 
 ### Implementation（US1）
 
-- [x] T019 [P] [US1] 擴充 FS layout：trash 路徑 helpers 於 `apps/server/src/fs-layout/index.ts`（`.pah/trash/items/<trashId>/...`）
-- [x] T020 [P] [US1] 實作 trash 存放與 manifest 寫入（含 attachments 搬移）於 `apps/server/src/trash/trashStore.ts`
-- [x] T021 [P] [US1] 實作 trash 列表查詢（q/entityType/page/perPage）於 `apps/server/src/trash/listTrash.ts`
-- [x] T022 [P] [US1] 實作 trash 永久刪除（purge）於 `apps/server/src/trash/purgeTrash.ts`
-- [x] T023 [P] [US1] 新增回收站 retention 清理工作（依 `trashRetentionDays`；server 啟動一次 + 每日固定時間）於 `apps/server/src/trash/retention.ts`
-- [x] T024 [P] [US1] 實作 trash 復原（restore：overwrite/rename；衝突回傳 409 + RestoreConflict）於 `apps/server/src/trash/restoreTrash.ts`
-- [x] T025 [US1] 新增 trash routes 並註冊於 server（GET/DELETE/POST restore）於 `apps/server/src/routes/trash.ts`、`apps/server/src/index.ts`
-- [x] T026 [US1] 修改 Project delete：由 archived=true 改為 soft delete → TrashItem 於 `apps/server/src/routes/entities.ts`
-- [x] T027 [US1] 修改 Prompt delete：由 archived=true 改為 soft delete → TrashItem 於 `apps/server/src/routes/entities.ts`
-- [x] T028 [P] [US1] 新增附件搬移 helper（entity attachments dir move）於 `apps/server/src/trash/moveAttachments.ts`
-- [x] T029 [P] [US1] 新增回收站 UI 資料層 client（fetch list/restore/purge）於 `apps/web/src/features/trash/api.ts`
-- [x] T030 [P] [US1] 新增回收站視圖（搜尋/篩選、復原、永久刪除）於 `apps/web/src/features/trash/TrashView.tsx`
-- [x] T031 [US1] Sidebar 加入「回收站」入口與 section 型別 於 `apps/web/src/layout/Sidebar.tsx`、`apps/web/src/layout/MainContent.tsx`
-- [x] T032 [US1] 回收站復原衝突互動（overwrite/rename/取消）於 `apps/web/src/features/trash/RestoreConflictDialog.tsx`
-- [x] T033 [US1] Detail Panel 增加「封存/刪除」入口（封存=更新 archived；刪除=呼叫 trash delete）於 `apps/web/src/layout/DetailPanel.tsx`
-- [x] T034 [P] [US1] 實作檔案讀寫 API（支援 autosave）於 `apps/server/src/routes/files.ts`
-- [x] T035 [P] [US1] 實作附件上傳 API（multipart；回傳 storagePath）於 `apps/server/src/routes/attachments.ts`
-- [x] T036 [US1] 前端 MarkdownEditor 支援拖曳/貼上附件並插入引用（呼叫 attachments API）於 `apps/web/src/components/MarkdownEditor.tsx`
+- [ ] T024 [P] [US1] 對齊 FS layout：`.pah/trash` 路徑 helpers 於 apps/server/src/fs-layout/index.ts
+- [ ] T025 [P] [US1] 實作 trash 存放與 manifest 寫入（含 attachments 搬移）於 apps/server/src/trash/trashStore.ts
+- [ ] T026 [P] [US1] 實作 trash 列表查詢（q/entityType/page/perPage）於 apps/server/src/trash/listTrash.ts
+- [ ] T027 [P] [US1] 實作 trash 永久刪除（purge）於 apps/server/src/trash/purgeTrash.ts
+- [ ] T028 [P] [US1] 實作 trash 復原（overwrite/rename；衝突回 409 RestoreConflict）於 apps/server/src/trash/restoreTrash.ts
+- [ ] T029 [P] [US1] 新增 retention job（啟動先跑 + 每日固定時間）於 apps/server/src/trash/retention.ts
+- [ ] T030 [US1] 註冊 trash routes 於 apps/server/src/routes/trash.ts、apps/server/src/index.ts
 
-**Checkpoint**：US1 全測試通過且 quickstart 的回收站流程可操作。
+- [ ] T031 [US1] 對齊 Project/Prompt delete：soft delete → TrashItem 於 apps/server/src/routes/entities.ts
+- [ ] T032 [P] [US1] 實作檔案讀寫 API（autosave）於 apps/server/src/routes/files.ts
+- [ ] T033 [P] [US1] 實作附件上傳 API（multipart；回傳 storagePath）於 apps/server/src/routes/attachments.ts
+
+- [ ] T034 [P] [US1] 新增/對齊 web 端 entities client（projects/prompts CRUD）於 apps/web/src/features/library/api.ts
+- [ ] T035 [P] [US1] 新增回收站 client（list/restore/purge）於 apps/web/src/features/trash/api.ts
+
+- [ ] T036 [US1] 對齊 Sidebar 導覽：Projects/Prompts（list/board）+ Tools（Inbox/Archive/Trash/Clipboard/Settings）於 apps/web/src/layout/Sidebar.tsx
+- [ ] T037 [US1] 對齊主內容切換與 routing state（activeSection/subView）於 apps/web/src/layout/MainContent.tsx、apps/web/src/state/uiStore.ts
+
+- [ ] T038 [P] [US1] 實作 ProjectView（list/board + selection）於 apps/web/src/layout/ProjectView.tsx
+- [ ] T039 [P] [US1] 實作 PromptView（list/board + selection）於 apps/web/src/layout/PromptView.tsx
+- [ ] T040 [US1] 實作右側 overlay Detail Panel（Saving/Saved/Failed + delete/archive actions）於 apps/web/src/layout/SidePanel.tsx
+
+**Checkpoint**：US1 contract + integration tests 全通過，且 quickstart 的「建立/編輯/autosave/刪除/復原」可獨立驗收。
 
 ---
 
-## Phase 4: User Story 2（Priority: P2）— 視圖切換 + 搜尋/篩選 + 即時同步（含外部修改衝突）
+## Phase 4: User Story 2 - 視圖切換與搜尋/篩選 (Priority: P2)
 
-**Goal**：列表/看板切換不改變資料集合；提供搜尋/篩選；外部檔案異動時 UI 有一致回饋並可處置衝突。
+**Goal**：列表/看板切換不改變資料集合；提供搜尋/篩選（title/tags/body + status/priority）；並記住上次視圖/篩選（存 WorkspaceSettings）；新增 Tools → Archive（同頁顯示已封存 project + prompt）。
 
-**Independent Test Criteria**：建立多筆 prompts 後可切換列表/看板、搜尋/篩選；模擬外部修改同檔後，UI 進入 conflict 並可「重新整理/覆寫」。
+**Independent Test**：建立多筆資產後，套用搜尋/篩選並切換 list/board；重整頁面後偏好能自動還原；Archive 視圖可同頁看到已封存專案與提示詞。
 
-### Tests（US2）
+### Tests（US2，Test-First）
 
-- [x] T037 [P] [US2] 擴充搜尋 API contract tests（SearchRequest/SearchResponse）於 `tests/contract/api-search.spec.ts`
-- [x] T038 [P] [US2] 擴充 WS payload contract tests（file.changed / sync.status）於 `tests/contract/ws-sync.spec.ts`
-- [x] T039 [P] [US2] 擴充列表/看板切換一致性整合測試於 `tests/integration/view-toggle-consistency.spec.ts`
-- [x] T040 [P] [US2] 擴充外部修改衝突整合測試（重新整理/覆寫）於 `tests/integration/conflict-resolution.spec.ts`
+- [ ] T041 [P] [US2] 擴充搜尋 API contract tests（SearchRequest/SearchResponse + highlight/snippet）於 tests/contract/api-search.spec.ts
+- [ ] T042 [P] [US2] 擴充 WS sync contract tests（file.changed / sync.status）於 tests/contract/ws-sync.spec.ts
+- [ ] T043 [P] [US2] 列表/看板切換一致性整合測試於 tests/integration/view-toggle-consistency.spec.ts
+- [ ] T044 [P] [US2] 外部修改衝突整合測試（refresh/overwrite）於 tests/integration/conflict-resolution.spec.ts
+- [ ] T045 [P] [US2] UI 偏好落盤合規測試（不依賴 localStorage）於 tests/integration/persistence-compliance.spec.ts
 
 ### Implementation（US2）
 
-- [x] T041 [P] [US2] 後端：chokidar watcher 推播 file.changed（忽略 `.pah/**`）於 `apps/server/src/watch/fileWatcher.ts`
-- [x] T042 [US2] 後端：搜尋端點與索引快取（MVP）於 `apps/server/src/routes/search.ts`、`apps/server/src/search/index.ts`
-- [x] T043 [P] [US2] 前端：搜尋輸入與條件保存（無結果 empty state）於 `apps/web/src/layout/MainContent.tsx`
-- [x] T044 [P] [US2] 前端：看板視圖（與列表共享同一集合）於 `apps/web/src/features/library/ListView.tsx`
-- [x] T045 [US2] 前端：衝突橫幅與處置互動（refresh/overwrite/copy unsaved）於 `apps/web/src/features/conflict/ConflictBanner.tsx`、`apps/web/src/layout/DetailPanel.tsx`
-- [x] T046 [P] [US2] 前端：WS client + sync 狀態顯示於 `apps/web/src/features/sync/SyncProvider.tsx`
-- [x] T047 [P] [US2] 整合回饋時延 SLA（互動後 200ms 內可見 loading/狀態）於 `tests/integration/feedback-latency.spec.ts`
+- [ ] T046 [P] [US2] 後端：chokidar watcher 推播 file.changed（忽略 `.pah/**`）於 apps/server/src/watch/fileWatcher.ts
+- [ ] T047 [US2] 後端：搜尋端點與索引快取（MVP）於 apps/server/src/routes/search.ts、apps/server/src/search/index.ts
+
+- [ ] T048 [P] [US2] 前端：搜尋輸入/篩選 UI（含 empty state）於 apps/web/src/layout/ProjectView.tsx、apps/web/src/layout/PromptView.tsx
+- [ ] T049 [US2] 前端：將 view/filter 偏好寫入 WorkspaceSettings（API 落盤）於 apps/web/src/state/uiStore.ts、apps/web/src/features/settings/api.ts
+
+- [ ] T050 [P] [US2] 新增 archived 篩選參數（projects/prompts list endpoints）於 specs/001-prompt-asset-hub/contracts/openapi.yaml
+- [ ] T051 [P] [US2] 後端：支援 archived 篩選（查詢/掃描/索引）於 apps/server/src/routes/entities.ts、apps/server/src/indexing/index.ts
+- [ ] T052 [P] [US2] 契約測試：archived filter 行為於 tests/contract/api-project-prompt.spec.ts
+
+- [ ] T053 [P] [US2] 實作 ArchiveView（同頁顯示封存 projects + prompts + 類型篩選）於 apps/web/src/features/archive/ArchiveView.tsx
+- [ ] T054 [US2] 串接 Sidebar → Tools/Archive 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
 
 ---
 
-## Phase 5: User Story 3（Priority: P3）— 版本備份與歷史檢視
+## Phase 5: User Story 3 - 版本備份與歷史檢視 (Priority: P3)
 
-**Goal**：可建立版本節點、每日快照與立即備份；歷史列表可檢視並開啟舊版內容；符合附件完整複本與 SC-003 量測定義。
+**Goal**：手動版本節點、每日快照、立即備份；歷史列表可檢視並開啟指定版本；快照/版本包含附件完整複本。
 
-**Independent Test Criteria**：對單一 prompt 建立多次版本/快照；驗證 manifest/root/attachments layout 與 retention；可從 UI 開啟舊版內容。
+**Independent Test**：在單一 prompt 上建立多次編輯與手動備份，驗證 snapshot layout（manifest/root/attachments）與 retention；UI 可開啟舊版內容。
 
-### Tests（US3）
+### Tests（US3，Test-First）
 
-- [x] T048 [P] [US3] 擴充 snapshot/version contract tests（manifest shape）於 `tests/contract/api-snapshot-version.spec.ts`
-- [x] T049 [P] [US3] 擴充 snapshot layout 整合測試（manifest/root/attachments）於 `tests/integration/snapshot-layout.spec.ts`
-- [x] T050 [P] [US3] 擴充 retention 整合測試（含 pinned）於 `tests/integration/retention-policy.spec.ts`
+- [ ] T055 [P] [US3] snapshot/version contract tests（含 scope/manifest shape）於 tests/contract/api-snapshot-version.spec.ts
+- [ ] T056 [P] [US3] snapshot layout 整合測試（manifest/root/attachments）於 tests/integration/snapshot-layout.spec.ts
+- [ ] T057 [P] [US3] retention 整合測試（含 pinned/配額策略）於 tests/integration/retention-policy.spec.ts
 
 ### Implementation（US3）
 
-- [x] T051 [P] [US3] 後端：snapshot service（daily + manual）於 `apps/server/src/backup/snapshot.ts`
-- [x] T052 [P] [US3] 後端：version node service（entity scope）於 `apps/server/src/backup/version-node/index.ts`
-- [x] T053 [P] [US3] 後端：retention 清理策略於 `apps/server/src/backup/retention.ts`
-- [x] T054 [US3] 後端：routes 對齊 OpenAPI（snapshots/versions）於 `apps/server/src/routes/snapshots.ts`、`specs/001-prompt-asset-hub/contracts/openapi.yaml`
-- [x] T055 [P] [US3] 前端：HistoryView（列表 + 檢視 + 建立快照/版本）於 `apps/web/src/features/history/HistoryView.tsx`
+- [ ] T058 [P] [US3] 後端：snapshot service（daily + manual）於 apps/server/src/backup/snapshot.ts
+- [ ] T059 [P] [US3] 後端：version node service（entity scope）於 apps/server/src/backup/version-node/index.ts
+- [ ] T060 [P] [US3] 後端：retention 清理策略於 apps/server/src/backup/retention.ts
+- [ ] T061 [US3] 後端：routes 對齊 OpenAPI（snapshots/versions）於 apps/server/src/routes/snapshots.ts、specs/001-prompt-asset-hub/contracts/openapi.yaml
+- [ ] T062 [P] [US3] 前端：HistoryView（列表 + 開啟 + 建立快照/版本）於 apps/web/src/features/history/HistoryView.tsx
 
 ---
 
-## Phase 6: User Story 4（Priority: P3）— 暫存區檢視與簡修
+## Phase 6: User Story 4 - 暫存區檢視與簡修 (Priority: P3)
 
-**Goal**：顯示 InboxItem 並允許最小幅度編修（標題/註記/刪減）；清楚提示「歸檔由外部工具處理」。
+**Goal**：顯示 InboxItem 並允許最小幅度編修（標題/刪減/註記）；清楚提示「歸檔由外部工具處理」。
 
-**Independent Test Criteria**：建立多筆 inbox 檔案後可在 UI 編修並保存；重啟後可由掃描重建。
+**Independent Test**：建立多筆 inbox 檔案後可在 UI 編修並保存；重啟後可由掃描重建。
 
-### Tests（US4）
+### Tests（US4，Test-First）
 
-- [x] T056 [P] [US4] 擴充 inbox contract tests 於 `tests/contract/api-inbox.spec.ts`
-- [x] T057 [P] [US4] 擴充 inbox 可用性/延遲整合測試於 `tests/integration/inbox-usability.spec.ts`
+- [ ] T063 [P] [US4] inbox contract tests（list/get/update/delete）於 tests/contract/api-inbox.spec.ts
+- [ ] T064 [P] [US4] inbox 可用性/延遲整合測試於 tests/integration/inbox-usability.spec.ts
 
 ### Implementation（US4）
 
-- [x] T058 [US4] 後端：Inbox routes（讀取 + 簡修更新）於 `apps/server/src/routes/inbox.ts`
-- [x] T059 [P] [US4] 前端：InboxView（列表 + 最小編修）於 `apps/web/src/features/inbox/InboxView.tsx`
+- [ ] T065 [US4] 後端：Inbox routes（讀取 + 簡修更新）於 apps/server/src/routes/inbox.ts
+- [ ] T066 [P] [US4] 前端：InboxView（列表 + 最小編修 + 文案）於 apps/web/src/features/inbox/InboxView.tsx
+- [ ] T067 [US4] 串接 Sidebar → Tools/Inbox 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
 
 ---
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-目標：把 constitution gates（UI regression evidence、效能基準、契約一致性）落地為可重跑的工件。
+目標：補齊未被 user stories 明確覆蓋但屬於 FR/UI/Entities 的能力（Clipboard/Snippets），並把 UI regression/效能基準/契約漂移防護落地。
 
-- [x] T060 [P] 建立/更新 UI regression checklist 與 evidence 準備 於 `specs/001-prompt-asset-hub/checklists/ui-regression.md`
-- [x] T061 完成 UI 對照驗收（對照 golden reference）並記錄 evidence 於 `0resource/ui_prototype_v3.jsx`
-- [x] T062 [P] 新增效能基準（掃描/搜尋/快照/回收站 list）於 `tests/integration/benchmarks/benchmarks.spec.ts`
-- [x] T063 [P] 強化 OpenAPI contract tests：確認所有實作 routes 都在 spec 中（避免漂移）於 `tests/contract/openapi.spec.ts`
-- [x] T064 [P] 更新 quickstart 驗收流程（含回收站/衝突/retention）於 `specs/001-prompt-asset-hub/quickstart.md`
+- [ ] T068 [P] Snippets/Clipboard：更新 FS layout snippets 路徑為 `.pah/snippets/`（每個 snippet 一檔）於 apps/server/src/fs-layout/index.ts
+- [ ] T069 [P] Snippets/Clipboard：新增 contracts DTO（Snippet/SnippetList）於 packages/contracts/src/dto/snippet.ts、packages/contracts/src/dto/index.ts
+- [ ] T070 [P] Snippets/Clipboard：更新 OpenAPI（/api/snippets CRUD）於 specs/001-prompt-asset-hub/contracts/openapi.yaml
+- [ ] T071 [P] Snippets/Clipboard：新增 snippet contract tests 於 tests/contract/api-snippets.spec.ts
+- [ ] T072 Snippets/Clipboard：後端 snippets routes（list/get/create/update/delete）於 apps/server/src/routes/snippets.ts、apps/server/src/index.ts
+- [ ] T073 [P] Snippets/Clipboard：前端 ClipboardView（list + copy/insert）於 apps/web/src/features/clipboard/ClipboardView.tsx
+- [ ] T074 Snippets/Clipboard：串接 Sidebar → Tools/Clipboard 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
 
-### Settings（補齊 FR-009 範圍）
-
-- [x] T065 [P] Contracts：擴充 Workspace Settings DTO + zod schema（`tagsDict`, `commonOptions`, `backup`）並更新匯出於 `packages/contracts/src/dto/workspace.ts`、`packages/contracts/src/dto/index.ts`（驗收：`tests/contract/workspace-settings-dto.spec.ts` 覆蓋新欄位）
-- [x] T066 [P] Web UI：SettingsView 支援 tagsDict CRUD（新增/改名/刪除）與最小合併策略（rename 視為 merge）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：可在 UI 操作並觸發 settings 更新）
-- [x] T067 [P] Web UI：SettingsView 支援 commonOptions 編輯（新增/刪除/去重）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：refresh 後仍保留）
-- [x] T068 [P] Web UI：SettingsView 支援 backup 編輯（至少 dailySnapshot + schedule 字串）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：invalid schedule 顯示錯誤）
-- [x] T069 Server：workspace settings 更新與驗證（對 tagsDict/commonOptions/backup 做 schema 驗證、預設值與向後相容）於 `apps/server/src/routes/workspace.ts`
-- [x] T070 [P] Integration：擴充設定頁整合測試矩陣（tagsDict rename/merge、commonOptions 去重、backup roundtrip、invalid input）於 `tests/integration/settings-page.spec.ts`
-- [x] T071 [P] Contract：擴充/對齊 workspace permissions contract tests（GET `/api/workspace/permissions`；success + missing path 400 + error format）於 `tests/contract/api-workspace-permissions.spec.ts`
+- [ ] T075 [P] UI regression：建立/更新 checklist 與 evidence 流程於 specs/001-prompt-asset-hub/checklists/ui-regression.md
+- [ ] T076 [P] 效能基準：掃描/搜尋/快照/回收站 list benchmarks 於 tests/integration/benchmarks/benchmarks.spec.ts
+- [ ] T077 [P] 防漂移：強化 OpenAPI contract tests（確保所有 routes 對齊 spec）於 tests/contract/openapi.spec.ts
+- [ ] T078 更新 quickstart 驗收流程（含 Archive/Clipboard）於 specs/001-prompt-asset-hub/quickstart.md
 
 ---
 
 ## Dependencies & Execution Order
 
-Phase 依賴：
-1. Phase 1（Setup）→ Phase 2（Foundational）為所有故事的前置
-2. US1（P1）為 MVP；完成後 US2/US3/US4 可平行推進
+### User Story Completion Order（建議）
 
-User Story 依賴圖（建議順序）：
-1. US1 → US2 → US3
-2. US4 可在 US1 後平行
+1. US1（P1）→ 2. US2（P2）→ 3. US3（P3）
+4. US4（P3）可在 US1 後平行推進（但仍依賴 Phase 2）
+
+### Dependency Graph（ASCII）
+
+Setup(Phase1) → Foundational(Phase2) → US1
+								   ├→ US2 → US3
+								   └→ US4
+
+---
 
 ## Parallel Execution Examples（每個故事）
 
-US1 可平行：
-1. 後端 trash store/routes（T019–T027）與前端 TrashView/Sidebar（T029–T032）可平行
-2. autosave/failure tests（T018）可與 trash tests（T015–T017）平行
+US1：
+- 後端 trash（T024–T030）可與前端 views（T036–T040）平行
+- autosave tests（T019–T020）可與 trash tests（T021–T023）平行
 
-US2 可平行：
-1. watcher（T041）與搜尋（T042）可平行
-2. 前端 WS client（T046）與 UI 切換/搜尋（T043–T044）可平行
+US2：
+- watcher（T046）可與 search index（T047）平行
+- ArchiveView（T053）可在 archived filter contract（T050–T052）穩定後開始
 
-US3 可平行：
-1. snapshot/version/retention services（T051–T053）可平行
-2. UI HistoryView（T055）可在 API contract 穩定後開始
+US3：
+- snapshot/version/retention services（T058–T060）可平行
+- HistoryView（T062）可在 routes 形狀確認後開始
 
-US4 可平行：
-1. 後端 inbox routes（T058）與前端 InboxView（T059）可平行
+US4：
+- inbox routes（T065）與 InboxView（T066）可平行
+
+---
 
 ## Implementation Strategy
 
-MVP（只做 US1）：
-1. 完成 Phase 1 + Phase 2
-2. 完成 US1（含回收站 delete/restore/purge、衝突處置、retention 設定欄位）
-3. 跑 quickstart 驗收流程（`specs/001-prompt-asset-hub/quickstart.md`）與 US1 測試組
+### MVP First（只做 US1）
 
-增量交付：US1 → US2 → US3/US4，最後做 Phase 7 gates。
+1. 完成 Phase 1 + Phase 2
+2. 完成 US1（含 autosave + trash delete/restore/purge + feedback）
+3. **STOP & VALIDATE**：跑 US1 相關 contract/integration tests，並依 `quickstart.md` 驗收
+
+### Incremental Delivery
+
+US1 → US2 → US3/US4 → Phase 7（Clipboard/Regression/Benchmarks）

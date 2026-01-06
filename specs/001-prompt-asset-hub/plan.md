@@ -1,183 +1,138 @@
-# Implementation Plan: 001-prompt-asset-hub
+# Implementation Plan: 001-prompt-asset-hub — 檔案為核心的提示詞資產管理主系統
 
-**Branch**: `001-prompt-asset-hub` | **Date**: 2026-01-06 | **Spec**: `specs/001-prompt-asset-hub/spec.md`
-**Input**: `specs/001-prompt-asset-hub/spec.md`
+**Branch**: `001-prompt-asset-hub` | **Date**: 2026-01-06 | **Spec**: ./spec.md
+**Input**: Feature specification from `/specs/001-prompt-asset-hub/spec.md`
 
 <!-- Language requirement: All specifications and plans MUST be written in Traditional Chinese (zh-TW). -->
 
-**Note**: 本檔由 `/speckit.plan` 工作流維護；需符合 Project Constitution gate（contracts-first、測試先行、200ms 回饋、效能目標）。
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-此功能打造一套「以檔案為唯一權威（INV-001）」的提示詞資產管理系統，使用者可在同一處完成：
+本功能提供一套「檔案為唯一權威（local-first）」的提示詞資產管理：以專案/提示詞為核心，支援列表/看板、搜尋/篩選、Detail Panel 同頁編輯與 ≤2s autosave、附件拖放、回收站（可復原 + retention）、以及版本節點/每日快照。
 
-- 專案/提示詞的建立、編輯、自動保存（停筆 ≤ 2 秒）、封存
-- 搜尋/篩選與列表/看板視圖切換（保留狀態）
-- 暫存區（inbox）檢視與簡修（歸檔由外部工具處理）
-- 版本節點 + 每日快照 + 立即備份（正文 + 中繼資料 + 附件完整複本）
-- 回收站（soft delete）+ 復原衝突處理（覆蓋/改名/取消）+ retention 自動清理
-
-架構採 monorepo：`apps/server`（Fastify + ws + chokidar）提供 API/監控/索引與 `apps/web`（React + Vite）互動；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 管控漂移（contracts-first governance）。
+技術上採用 monorepo：
+- 後端：Fastify（本機單人模式 API）+ chokidar 監控檔案異動，資料落盤於 `<rootPath>` 與 `<attachmentPath>`。
+- 前端：React + Vite + Tailwind，UI 視覺/互動以 `0resource/ui_prototype_v3.jsx` 為 Golden Reference。
+- Contracts-first：DTO/Schema 以 `packages/contracts` 與 specs 的 OpenAPI 為契約來源，並以 Vitest 契約測試護欄。
 
 ## Technical Context
 
-**Language/Version**: TypeScript（strict）+ Node.js 20 LTS  
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: TypeScript 5.3（Node.js 20 LTS）、React 18
 **Primary Dependencies**:
-- Backend: Fastify、ws、chokidar、gray-matter
-- Shared contracts: zod
-- Frontend: React、Vite、Tailwind、CodeMirror
-
-**Storage**: 檔案系統（`<rootPath>`、`<attachmentPath>`、`<rootPath>/.pah/*`）  
-**Testing**: Vitest（`tests/unit` / `tests/integration` / `tests/contract`）  
-**Target Platform**: 本機（Windows/macOS/Linux）  
-**Project Type**: Web application（本機 server + web UI）
-
+- Backend: Fastify 4.x、chokidar、gray-matter、zod、ws
+- Frontend: Vite 5、Tailwind 3、zustand、lucide-react
+**Storage**: 檔案系統（Markdown + frontmatter + 附件目錄），內部資料置於 `<rootPath>/.pah/`（workspace settings、trash、cache、events）
+**Testing**: Vitest（unit/contract/integration）、Playwright（web e2e）
+**Target Platform**: 本機桌面環境（Windows 優先；設計需可跨平台）
+**Project Type**: Monorepo（`apps/server` + `apps/web` + `packages/contracts`）
 **Performance Goals**:
-- UX 回饋：使用者操作後 200ms 內顯示 loading/saving/error（Constitution III）
-- API/本機檔案操作：典型 p95 < 100ms（Constitution IV baseline；實作依 tasks 加上可量測基準）
-- 搜尋：在 5,000 筆資產下，95% 查詢 < 1s（SC-002）
-
+- 搜尋/篩選：在 5,000 筆資產下，95% 查詢 < 1 秒（見 spec SC-002）
+- 本機 API / 檔案操作：baseline p95 < 100ms（視 feature 逐步量測與調整）
+- Autosave：停止輸入 ≤ 2 秒觸發並提供 Saving/Saved/Failed 回饋
 **Constraints**:
-- Local-first：磁碟檔案為唯一權威（INV-001），可掃描重建（INV-002），不得有 UI 私有真實狀態（INV-003）
-- Settings 儲存：`rootPath`/`attachmentPath` 必須已存在；不存在回 400；server 不自動 mkdir（FR-011 / Clarifications 2026-01-06）
-- tagsDict 刪除：僅更新 tagsDict（建議/選單），不批次改寫既有檔案 tags（FR-009 / Clarifications 2026-01-06）
-- backup.schedule：每日時間 `HH:mm`（24 小時制，本機時區）（FR-009 / Clarifications 2026-01-06）
-- trash restore rename：`newSlug` 僅替換原本 slug（同一路徑位置復原），不支援跨專案搬移復原（FR-001 / Clarifications 2026-01-06）
-- trash retention：server 啟動先跑一次，之後每日固定時間（例如 03:00，本機時區）執行（FR-001 / Clarifications 2026-01-06）
-
-**Scale/Scope**:
-- 單人本機使用；資產規模目標：專案/提示詞合計約 5,000 筆
-- 附件可能為大檔；快照/版本需完整複本但不得阻塞編輯（需透過 UX 回饋與非同步策略落地）
+- 單人本機模式：不做登入/權限模型；但需檢查 rootPath/attachmentPath 存在且具讀寫權限
+- UI Golden Reference：視覺與互動需對齊 `0resource/ui_prototype_v3.jsx`
+- Contracts-first：DTO/schema 變更必須同步更新 contracts 與契約測試
+- UI 偏好（視圖/篩選）需落盤至 WorkspaceSettings（不得以 localStorage 作權威）
+**Scale/Scope**: 以 1 位使用者、5,000 筆 Project/Prompt/InboxItem 為 MVP 目標規模
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 **Code Quality & Maintainability**:
-- [x] 架構設計遵循單一職責原則（server 路由/索引/監控/備份分模組）
-- [x] 命名規範清晰（描述性命名，避免縮寫）
-- [x] TypeScript strict 已啟用
-- [x] 錯誤處理策略已定義（API 以可理解錯誤回應；IO/權限/衝突皆明確回報）
+- [x] 架構設計遵循單一職責原則（server routes / fs-layout / web UI 元件分層）
+- [x] 命名規範清晰（以 entity/domain 命名；避免隱晦縮寫）
+- [x] TypeScript 嚴格模式已啟用（root `npm run type-check` 覆蓋 server/contracts/web）
+- [x] 錯誤處理策略已定義（路徑權限/IO 失敗/衝突需回傳可理解錯誤；UI 顯示可重試入口）
 
 **Testing Standards**:
-- [x] Test-First 納入計畫（若例外需在 PR 註明理由）
-- [x] contracts-first：DTO/schema 變更需同步更新 OpenAPI/contracts 並新增/更新契約測試
-- [x] 核心功能測試覆蓋率目標 ≥ 80%
+- [x] Test-First 已納入計畫（若有例外需在 PR 說明）
+- [x] Contracts-first：DTO/schema 變更需同步更新 contracts 與契約測試
+- [x] 核心功能覆蓋率目標：≥ 80%（以儲存/搜尋/同步/備份為核心模組）
 
 **User Experience Consistency**:
-- [x] UI golden reference：`0resource/ui_prototype_v3.jsx`
-- [x] 互動模式遵循 sidebar → list/board → detail panel
-- [x] 200ms 內回饋機制已納入整合測試面向（feedback-latency 等）
+- [x] 設計與互動一致（Golden Reference：`0resource/ui_prototype_v3.jsx`）
+- [x] 互動模式：sidebar → list/board → overlay detail panel（含 backdrop 點擊關閉）
+- [x] 回饋機制：使用者操作 200ms 內提供可見回饋（saving/toast/error）
 
 **Performance Requirements**:
-- [x] 響應時間目標已列出（API / UI / 搜尋）
-- [x] 資源限制與風險已辨識（大附件、快照複製、索引重建）
-- [x] 大量資料處理將以 benchmarks / perf 測試在 tasks 中落地
+- [x] 響應時間目標：搜尋 p95<1s、一般 IO/API baseline p95<100ms（見 Technical Context）
+- [x] 資源限制：以 5,000 筆資產為 MVP；快照/附件複製需可觀測並可重試
+- [x] 基準測試計畫：索引重建、搜尋、寫檔、快照建立耗時（見 research.md Notes）
+
+**Gate 結論**: PASS（可進入 Phase 0；若後續發現 contracts 與 spec enum 不一致，需在 Phase 1/2 以契約更新處理）
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/001-prompt-asset-hub/
-├── plan.md
-├── research.md
-├── data-model.md
-├── quickstart.md
-├── contracts/
-│   └── openapi.yaml
-└── tasks.md
+specs/[###-feature]/
+├── plan.md              # This file (/speckit.plan command output)
+├── research.md          # Phase 0 output (/speckit.plan command)
+├── data-model.md        # Phase 1 output (/speckit.plan command)
+├── quickstart.md        # Phase 1 output (/speckit.plan command)
+├── contracts/           # Phase 1 output (/speckit.plan command)
+└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
 ### Source Code (repository root)
-
 ```text
 apps/
-├── server/
-│   ├── src/
-│   │   ├── attachments/
-│   │   ├── backup/
-│   │   ├── fs-layout/
-│   │   ├── indexing/
-│   │   ├── routes/
-│   │   ├── search/
-│   │   ├── trash/
-│   │   └── watch/
-│   └── tsconfig.json
-└── web/
-    ├── src/
-    │   ├── components/
-    │   ├── features/
-    │   ├── hooks/
-    │   └── layout/
-    └── tsconfig.json
-
+  server/
+    src/
+      routes/
+      fs-layout/
+      ...
+  web/
+    src/
+      layout/
+      features/
+      state/
+      ui/
 packages/
-└── contracts/
-    ├── src/
-    │   ├── dto/
-    │   ├── frontmatter/
-    │   └── ws/
-    └── tsconfig.json
+  contracts/
+    src/
+      dto/
+      frontmatter/
+      ws/
 
 tests/
-├── contract/
-├── integration/
-└── unit/
+  contract/
+  integration/
+  unit/
 ```
 
-## UI Implementation Strategy (Strict Porting Mandate)
+**Structure Decision**: 本專案採 monorepo web + backend + shared contracts；UI 與互動以 prototype 為 Golden Reference，功能契約由 contracts + specs/OpenAPI 描述並由測試保護。
 
-**CRITICAL ARCHITECTURAL DECISION**:
-The application MUST be implemented as a **Single-View Application** controlled by React State, NOT by Next.js Page Routing (except for the root).
+## Phase Plan（到 Phase 2 規劃為止）
 
-1.  **Layout Structure (Based on `ui_prototype_v3.jsx`)**:
-    -   **Container**: `flex h-screen overflow-hidden`.
-    -   **Sidebar**: Fixed width (`w-60`), collapsible, using `bg-[#F7F7F5]`.
-    -   **Main Content**: `flex-1`, scrollable area.
-    -   **Detail Panel**: An **Overlay/Slide-over** component (`absolute top-0 right-0 z-50`), NOT a separate page.
+### Phase 0 — Outline & Research
+- 整理並對齊已定案澄清（Archive/enum/snippets path/overlay detail panel）到 research.md（決策 + rationale + alternatives）。
+- 盤點現行實作與 spec 的差異（例如：Snippet 目前在 server `fs-layout` 指向 `<rootPath>/snippets`，需遷移至 `<rootPath>/.pah/snippets`）。
 
-2.  **Visual Precision**:
-    -   **Typography**: Use `text-xs` (12px) and `text-sm` (14px) exactly as defined in the source.
-    -   **Colors**: Use the specific hex code `bg-[#F7F7F5]` for backgrounds, not generic `bg-gray-100`.
-    -   **Components**: Port the `GhostButton`, `StatusBadge`, and `SidePanel` components exactly from `design-context.md`.
+### Phase 1 — Design & Contracts
+- 更新 data-model.md：檔案 mapping、frontmatter 欄位、enum（Project/Prompt status、Prompt priority）、Snippet 落盤路徑。
+- 更新 specs/contracts/openapi.yaml：補上 enum、archived 篩選等契約細節。
+- 更新 quickstart.md：確保操作路徑與最新 Sidebar/Archive/Trash/Detail overlay 一致。
 
-3.  **State Management**:
-    -   Use `zustand` to manage the `activeSection` (Projects/Prompts) and `selectedItem` (Detail Panel) state globally, mirroring the `useState` logic in the prototype.
-    
-
-**Structure Decision**: 採用「本機 server + web UI」的 web application monorepo；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 作為漂移 gate。
-
-## Phase 0 — Research
-
-**Goal**: 釐清高風險決策（同步/衝突、刪除/復原語意、快照/版本策略、搜尋策略、排程/retention）並收斂替代方案。
-
-**Output**: `specs/001-prompt-asset-hub/research.md`
-
-**Status**: 已完成（包含單人本機模式、完整複本、監控去抖、搜尋策略、soft delete、復原衝突、retention 等決策）。
-
-## Phase 1 — Design & Contracts
-
-**Goal**: 以 contracts-first 落地資料模型與 API 介面，確保 server/web/contracts 三者一致並可由測試保護。
-
-**Outputs**:
-- `specs/001-prompt-asset-hub/data-model.md`
-- `specs/001-prompt-asset-hub/contracts/openapi.yaml`
-- `specs/001-prompt-asset-hub/quickstart.md`
-
-**Status**: 已完成（並以 `tests/contract/*` 驗證）。
-
-## Phase 2 — Planning
-
-**Goal**: 將設計轉為可驗收、可測試、可分批交付的工程任務（由 `/speckit.tasks` 維護）。
-
-**Primary Source**: `specs/001-prompt-asset-hub/tasks.md`
-
-**Execution Strategy (high-level)**:
-- 先維持 contracts-first gate：每一個 API/WS/frontmatter schema 變更都同 PR 更新 contracts + contract tests
-- 以「端到端可用」的薄切片交付：Settings/Workspace → Project/Prompt CRUD + autosave → Search/Views → Inbox → Trash → Backup/Snapshots
-- 針對高風險流程（衝突、IO 失敗、retention）優先補齊 integration tests
+### Phase 2 — Task Planning（由 /speckit.tasks 產出）
+- 以 contracts-first 將 contracts package（`packages/contracts`）與 server/web 行為對齊最新 enum 與 Snippet 路徑。
+- 增補契約測試/整合測試，確保 UI regression（含截圖/錄影）與核心 flows 不回歸。
 
 ## Complexity Tracking
 
-（無違規需要例外；目前設計符合 constitution gate。）
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

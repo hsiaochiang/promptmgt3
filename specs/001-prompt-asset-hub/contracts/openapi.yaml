@@ -390,7 +390,7 @@ components:
         id: { type: string }
         title: { type: string }
         summary: { type: string }
-        status: { type: string }
+        status: { type: string, enum: [planned, in_progress, paused, done] }
         tags: { type: array, items: { type: string } }
         archived: { type: boolean }
         updatedAt: { type: string, format: date-time }
@@ -400,7 +400,7 @@ components:
       properties:
         title: { type: string }
         summary: { type: string }
-        status: { type: string }
+        status: { type: string, enum: [planned, in_progress, paused, done] }
         tags: { type: array, items: { type: string } }
     Prompt:
       type: object
@@ -408,8 +408,8 @@ components:
         id: { type: string }
         projectId: { type: string }
         title: { type: string }
-        status: { type: string }
-        priority: { type: string }
+        status: { type: string, enum: [draft, needs_review, ready, deprecated] }
+        priority: { type: string, enum: [high, medium, low] }
         tags: { type: array, items: { type: string } }
         body: { type: string }
         notes: { type: string }
@@ -421,8 +421,8 @@ components:
       properties:
         projectId: { type: string }
         title: { type: string }
-        status: { type: string }
-        priority: { type: string }
+        status: { type: string, enum: [draft, needs_review, ready, deprecated] }
+        priority: { type: string, enum: [high, medium, low] }
         tags: { type: array, items: { type: string } }
         body: { type: string }
         notes: { type: string }

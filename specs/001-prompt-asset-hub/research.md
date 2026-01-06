@@ -59,12 +59,25 @@
   - 永遠自動改名：雖安全但會造成使用者困惑，且可能破壞預期路徑/slug。
 
 ### D9: 回收站自動清理（Retention）
-- **Decision**: 回收站採自動清理；預設保留 30 天，可在設定調整。清理失敗必須可觀測並允許重試，且不得造成「部分刪除」的無提示不一致。
-- **Rationale**: 控制磁碟佔用；符合長期使用需求；降低手動維護成本。
-- **Alternatives**:
   - 不清理：磁碟佔用不可控。
   - 固定天數不可調：無法滿足不同使用情境。
 
+
+### D10. Domain enums are fixed by spec (contracts-first)
+
+- Decision: Project/Prompt 的狀態與 priority 以 spec 定義的 enum 為準，並在 contracts + OpenAPI 中固化。
+- Rationale: 減少前後端/契約分歧，讓測試能更精準地捕捉回歸。
+- Alternatives considered:
+  - 全部用 `string`：彈性高但容易產生互不相容的值。
+  - 只在 UI 端限制：server/contract 仍可能接受不合法值，造成落盤污染。
+
+### D11. Snippets are stored under `<rootPath>/.pah/snippets/`
+
+- Decision: Snippet 實體（非搜尋摘要文字）一律落盤在 `<rootPath>/.pah/snippets/`，每個 snippet 一檔；可透過 scan 重建。
+- Rationale: `.pah/` 是內部管理資料根目錄（settings/trash/cache/events），snippet 屬於系統資料且不應污染使用者工作目錄頂層。
+- Alternatives considered:
+  - `<rootPath>/snippets/`：容易與使用者自建資料混淆，且不符合 `.pah/` 聚合內部資料的設計。
+  - 嵌入在 Prompt 檔：操作簡單但不利於重用/獨立版本與掃描重建。
 ## Notes / Follow-ups
 - 基準測試需涵蓋：索引重建時間、寫檔 p95、搜尋 p95、快照/版本建立耗時與磁碟佔用。
 - 權限檢查需在設定頁與保存/附件操作時預檢，避免部分流程才失敗。

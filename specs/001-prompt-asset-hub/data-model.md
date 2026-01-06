@@ -15,7 +15,7 @@
 - InboxItem
 	- `inbox/<inboxId>.md`（frontmatter + rawContent/cleaned content）
 - Snippet
-	- `snippets/<category>/<snippetId>.md`
+	- `.pah/snippets/<snippetId>.md`
 - Attachment
 	- `<attachmentPath>/<entityType>/<entityId>/<filename>`（避免同名覆蓋；快照/版本需完整複製）
 - VersionEvent
@@ -50,7 +50,7 @@
 - slug（必填）
 - title（必填）
 - summary（選填，預設 ""）
-- status（選填，預設 "planning"）
+- status（選填，預設 "planned"）
 - type（選填，預設 ""）
 - tags（選填，預設 []）
 - archived（選填，預設 false）
@@ -64,7 +64,7 @@
 - projectId（必填）：指向 Project.id
 - title（必填）
 - status（選填，預設 "draft"）
-- priority（選填，預設 "P1"）
+- priority（選填，預設 "medium"）
 - tags（選填，預設 []）
 - sourceLink（選填）
 - notes（選填，預設 ""）
@@ -119,7 +119,7 @@
 - title (string)
 - summary (string)
 - description (string)
-- status (enum: planning/in-progress/paused/done)
+- status (enum: planned/in_progress/paused/done)
 - type (string)
 - tags (string[])
 - attachments (AttachmentRef[])
@@ -132,8 +132,8 @@
 - slug (string)
 - projectId (string)
 - title (string)
-- status (enum: draft/tuning/ready/disabled)
-- priority (enum: P0/P1/P2)
+- status (enum: draft/needs_review/ready/deprecated)
+- priority (enum: high/medium/low)
 - tags (string[])
 - sourceLink (string)
 - notes (string)
@@ -215,8 +215,8 @@
 - Search Index：重建時需跳過無法解析的檔案並記錄錯誤
 
 ## 狀態轉換（摘要）
-- Prompt.status: draft → tuning → ready → disabled；封存不改 status，但 archived=true
-- Project.status: planning → in-progress → paused/done；封存設定 archived=true
+- Prompt.status: draft → needs_review → ready → deprecated；封存不改 status，但 archived=true
+- Project.status: planned → in_progress → paused/done；封存設定 archived=true
 - InboxItem.cleanedState: unprocessed → cleaned → archived（但不觸發歸檔寫入）
 - VersionEvent: 每次版本/快照新增一筆，無更新/刪除；刪除時保留歷史紀錄條目
 
