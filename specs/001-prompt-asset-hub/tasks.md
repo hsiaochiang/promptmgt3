@@ -44,10 +44,10 @@ description: "Task list: 001-prompt-asset-hub"
 
 目標：確保 monorepo 的啟動/測試腳本、型別設定、開發體驗符合 plan.md。
 
-- [ ] T001 確認根目錄腳本與工作區命令一致（dev/web/server/test）於 `package.json`
-- [ ] T002 [P] 對齊 TypeScript 專案參考與 strict 設定（root + apps + packages），並修正「編譯輸出覆寫輸入」類問題（排除 `apps/**/dist/**`、`apps/web/postcss.config.js`、`apps/web/tailwind.config.js` 等非 TS 輸入；root 設為 noEmit 或改用 project references）；更新於 `tsconfig.json`、`apps/server/tsconfig.json`、`apps/web/tsconfig.json`、`packages/contracts/tsconfig.json`（驗收：`npm run type-check` 或 `tsc -b` 無 overwrite input 錯誤）
-- [ ] T003 [P] 補齊開發環境說明與 smoke steps 於 `specs/001-prompt-asset-hub/quickstart.md`
-- [ ] T004 [P] 建立最小端到端啟動檢查（server health + web render）於 `tests/integration/smoke.spec.ts`
+- [x] T001 確認根目錄腳本與工作區命令一致（dev/web/server/test）於 `package.json`
+- [x] T002 [P] 對齊 TypeScript 專案參考與 strict 設定（root + apps + packages），並修正「編譯輸出覆寫輸入」類問題（排除 `apps/**/dist/**`、`apps/web/postcss.config.js`、`apps/web/tailwind.config.js` 等非 TS 輸入；root 設為 noEmit 或改用 project references）；更新於 `tsconfig.json`、`apps/server/tsconfig.json`、`apps/web/tsconfig.json`、`packages/contracts/tsconfig.json`（驗收：`npm run type-check` 或 `tsc -b` 無 overwrite input 錯誤）
+- [x] T003 [P] 補齊開發環境說明與 smoke steps 於 `specs/001-prompt-asset-hub/quickstart.md`
+- [x] T004 [P] 建立最小端到端啟動檢查（server health + web render）於 `tests/integration/smoke.spec.ts`
 
 ---
 
@@ -55,14 +55,14 @@ description: "Task list: 001-prompt-asset-hub"
 
 目標：在任何 user story 前，先把「契約/設定/路徑與權限」打成穩固地基（符合 constitution 的 contracts-first gate）。
 
-- [ ] T005 [P] 新增 Workspace Settings DTO + zod schema 於 `packages/contracts/src/dto/workspace.ts`（包含 `trashRetentionDays`）
-- [ ] T006 [P] 新增 Trash DTO + zod schema 於 `packages/contracts/src/dto/trash.ts`（TrashItem/TrashListResponse/TrashRestoreRequest/TrashRestoreResult/RestoreConflict）
-- [ ] T007 [P] 匯出新 DTO（workspace/trash）於 `packages/contracts/src/dto/index.ts` 與 `packages/contracts/src/index.ts`
-- [ ] T008 [P] 更新/對齊 OpenAPI contract sanity checks（涵蓋 trash endpoints + Settings.trashRetentionDays）於 `tests/contract/openapi.spec.ts`
-- [ ] T009 [P] 新增 Trash DTO contract tests（valid/invalid）於 `tests/contract/trash-dto.spec.ts`
-- [ ] T010 更新後端 workspace 設定型別與預設值（加入 `trashRetentionDays: 30`）於 `apps/server/src/routes/workspace.ts`
-- [ ] T011 更新前端設定頁顯示/編輯 trash retention days 於 `apps/web/src/features/settings/SettingsView.tsx`
-- [ ] T012 [P] 新增設定頁整合測試（含路徑權限 + trashRetentionDays roundtrip）於 `tests/integration/settings-page.spec.ts`
+- [x] T005 [P] 新增 Workspace Settings DTO + zod schema 於 `packages/contracts/src/dto/workspace.ts`（包含 `trashRetentionDays`）
+- [x] T006 [P] 新增 Trash DTO + zod schema 於 `packages/contracts/src/dto/trash.ts`（TrashItem/TrashListResponse/TrashRestoreRequest/TrashRestoreResult/RestoreConflict）
+- [x] T007 [P] 匯出新 DTO（workspace/trash）於 `packages/contracts/src/dto/index.ts` 與 `packages/contracts/src/index.ts`
+- [x] T008 [P] 更新/對齊 OpenAPI contract sanity checks（涵蓋 trash endpoints + Settings.trashRetentionDays）於 `tests/contract/openapi.spec.ts`
+- [x] T009 [P] 新增 Trash DTO contract tests（valid/invalid）於 `tests/contract/trash-dto.spec.ts`
+- [x] T010 更新後端 workspace 設定型別與預設值（加入 `trashRetentionDays: 30`）於 `apps/server/src/routes/workspace.ts`
+- [x] T011 更新前端設定頁顯示/編輯 trash retention days 於 `apps/web/src/features/settings/SettingsView.tsx`
+- [x] T012 [P] 新增設定頁整合測試（含路徑權限 + trashRetentionDays roundtrip）於 `tests/integration/settings-page.spec.ts`
 
 **Checkpoint**：contracts + Settings + integration test 基礎可跑，才進入 US1。
 
@@ -188,7 +188,7 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Settings（補齊 FR-009 範圍）
 
-- [ ] T065 [P] Contracts：擴充 Workspace Settings DTO + zod schema（`tagsDict`, `commonOptions`, `backup`）並更新匯出於 `packages/contracts/src/dto/workspace.ts`、`packages/contracts/src/dto/index.ts`（驗收：`tests/contract/workspace-settings-dto.spec.ts` 覆蓋新欄位）
+- [x] T065 [P] Contracts：擴充 Workspace Settings DTO + zod schema（`tagsDict`, `commonOptions`, `backup`）並更新匯出於 `packages/contracts/src/dto/workspace.ts`、`packages/contracts/src/dto/index.ts`（驗收：`tests/contract/workspace-settings-dto.spec.ts` 覆蓋新欄位）
 - [ ] T066 [P] Web UI：SettingsView 支援 tagsDict CRUD（新增/改名/刪除）與最小合併策略（rename 視為 merge）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：可在 UI 操作並觸發 settings 更新）
 - [ ] T067 [P] Web UI：SettingsView 支援 commonOptions 編輯（新增/刪除/去重）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：refresh 後仍保留）
 - [ ] T068 [P] Web UI：SettingsView 支援 backup 編輯（至少 dailySnapshot + schedule 字串）於 `apps/web/src/features/settings/SettingsView.tsx`（驗收：invalid schedule 顯示錯誤）
