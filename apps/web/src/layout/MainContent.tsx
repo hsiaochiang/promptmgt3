@@ -3,6 +3,10 @@ import { Kanban, List as ListIcon, Search, X } from 'lucide-react';
 import { ProjectView } from './ProjectView';
 import { PromptView } from './PromptView';
 import { SettingsView } from '../features/settings/SettingsView';
+import { InboxView } from '../features/inbox/InboxView';
+import { ArchiveView } from '../features/archive/ArchiveView';
+import { TrashView } from '../features/trash/TrashView';
+import { ClipboardView } from '../features/clipboard/ClipboardView';
 import type { ActiveSection } from '../state/uiStore';
 import { useUiStore } from '../state/uiStore';
 
@@ -112,9 +116,15 @@ export function MainContent({ activeSection }: MainContentProps) {
       ? '專案管理'
       : activeSection === 'prompts'
         ? '提示詞管理'
-        : activeSection === 'clipboard'
-          ? '剪貼簿'
-          : '設定';
+        : activeSection === 'inbox'
+          ? '暫存區'
+          : activeSection === 'archive'
+            ? '已封存資產'
+            : activeSection === 'trash'
+              ? '回收站'
+              : activeSection === 'clipboard'
+                ? '剪貼簿'
+                : '設定';
 
   // 簡單的 View Mode 切換邏輯
   const currentSubView = activeSection === 'projects' ? projectSubView : promptSubView;
@@ -169,6 +179,10 @@ export function MainContent({ activeSection }: MainContentProps) {
       >
         {activeSection === 'projects' && <ProjectView />}
         {activeSection === 'prompts' && <PromptView />}
+        {activeSection === 'inbox' && <InboxView />}
+        {activeSection === 'archive' && <ArchiveView />}
+        {activeSection === 'trash' && <TrashView />}
+        {activeSection === 'clipboard' && <ClipboardView />}
         {activeSection === 'settings' && <SettingsView />}
       </div>
     </div>

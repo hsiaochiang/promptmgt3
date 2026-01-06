@@ -174,9 +174,10 @@ export function getInboxItemFilePath(rootPath: string, inboxId: string): string 
 
 /**
  * Get snippets directory path
+ * Snippets are stored in .pah/snippets/ (one file per snippet)
  */
 export function getSnippetsDir(rootPath: string): string {
-  return path.join(rootPath, 'snippets');
+  return path.join(getPahDir(rootPath), 'snippets');
 }
 
 /**
@@ -184,10 +185,9 @@ export function getSnippetsDir(rootPath: string): string {
  */
 export function getSnippetFilePath(
   rootPath: string,
-  category: string,
   snippetId: string
 ): string {
-  return path.join(getSnippetsDir(rootPath), category, `${snippetId}.md`);
+  return path.join(getSnippetsDir(rootPath), `${snippetId}.md`);
 }
 
 /**

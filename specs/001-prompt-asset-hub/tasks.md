@@ -185,14 +185,14 @@ description: "任務清單：001-prompt-asset-hub"
 
 ### 測試（US4，Test-First）
 
-- [ ] T063 [P] [US4] inbox contract tests（list/get/update/delete）於 tests/contract/api-inbox.spec.ts
-- [ ] T064 [P] [US4] inbox 可用性/延遲整合測試於 tests/integration/inbox-usability.spec.ts
+- [x] T063 [P] [US4] inbox contract tests（list/get/update/delete）於 tests/contract/api-inbox.spec.ts
+- [x] T064 [P] [US4] inbox 可用性/延遲整合測試於 tests/integration/inbox-usability.spec.ts
 
 ### 實作（US4）
 
-- [ ] T065 [US4] 後端：Inbox routes（讀取 + 簡修更新）於 apps/server/src/routes/inbox.ts
-- [ ] T066 [P] [US4] 前端：InboxView（列表 + 最小編修 + 文案）於 apps/web/src/features/inbox/InboxView.tsx
-- [ ] T067 [US4] 串接 Sidebar → Tools/Inbox 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
+- [x] T065 [US4] 後端：Inbox routes（讀取 + 簡修更新）於 apps/server/src/routes/inbox.ts
+- [x] T066 [P] [US4] 前端：InboxView（列表 + 最小編修 + 文案）於 apps/web/src/features/inbox/InboxView.tsx
+- [x] T067 [US4] 串接 Sidebar → Tools/Inbox 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
 
 ---
 

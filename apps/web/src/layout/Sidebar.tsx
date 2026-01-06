@@ -1,4 +1,4 @@
-import { Layout, Kanban, List as ListIcon, Clipboard, Settings, ChevronRight } from 'lucide-react';
+import { Layout, Kanban, List as ListIcon, Clipboard, Settings, ChevronRight, Inbox, Archive, Trash2 } from 'lucide-react';
 import { useUiStore } from '../state/uiStore';
 
 // Helper components
@@ -101,6 +101,27 @@ export function Sidebar() {
         />
 
         <SectionHeader label="Tools" isCollapsed={!isSidebarOpen} />
+        <NavItem
+          icon={Inbox}
+          label="暫存區"
+          isActive={activeSection === 'inbox'}
+          isCollapsed={!isSidebarOpen}
+          onClick={() => setActiveSection('inbox')}
+        />
+        <NavItem
+          icon={Archive}
+          label="已封存"
+          isActive={activeSection === 'archive'}
+          isCollapsed={!isSidebarOpen}
+          onClick={() => setActiveSection('archive')}
+        />
+        <NavItem
+          icon={Trash2}
+          label="回收站"
+          isActive={activeSection === 'trash'}
+          isCollapsed={!isSidebarOpen}
+          onClick={() => setActiveSection('trash')}
+        />
         <NavItem
           icon={Clipboard}
           label="剪貼簿"

@@ -334,6 +334,59 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/VersionEvent' } } } } }
         '400': { description: Bad Request }
 
+  /api/snippets:
+    get:
+      summary: 列出所有片段
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SnippetList' } } } }
+    post:
+      summary: 新增片段
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SnippetInput' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Snippet' } } } }
+        '400': { description: Bad Request }
+
+  /api/snippets/{id}:
+    get:
+      summary: 取得片段詳情
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Snippet' } } } }
+        '404': { description: Not Found }
+    put:
+      summary: 更新片段
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SnippetInput' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Snippet' } } } }
+        '404': { description: Not Found }
+    delete:
+      summary: 刪除片段
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: No Content }
+        '404': { description: Not Found }
+
 components:
   schemas:
     ErrorResponse:
@@ -488,6 +541,33 @@ components:
         page: { type: integer }
         perPage: { type: integer }
         hasMore: { type: boolean }
+    
+    Snippet:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        content: { type: string }
+        tags: { type: array, items: { type: string } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    SnippetInput:
+      type: object
+      required: [title, content]
+      properties:
+        title: { type: string }
+        content: { type: string }
+        tags: { type: array, items: { type: string } }
+
+    SnippetList:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Snippet' }
+        total: { type: integer }
+
     PathPermissions:
       type: object
       properties:
