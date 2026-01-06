@@ -19,7 +19,6 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [unsavedSnapshot, setUnsavedSnapshot] = useState<PromptEntity | null>(null);
   const [lastKnownUpdatedAt, setLastKnownUpdatedAt] = useState<string | null>(prompt.updatedAt ?? null);
-  const [serverPrompt, setServerPrompt] = useState<PromptEntity | null>(prompt);
   const [creatingVersion, setCreatingVersion] = useState(false);
 
   const { lastStatus, setStatus } = useSyncStatus();
@@ -28,7 +27,6 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   // Update form data when prompt changes
   useEffect(() => {
     setFormData(prompt);
-    setServerPrompt(prompt);
     setLastKnownUpdatedAt(prompt.updatedAt ?? null);
     setLastSaved(null);
     setSaveError(null);
@@ -64,7 +62,6 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
             }
 
             // Keep server snapshot and known updatedAt in sync
-            setServerPrompt(current);
             setLastKnownUpdatedAt(currentUpdatedAt);
           }
         }
@@ -83,7 +80,6 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
 
         const updated = (await response.json()) as PromptEntity;
         setLastSaved(new Date());
-        setServerPrompt(updated);
         setLastKnownUpdatedAt(updated.updatedAt ?? null);
         setHasUnsavedChanges(false);
         setUnsavedSnapshot(null);
@@ -123,25 +119,17 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   };
 
   const handleCreateVersion = async () => {
-    if (!prompt.projectSlug || !prompt.slug) {
-      alert('無法建立版本節點：缺少必要的專案或提示詞資訊');
-      return;
-    }
-
     const message = window.prompt('請輸入版本節點的說明（選填）：');
     if (message === null) return; // User cancelled
 
     try {
       setCreatingVersion(true);
       
-      const response = await fetch('http://localhost:3001/api/versions', {
+      const response = await fetch('http://localhost:3001/api/snapshots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          entityType: 'prompt',
-          entityId: prompt.id,
-          projectSlug: prompt.projectSlug,
-          promptSlug: prompt.slug,
+          scope: 'prompt',
           message: message || undefined,
         }),
       });
@@ -176,7 +164,6 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
 
       const latest = (await response.json()) as PromptEntity;
       setFormData(latest);
-      setServerPrompt(latest);
       setLastKnownUpdatedAt(latest.updatedAt ?? null);
       setLastSaved(new Date());
       setSaveError(null);

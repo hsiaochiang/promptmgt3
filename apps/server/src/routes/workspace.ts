@@ -13,6 +13,7 @@ export interface WorkspaceSettings {
     schedule?: string;
     remote?: string;
   };
+  trashRetentionDays?: number;
   updatedAt: string;
 }
 
@@ -24,7 +25,11 @@ export async function loadWorkspaceSettings(rootPath: string): Promise<Workspace
 
   try {
     const content = await fs.readFile(configPath, 'utf-8');
-    return JSON.parse(content);
+    const parsed = JSON.parse(content) as WorkspaceSettings;
+    return {
+      ...parsed,
+      trashRetentionDays: parsed.trashRetentionDays ?? 30,
+    };
   } catch (error) {
     // Return default settings if file doesn't exist
     return {
@@ -33,6 +38,7 @@ export async function loadWorkspaceSettings(rootPath: string): Promise<Workspace
       backup: {
         dailySnapshot: false,
       },
+      trashRetentionDays: 30,
       updatedAt: new Date().toISOString(),
     };
   }
@@ -100,7 +106,7 @@ export async function checkPathPermissions(dirPath: string): Promise<{
  */
 export async function registerWorkspaceRoutes(server: FastifyInstance, rootPath: string) {
   // GET /api/workspace/settings
-  server.get('/api/workspace/settings', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get('/api/workspace/settings', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const settings = await loadWorkspaceSettings(rootPath);
       return settings;

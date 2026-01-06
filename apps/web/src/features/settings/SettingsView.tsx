@@ -10,6 +10,7 @@ interface WorkspaceSettings {
     schedule?: string;
     remote?: string;
   };
+  trashRetentionDays?: number;
   updatedAt: string;
 }
 
@@ -156,6 +157,30 @@ export function SettingsView() {
                 />
                 <span className="text-sm">啟用每日自動快照</span>
               </label>
+            </div>
+          </div>
+
+          {/* Trash Settings */}
+          <div className="border-t border-subtle pt-6">
+            <h3 className="text-sm font-medium mb-3">回收站設定</h3>
+            <div>
+              <label className="block text-sm font-medium mb-1">回收站保留天數</label>
+              <input
+                type="number"
+                min={1}
+                value={settings.trashRetentionDays ?? 30}
+                onChange={(e) =>
+                  handleFieldChange(
+                    'trashRetentionDays',
+                    Math.max(1, Number(e.target.value || 30)),
+                  )
+                }
+                className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="30"
+              />
+              <p className="mt-1 text-xs text-secondary">
+                到期後系統會自動清理回收站項目（預設 30 天）
+              </p>
             </div>
           </div>
 

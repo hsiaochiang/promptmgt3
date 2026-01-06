@@ -5,7 +5,8 @@
     "lib": ["ES2022"],
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "allowJs": true,
+    "allowJs": false,
+    "noEmit": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -13,5 +14,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "include": ["tools/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "**/dist/**",
+    "apps/web/postcss.config.js",
+    "apps/web/tailwind.config.js"
+  ]
 }

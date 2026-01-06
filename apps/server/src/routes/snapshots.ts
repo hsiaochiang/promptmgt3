@@ -76,7 +76,7 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
   });
 
   // GET /api/snapshots - list snapshot/version events
-  server.get('/api/snapshots', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get('/api/snapshots', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const events = await listSnapshots(rootPath);
       return events;
@@ -130,7 +130,7 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
   });
 
   // GET /api/versions - list all version nodes
-  server.get('/api/versions', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get('/api/versions', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const events = await listAllVersionNodes(rootPath);
       return events;

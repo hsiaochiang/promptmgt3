@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { getSnapshotsDir, getVersionsDir } from '../fs-layout/index.js';
+import { getSnapshotsDir } from '../fs-layout/index.js';
 
 export interface SnapshotManifest {
   snapshotId: string;

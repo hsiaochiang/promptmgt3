@@ -23,6 +23,13 @@
 - SearchIndex（MVP in-memory / cache）
 	- 非權威 cache：`<rootPath>/.pah/cache/search-index.json`（可刪除、可重建）
 
+- Trash（回收站 / soft delete）
+	- 位置：`<rootPath>/.pah/trash/`
+	- 每筆回收站項目：`<rootPath>/.pah/trash/items/<trashId>/`
+		- `manifest.json`：trashId、entityType、entityId、deletedAt、purgeAfter、originalRelativePath、attachmentsMoved、sizeBytes、errors
+		- `root/`：被刪除實體的原始相對路徑檔案（例如 `projects/<projectSlug>/prompts/<promptSlug>.md`）
+		- `attachments/`：被刪除實體對應的附件資料夾鏡像（`<entityType>/<entityId>/...`）
+
 ## 實體與欄位
 
 ### Frontmatter Schema（欄位規格：必填/選填/預設、id vs slug）
@@ -84,8 +91,26 @@
 - tagsDict (map: category -> tags)
 - commonOptions (e.g., models/sources)
 - backupSettings: { dailySnapshot: boolean, schedule: time, remote?: string }
+- trashRetentionDays: number（預設 30；到期自動清理回收站）
 - integrations: { authInfo?: string }
 - updatedAt (datetime)
+
+### TrashItem
+- trashId (uuid)
+- entityType (enum: project|prompt|inboxItem|snippet|unknown)
+- entityId (string)
+- deletedAt (datetime)
+- purgeAfter (datetime)
+- originalRelativePath (string)
+- titleSnapshot (string, optional)
+- attachmentsMoved (boolean)
+- sizeBytes (number, optional)
+- errors (string[])
+
+### TrashPolicy
+- retentionDays (number, default 30)
+- deleteSemantics: 'soft-delete'
+- restoreConflictStrategy (enum: block|overwrite|rename)
 
 ### Project
 - id (uuid)
@@ -193,3 +218,8 @@
 - Project.status: planning → in-progress → paused/done；封存設定 archived=true
 - InboxItem.cleanedState: unprocessed → cleaned → archived（但不觸發歸檔寫入）
 - VersionEvent: 每次版本/快照新增一筆，無更新/刪除；刪除時保留歷史紀錄條目
+
+- Delete / Restore（回收站）
+	- Active（在 rootPath 內可被掃描）→ Trashed（移至 `.pah/trash/items/<trashId>/`）
+	- Trashed → Restored（搬回 originalRelativePath；若衝突則回報並由 UI 選擇覆蓋/改名/取消）
+	- Trashed → Purged（永久刪除；需明確確認；若失敗需可重試且不得造成無提示的不一致）

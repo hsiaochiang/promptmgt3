@@ -1,5 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
-import { SyncContext } from '../sync/SyncProvider';
+import { useState, useEffect } from 'react';
 import type { SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
 
 interface BackupStatus {
@@ -28,7 +27,7 @@ export function BackupStatusBanner() {
         const parsed = JSON.parse(event.data);
         
         if (parsed.event === 'snapshot.created') {
-          const data = parsed as SnapshotCreatedPayload;
+          parsed as SnapshotCreatedPayload;
           setStatus({
             isBackingUp: false,
             lastSuccess: new Date().toISOString(),

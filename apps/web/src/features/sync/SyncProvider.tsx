@@ -25,9 +25,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     ws.onmessage = (event) => {
       try {
-        const parsed = JSON.parse(event.data) as StatusEvent | any;
-        if (parsed.event === 'sync.status') {
-          const data = parsed.data as StatusEvent['data'];
+        const parsed = JSON.parse(event.data) as unknown;
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          (parsed as any).event === 'sync.status'
+        ) {
+          const data = (parsed as StatusEvent).data as any;
           setLastStatus({ status: data.status, message: data.message });
         }
       } catch {

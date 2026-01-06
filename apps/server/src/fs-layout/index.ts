@@ -46,6 +46,31 @@ export function getCacheDir(rootPath: string): string {
 }
 
 /**
+ * Get trash directory path
+ */
+export function getTrashDir(rootPath: string): string {
+  return path.join(getPahDir(rootPath), 'trash');
+}
+
+/**
+ * Get trash items directory path
+ */
+export function getTrashItemsDir(rootPath: string): string {
+  return path.join(getTrashDir(rootPath), 'items');
+}
+
+/**
+ * Get a specific trash item directory path
+ */
+export function getTrashItemDir(rootPath: string, trashId: string): string {
+  return path.join(getTrashItemsDir(rootPath), trashId);
+}
+
+export function getTrashItemManifestPath(rootPath: string, trashId: string): string {
+  return path.join(getTrashItemDir(rootPath, trashId), 'manifest.json');
+}
+
+/**
  * Get search index cache file path
  */
 export function getSearchIndexCachePath(rootPath: string): string {

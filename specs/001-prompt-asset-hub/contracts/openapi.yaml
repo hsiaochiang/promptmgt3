@@ -4,7 +4,7 @@ info:
   version: 0.1.0
   description: "本機單人模式 API（REST）"
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3001
 paths:
   /api/workspace/settings:
     get:
@@ -100,6 +100,77 @@ paths:
             schema: { $ref: '#/components/schemas/PromptInput' }
       responses:
         '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Prompt' } } } }
+    delete:
+      summary: 刪除提示詞（移到回收站，可復原）
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TrashItem' } } } }
+        '404': { description: Not Found }
+
+  /api/projects/{id}:
+    delete:
+      summary: 刪除專案（移到回收站，可復原）
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TrashItem' } } } }
+        '404': { description: Not Found }
+
+  /api/trash:
+    get:
+      summary: 列出回收站項目（可搜尋/篩選）
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: entityType
+          schema: { type: string, enum: [project, prompt, inboxItem, snippet, unknown] }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TrashListResponse' } } } }
+
+  /api/trash/{trashId}:
+    delete:
+      summary: 永久刪除回收站項目（不可復原）
+      parameters:
+        - in: path
+          name: trashId
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: No Content }
+        '404': { description: Not Found }
+
+  /api/trash/{trashId}/restore:
+    post:
+      summary: 從回收站復原（可能衝突）
+      parameters:
+        - in: path
+          name: trashId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TrashRestoreRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TrashRestoreResult' } } } }
+        '409': { description: Conflict, content: { application/json: { schema: { $ref: '#/components/schemas/RestoreConflict' } } } }
+        '404': { description: Not Found }
   /api/files/read:
     get:
       summary: 讀取檔案
@@ -211,6 +282,8 @@ components:
         tagsDict: { type: object }
         commonOptions: { type: object }
         backup: { $ref: '#/components/schemas/BackupSettings' }
+        trashRetentionDays: { type: integer, minimum: 1, description: '回收站自動清理保留天數（預設 30 天）' }
+        updatedAt: { type: string, format: date-time }
     SettingsUpdate:
       allOf:
         - $ref: '#/components/schemas/Settings'
@@ -330,3 +403,54 @@ components:
         readable: { type: boolean }
         writable: { type: boolean }
         error: { type: string }
+
+    TrashItem:
+      type: object
+      properties:
+        trashId: { type: string }
+        entityType: { type: string, enum: [project, prompt, inboxItem, snippet, unknown] }
+        entityId: { type: string }
+        titleSnapshot: { type: string }
+        deletedAt: { type: string, format: date-time }
+        purgeAfter: { type: string, format: date-time }
+        originalRelativePath: { type: string }
+        attachmentsMoved: { type: boolean }
+
+    TrashListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/TrashItem' }
+        total: { type: integer }
+        page: { type: integer }
+        perPage: { type: integer }
+        hasMore: { type: boolean }
+
+    TrashRestoreRequest:
+      type: object
+      required: [strategy]
+      properties:
+        strategy: { type: string, enum: [overwrite, rename] }
+        newSlug: { type: string, description: '僅 strategy=rename 時使用；用於計算新的目的地路徑' }
+
+    TrashRestoreResult:
+      type: object
+      properties:
+        restored: { type: boolean }
+        entityType: { type: string }
+        entityId: { type: string }
+        restoredRelativePath: { type: string }
+
+    RestoreConflict:
+      type: object
+      properties:
+        code: { type: string, example: 'RESTORE_CONFLICT' }
+        message: { type: string }
+        conflicts:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: { type: string, enum: [entityPath, attachmentPath] }
+              path: { type: string }

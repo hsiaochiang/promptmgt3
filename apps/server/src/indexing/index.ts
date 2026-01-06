@@ -16,8 +16,6 @@ import {
   getPromptFilePath,
   getInboxDir,
   getInboxItemFilePath,
-  isSystemPath,
-  isCachePath,
 } from '../fs-layout/index.js';
 
 export interface ScanResult {

@@ -7,10 +7,8 @@ import {
 } from '@pah/contracts';
 import {
   getInboxItemFilePath,
-  getInboxDir,
 } from '../fs-layout/index.js';
 import {
-  parseInboxItemFile,
   writeInboxItemFile,
   scanWorkspace,
 } from '../indexing/index.js';
@@ -21,7 +19,7 @@ import {
  */
 export async function registerInboxRoutes(server: FastifyInstance, rootPath: string) {
   // GET /api/inbox - List all inbox items
-  server.get('/api/inbox', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get('/api/inbox', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const scanResult = await scanWorkspace(rootPath);
       return scanResult.inbox;

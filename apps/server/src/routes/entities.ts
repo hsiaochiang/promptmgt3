@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
+import path from 'path';
 import {
   type ProjectEntity,
   type PromptEntity,
@@ -10,23 +11,20 @@ import {
 import {
   getProjectFilePath,
   getPromptFilePath,
-  getProjectsDir,
-  getProjectPromptsDir,
 } from '../fs-layout/index.js';
 import {
-  parseProjectFile,
-  parsePromptFile,
   writeProjectFile,
   writePromptFile,
   scanWorkspace,
 } from '../indexing/index.js';
+import { moveEntityToTrash } from '../trash/trashStore.js';
 
 /**
  * Register project routes
  */
 export async function registerProjectRoutes(server: FastifyInstance, rootPath: string) {
   // GET /api/projects - List all projects
-  server.get('/api/projects', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get('/api/projects', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const scanResult = await scanWorkspace(rootPath);
       return scanResult.projects;
@@ -148,8 +146,8 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
       
       if (request.body.slug && request.body.slug !== existing.slug) {
         // Rename directory if slug changed
-        const oldDir = getProjectFilePath(rootPath, existing.slug).replace('/project.md', '');
-        const newDir = getProjectFilePath(rootPath, request.body.slug).replace('/project.md', '');
+        const oldDir = path.dirname(getProjectFilePath(rootPath, existing.slug));
+        const newDir = path.dirname(getProjectFilePath(rootPath, request.body.slug));
         
         await fs.rename(oldDir, newDir);
         filePath = getProjectFilePath(rootPath, request.body.slug);
@@ -181,17 +179,21 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
         return reply.code(404).send({ error: 'Project not found' });
       }
 
-      // Archive instead of deleting
-      const updated: ProjectEntity = {
-        ...existing,
-        archived: true,
-        updatedAt: new Date().toISOString(),
-      };
+      // Soft delete -> move to trash
+      const projectDir = path.dirname(getProjectFilePath(rootPath, existing.slug));
+      const originalRelativePath = `projects/${existing.slug}`;
 
-      const filePath = getProjectFilePath(rootPath, existing.slug);
-      await writeProjectFile(filePath, updated);
+      const item = await moveEntityToTrash({
+        rootPath,
+        entityType: 'project',
+        entityId: existing.id,
+        titleSnapshot: existing.title,
+        originalAbsPath: projectDir,
+        originalRelativePath,
+        attachmentsEntityType: 'project',
+      });
 
-      return { message: 'Project archived successfully' };
+      return item;
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to delete project',
@@ -206,7 +208,7 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
  */
 export async function registerPromptRoutes(server: FastifyInstance, rootPath: string) {
   // GET /api/prompts - List all prompts
-  server.get('/api/prompts', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get('/api/prompts', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const scanResult = await scanWorkspace(rootPath);
       return scanResult.prompts;
@@ -383,17 +385,21 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
         return reply.code(404).send({ error: 'Parent project not found' });
       }
 
-      // Archive instead of deleting
-      const updated: PromptEntity = {
-        ...existing,
-        archived: true,
-        updatedAt: new Date().toISOString(),
-      };
-
+      // Soft delete -> move to trash
       const filePath = getPromptFilePath(rootPath, project.slug, existing.slug);
-      await writePromptFile(filePath, updated);
+      const originalRelativePath = `projects/${project.slug}/prompts/${existing.slug}.md`;
 
-      return { message: 'Prompt archived successfully' };
+      const item = await moveEntityToTrash({
+        rootPath,
+        entityType: 'prompt',
+        entityId: existing.id,
+        titleSnapshot: existing.title,
+        originalAbsPath: filePath,
+        originalRelativePath,
+        attachmentsEntityType: 'prompt',
+      });
+
+      return item;
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to delete prompt',
