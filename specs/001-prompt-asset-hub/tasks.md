@@ -144,17 +144,17 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Tests（US3）
 
-- [ ] T048 [P] [US3] 擴充 snapshot/version contract tests（manifest shape）於 `tests/contract/api-snapshot-version.spec.ts`
-- [ ] T049 [P] [US3] 擴充 snapshot layout 整合測試（manifest/root/attachments）於 `tests/integration/snapshot-layout.spec.ts`
-- [ ] T050 [P] [US3] 擴充 retention 整合測試（含 pinned）於 `tests/integration/retention-policy.spec.ts`
+- [x] T048 [P] [US3] 擴充 snapshot/version contract tests（manifest shape）於 `tests/contract/api-snapshot-version.spec.ts`
+- [x] T049 [P] [US3] 擴充 snapshot layout 整合測試（manifest/root/attachments）於 `tests/integration/snapshot-layout.spec.ts`
+- [x] T050 [P] [US3] 擴充 retention 整合測試（含 pinned）於 `tests/integration/retention-policy.spec.ts`
 
 ### Implementation（US3）
 
-- [ ] T051 [P] [US3] 後端：snapshot service（daily + manual）於 `apps/server/src/backup/snapshot.ts`
-- [ ] T052 [P] [US3] 後端：version node service（entity scope）於 `apps/server/src/backup/version-node/index.ts`
-- [ ] T053 [P] [US3] 後端：retention 清理策略於 `apps/server/src/backup/retention.ts`
-- [ ] T054 [US3] 後端：routes 對齊 OpenAPI（snapshots/versions）於 `apps/server/src/routes/snapshots.ts`、`specs/001-prompt-asset-hub/contracts/openapi.yaml`
-- [ ] T055 [P] [US3] 前端：HistoryView（列表 + 檢視 + 建立快照/版本）於 `apps/web/src/features/history/HistoryView.tsx`
+- [x] T051 [P] [US3] 後端：snapshot service（daily + manual）於 `apps/server/src/backup/snapshot.ts`
+- [x] T052 [P] [US3] 後端：version node service（entity scope）於 `apps/server/src/backup/version-node/index.ts`
+- [x] T053 [P] [US3] 後端：retention 清理策略於 `apps/server/src/backup/retention.ts`
+- [x] T054 [US3] 後端：routes 對齊 OpenAPI（snapshots/versions）於 `apps/server/src/routes/snapshots.ts`、`specs/001-prompt-asset-hub/contracts/openapi.yaml`
+- [x] T055 [P] [US3] 前端：HistoryView（列表 + 檢視 + 建立快照/版本）於 `apps/web/src/features/history/HistoryView.tsx`
 
 ---
 

@@ -1,2 +1,2 @@
 /speckit.implement
-yes
+Please continue to verify and implement ALL remaining tasks in tasks.md, including US3 (Phase 5), US4 (Phase 6), and all Polish tasks (Phase 7). Many of these seem already implemented in the codebase; please verify them, update tasks.md, and implement any that are missing.

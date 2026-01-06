@@ -258,7 +258,7 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SearchResponse' } } } }
   /api/snapshots:
     post:
-      summary: 建立版本節點或立即備份（含附件完整複本）
+      summary: 建立快照（含附件完整複本）
       requestBody:
         required: true
         content:
@@ -271,9 +271,47 @@ paths:
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/VersionEvent' } } } }
     get:
-      summary: 列出歷史版本/快照
+      summary: 列出快照事件
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/VersionEvent' } } } } }
+  /api/versions:
+    post:
+      summary: 建立指定實體的版本節點
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                entityType:
+                  type: string
+                  enum: [project, prompt]
+                entityId: { type: string }
+                projectSlug: { type: string }
+                promptSlug: { type: string }
+                message: { type: string }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/VersionEvent' } } } }
+    get:
+      summary: 列出所有版本節點
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/VersionEvent' } } } } }
+  /api/versions/{entityType}/{entityId}:
+    get:
+      summary: 列出指定實體的版本節點
+      parameters:
+        - in: path
+          name: entityType
+          required: true
+          schema: { type: string, enum: [project, prompt] }
+        - in: path
+          name: entityId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/VersionEvent' } } } } }
+        '400': { description: Bad Request }
 
 components:
   schemas:
