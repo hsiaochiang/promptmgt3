@@ -119,20 +119,20 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Tests（US2）
 
-- [ ] T037 [P] [US2] 擴充搜尋 API contract tests（SearchRequest/SearchResponse）於 `tests/contract/api-search.spec.ts`
-- [ ] T038 [P] [US2] 擴充 WS payload contract tests（file.changed / sync.status）於 `tests/contract/ws-sync.spec.ts`
-- [ ] T039 [P] [US2] 擴充列表/看板切換一致性整合測試於 `tests/integration/view-toggle-consistency.spec.ts`
-- [ ] T040 [P] [US2] 擴充外部修改衝突整合測試（重新整理/覆寫）於 `tests/integration/conflict-resolution.spec.ts`
+- [x] T037 [P] [US2] 擴充搜尋 API contract tests（SearchRequest/SearchResponse）於 `tests/contract/api-search.spec.ts`
+- [x] T038 [P] [US2] 擴充 WS payload contract tests（file.changed / sync.status）於 `tests/contract/ws-sync.spec.ts`
+- [x] T039 [P] [US2] 擴充列表/看板切換一致性整合測試於 `tests/integration/view-toggle-consistency.spec.ts`
+- [x] T040 [P] [US2] 擴充外部修改衝突整合測試（重新整理/覆寫）於 `tests/integration/conflict-resolution.spec.ts`
 
 ### Implementation（US2）
 
-- [ ] T041 [P] [US2] 後端：chokidar watcher 推播 file.changed（忽略 `.pah/**`）於 `apps/server/src/watch/fileWatcher.ts`
-- [ ] T042 [US2] 後端：搜尋端點與索引快取（MVP）於 `apps/server/src/routes/search.ts`、`apps/server/src/search/index.ts`
-- [ ] T043 [P] [US2] 前端：搜尋輸入與條件保存（無結果 empty state）於 `apps/web/src/layout/MainContent.tsx`
-- [ ] T044 [P] [US2] 前端：看板視圖（與列表共享同一集合）於 `apps/web/src/features/library/ListView.tsx`
-- [ ] T045 [US2] 前端：衝突橫幅與處置互動（refresh/overwrite/copy unsaved）於 `apps/web/src/features/conflict/ConflictBanner.tsx`、`apps/web/src/layout/DetailPanel.tsx`
-- [ ] T046 [P] [US2] 前端：WS client + sync 狀態顯示於 `apps/web/src/features/sync/SyncProvider.tsx`
-- [ ] T047 [P] [US2] 整合回饋時延 SLA（互動後 200ms 內可見 loading/狀態）於 `tests/integration/feedback-latency.spec.ts`
+- [x] T041 [P] [US2] 後端：chokidar watcher 推播 file.changed（忽略 `.pah/**`）於 `apps/server/src/watch/fileWatcher.ts`
+- [x] T042 [US2] 後端：搜尋端點與索引快取（MVP）於 `apps/server/src/routes/search.ts`、`apps/server/src/search/index.ts`
+- [x] T043 [P] [US2] 前端：搜尋輸入與條件保存（無結果 empty state）於 `apps/web/src/layout/MainContent.tsx`
+- [x] T044 [P] [US2] 前端：看板視圖（與列表共享同一集合）於 `apps/web/src/features/library/ListView.tsx`
+- [x] T045 [US2] 前端：衝突橫幅與處置互動（refresh/overwrite/copy unsaved）於 `apps/web/src/features/conflict/ConflictBanner.tsx`、`apps/web/src/layout/DetailPanel.tsx`
+- [x] T046 [P] [US2] 前端：WS client + sync 狀態顯示於 `apps/web/src/features/sync/SyncProvider.tsx`
+- [x] T047 [P] [US2] 整合回饋時延 SLA（互動後 200ms 內可見 loading/狀態）於 `tests/integration/feedback-latency.spec.ts`
 
 ---
 
