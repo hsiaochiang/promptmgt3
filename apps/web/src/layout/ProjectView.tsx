@@ -1,5 +1,5 @@
-import { FolderOpen, ChevronDown, ChevronRight, Maximize2, Plus } from 'lucide-react';
-import { useUiStore } from '../../state/uiStore';
+import { FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { useUiStore } from '../state/uiStore';
 
 // Mock Data (從 Prototype 移植)
 const MOCK_PROJECTS = [

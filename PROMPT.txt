@@ -1,2 +1,1 @@
 /speckit.implement
-Please continue to verify and implement ALL remaining tasks in tasks.md, focusing on US4 (Phase 6) and all Polish/Settings tasks (Phase 7).

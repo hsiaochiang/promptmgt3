@@ -14,7 +14,7 @@ export const ProjectFrontmatterSchema = z.object({
   
   // Optional fields with defaults
   summary: z.string().default(''),
-  status: z.enum(['planning', 'in-progress', 'paused', 'done']).default('planning'),
+  status: z.enum(['planned', 'in_progress', 'paused', 'done']).default('planned'),
   type: z.string().default(''),
   tags: z.array(z.string()).default([]),
   archived: z.boolean().default(false),

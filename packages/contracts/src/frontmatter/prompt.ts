@@ -15,8 +15,8 @@ export const PromptFrontmatterSchema = z.object({
   updatedAt: z.string().datetime(),
   
   // Optional fields with defaults
-  status: z.enum(['draft', 'tuning', 'ready', 'disabled']).default('draft'),
-  priority: z.enum(['P0', 'P1', 'P2']).default('P1'),
+  status: z.enum(['draft', 'needs_review', 'ready', 'deprecated']).default('draft'),
+  priority: z.enum(['high', 'medium', 'low']).default('medium'),
   tags: z.array(z.string()).default([]),
   archived: z.boolean().default(false),
   notes: z.string().default(''),

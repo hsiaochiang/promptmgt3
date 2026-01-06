@@ -1,5 +1,5 @@
-import { FileText, Maximize2 } from 'lucide-react';
-import { useUiStore } from '../../state/uiStore';
+import { FileText } from 'lucide-react';
+import { useUiStore } from '../state/uiStore';
 
 // Mock Data
 const MOCK_PROMPTS = [

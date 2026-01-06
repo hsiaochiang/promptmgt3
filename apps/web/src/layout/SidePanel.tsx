@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Maximize2, Minimize2, MoreHorizontal, Archive, RotateCcw, Trash2, ChevronRight, Save } from 'lucide-react';
+import { Maximize2, Minimize2, ChevronRight, Save } from 'lucide-react';
 import { useUiStore } from '../state/uiStore';
 
 // 暫時使用簡單的 Mock Data 結構，實際應從 API 或 Store 獲取
@@ -12,7 +12,7 @@ const MOCK_DATA_PLACEHOLDER = {
 };
 
 export function SidePanel() {
-  const { selectedItem, closePanel, setActiveSection } = useUiStore();
+  const { selectedItem, closePanel } = useUiStore();
   const [isExpanded, setIsExpanded] = useState(false);
   const [formData, setFormData] = useState<any>(null);
 
