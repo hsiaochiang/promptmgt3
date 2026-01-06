@@ -88,23 +88,23 @@ description: "Task list: 001-prompt-asset-hub"
 
 ### Implementation（US1）
 
-- [ ] T019 [P] [US1] 擴充 FS layout：trash 路徑 helpers 於 `apps/server/src/fs-layout/index.ts`（`.pah/trash/items/<trashId>/...`）
-- [ ] T020 [P] [US1] 實作 trash 存放與 manifest 寫入（含 attachments 搬移）於 `apps/server/src/trash/trashStore.ts`
-- [ ] T021 [P] [US1] 實作 trash 列表查詢（q/entityType/page/perPage）於 `apps/server/src/trash/listTrash.ts`
-- [ ] T022 [P] [US1] 實作 trash 永久刪除（purge）於 `apps/server/src/trash/purgeTrash.ts`
-- [ ] T023 [P] [US1] 新增回收站 retention 清理工作（依 `trashRetentionDays`；server 啟動一次 + 每日固定時間）於 `apps/server/src/trash/retention.ts`
-- [ ] T024 [P] [US1] 實作 trash 復原（restore：overwrite/rename；衝突回傳 409 + RestoreConflict）於 `apps/server/src/trash/restoreTrash.ts`
-- [ ] T025 [US1] 新增 trash routes 並註冊於 server（GET/DELETE/POST restore）於 `apps/server/src/routes/trash.ts`、`apps/server/src/index.ts`
-- [ ] T026 [US1] 修改 Project delete：由 archived=true 改為 soft delete → TrashItem 於 `apps/server/src/routes/entities.ts`
-- [ ] T027 [US1] 修改 Prompt delete：由 archived=true 改為 soft delete → TrashItem 於 `apps/server/src/routes/entities.ts`
-- [ ] T028 [P] [US1] 新增附件搬移 helper（entity attachments dir move）於 `apps/server/src/trash/moveAttachments.ts`
-- [ ] T029 [P] [US1] 新增回收站 UI 資料層 client（fetch list/restore/purge）於 `apps/web/src/features/trash/api.ts`
-- [ ] T030 [P] [US1] 新增回收站視圖（搜尋/篩選、復原、永久刪除）於 `apps/web/src/features/trash/TrashView.tsx`
-- [ ] T031 [US1] Sidebar 加入「回收站」入口與 section 型別 於 `apps/web/src/layout/Sidebar.tsx`、`apps/web/src/layout/MainContent.tsx`
-- [ ] T032 [US1] 回收站復原衝突互動（overwrite/rename/取消）於 `apps/web/src/features/trash/RestoreConflictDialog.tsx`
-- [ ] T033 [US1] Detail Panel 增加「封存/刪除」入口（封存=更新 archived；刪除=呼叫 trash delete）於 `apps/web/src/layout/DetailPanel.tsx`
-- [ ] T034 [P] [US1] 實作檔案讀寫 API（支援 autosave）於 `apps/server/src/routes/files.ts`
-- [ ] T035 [P] [US1] 實作附件上傳 API（multipart；回傳 storagePath）於 `apps/server/src/routes/attachments.ts`
+- [x] T019 [P] [US1] 擴充 FS layout：trash 路徑 helpers 於 `apps/server/src/fs-layout/index.ts`（`.pah/trash/items/<trashId>/...`）
+- [x] T020 [P] [US1] 實作 trash 存放與 manifest 寫入（含 attachments 搬移）於 `apps/server/src/trash/trashStore.ts`
+- [x] T021 [P] [US1] 實作 trash 列表查詢（q/entityType/page/perPage）於 `apps/server/src/trash/listTrash.ts`
+- [x] T022 [P] [US1] 實作 trash 永久刪除（purge）於 `apps/server/src/trash/purgeTrash.ts`
+- [x] T023 [P] [US1] 新增回收站 retention 清理工作（依 `trashRetentionDays`；server 啟動一次 + 每日固定時間）於 `apps/server/src/trash/retention.ts`
+- [x] T024 [P] [US1] 實作 trash 復原（restore：overwrite/rename；衝突回傳 409 + RestoreConflict）於 `apps/server/src/trash/restoreTrash.ts`
+- [x] T025 [US1] 新增 trash routes 並註冊於 server（GET/DELETE/POST restore）於 `apps/server/src/routes/trash.ts`、`apps/server/src/index.ts`
+- [x] T026 [US1] 修改 Project delete：由 archived=true 改為 soft delete → TrashItem 於 `apps/server/src/routes/entities.ts`
+- [x] T027 [US1] 修改 Prompt delete：由 archived=true 改為 soft delete → TrashItem 於 `apps/server/src/routes/entities.ts`
+- [x] T028 [P] [US1] 新增附件搬移 helper（entity attachments dir move）於 `apps/server/src/trash/moveAttachments.ts`
+- [x] T029 [P] [US1] 新增回收站 UI 資料層 client（fetch list/restore/purge）於 `apps/web/src/features/trash/api.ts`
+- [x] T030 [P] [US1] 新增回收站視圖（搜尋/篩選、復原、永久刪除）於 `apps/web/src/features/trash/TrashView.tsx`
+- [x] T031 [US1] Sidebar 加入「回收站」入口與 section 型別 於 `apps/web/src/layout/Sidebar.tsx`、`apps/web/src/layout/MainContent.tsx`
+- [x] T032 [US1] 回收站復原衝突互動（overwrite/rename/取消）於 `apps/web/src/features/trash/RestoreConflictDialog.tsx`
+- [x] T033 [US1] Detail Panel 增加「封存/刪除」入口（封存=更新 archived；刪除=呼叫 trash delete）於 `apps/web/src/layout/DetailPanel.tsx`
+- [x] T034 [P] [US1] 實作檔案讀寫 API（支援 autosave）於 `apps/server/src/routes/files.ts`
+- [x] T035 [P] [US1] 實作附件上傳 API（multipart；回傳 storagePath）於 `apps/server/src/routes/attachments.ts`
 - [ ] T036 [US1] 前端 MarkdownEditor 支援拖曳/貼上附件並插入引用（呼叫 attachments API）於 `apps/web/src/components/MarkdownEditor.tsx`
 
 **Checkpoint**：US1 全測試通過且 quickstart 的回收站流程可操作。
