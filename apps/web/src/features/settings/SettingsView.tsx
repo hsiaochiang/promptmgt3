@@ -4,7 +4,7 @@ interface WorkspaceSettings {
   rootPath: string;
   attachmentPath: string;
   tagsDict?: Record<string, string[]>;
-  commonOptions?: Record<string, any>;
+  commonOptions?: Record<string, string[]>;
   backup?: {
     dailySnapshot: boolean;
     schedule?: string;
@@ -265,7 +265,7 @@ export function SettingsView() {
                           setSettings(prev => {
                             if (!prev) return prev;
                             const current = prev.commonOptions ?? {};
-                            const nextOpts: Record<string, unknown> = { ...current };
+                            const nextOpts: Record<string, string[]> = { ...current };
                             delete nextOpts[key];
                             return {
                               ...prev,

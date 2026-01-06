@@ -45,4 +45,27 @@ describe('Contract Tests - Workspace Settings DTO', () => {
 
     expect(WorkspaceSettingsSchema.safeParse(bad).success).toBe(false);
   });
+
+  it('should accept commonOptions as record of string arrays and reject invalid shapes', () => {
+    const ok = {
+      rootPath: 'D:/data/prompts',
+      attachmentPath: 'D:/data/attachments',
+      commonOptions: {
+        models: ['gpt-4o', 'claude-3.5'],
+        sources: [],
+      },
+    };
+
+    expect(WorkspaceSettingsSchema.safeParse(ok).success).toBe(true);
+
+    const bad = {
+      rootPath: 'D:/data/prompts',
+      attachmentPath: 'D:/data/attachments',
+      commonOptions: {
+        models: 'gpt-4o',
+      },
+    };
+
+    expect(WorkspaceSettingsSchema.safeParse(bad).success).toBe(false);
+  });
 });

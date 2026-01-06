@@ -91,6 +91,7 @@
 - tagsDict (map: category -> tags)
 - commonOptions (e.g., models/sources)
 - backup: { dailySnapshot: boolean, schedule: time, remote?: string }
+	- remote：保留欄位，用於未來遠端備份目的地/端點設定；目前僅保存設定值，不影響系統行為。
 - trashRetentionDays: number（預設 30；到期自動清理回收站）
 - integrations: { authInfo?: string }
 - updatedAt (datetime)

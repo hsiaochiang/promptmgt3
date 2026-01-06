@@ -13,11 +13,13 @@
     "dev:server": "npm run dev --workspace=apps/server",
     "build": "npm run build --workspaces --if-present",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage -c vitest.coverage.contracts.config.ts",
     "test:watch": "vitest",
     "type-check": "tsc -p apps/server/tsconfig.json --noEmit && tsc -p packages/contracts/tsconfig.json --noEmit && tsc -p apps/web/tsconfig.node.json --noEmit && tsc -p apps/web/tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^1.6.1",
     "concurrently": "^8.2.2",
     "react-test-renderer": "^18.3.1",
     "typescript": "^5.3.3",

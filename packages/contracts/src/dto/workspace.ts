@@ -13,11 +13,15 @@ export const BackupSettingsSchema = z
 
 export type BackupSettings = z.infer<typeof BackupSettingsSchema>;
 
+export const CommonOptionsSchema = z.record(z.array(z.string())).optional();
+
+export type CommonOptions = z.infer<typeof CommonOptionsSchema>;
+
 export const WorkspaceSettingsSchema = z.object({
   rootPath: z.string(),
   attachmentPath: z.string(),
   tagsDict: z.record(z.array(z.string())).optional(),
-  commonOptions: z.record(z.any()).optional(),
+  commonOptions: CommonOptionsSchema,
   backup: BackupSettingsSchema.optional(),
   trashRetentionDays: z.number().int().min(1).default(30),
   updatedAt: z.string().datetime().optional(),

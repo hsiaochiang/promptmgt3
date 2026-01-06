@@ -349,7 +349,12 @@ components:
         rootPath: { type: string }
         attachmentPath: { type: string }
         tagsDict: { type: object }
-        commonOptions: { type: object }
+        commonOptions:
+          type: object
+          description: 常用選項集合（key -> string[]）。例如：models、sources。
+          additionalProperties:
+            type: array
+            items: { type: string }
         backup: { $ref: '#/components/schemas/BackupSettings' }
         trashRetentionDays: { type: integer, minimum: 1, description: '回收站自動清理保留天數（預設 30 天）' }
         updatedAt: { type: string, format: date-time }
@@ -360,7 +365,12 @@ components:
         rootPath: { type: string }
         attachmentPath: { type: string }
         tagsDict: { type: object }
-        commonOptions: { type: object }
+        commonOptions:
+          type: object
+          description: 常用選項集合（key -> string[]）。例如：models、sources。
+          additionalProperties:
+            type: array
+            items: { type: string }
         backup: { $ref: '#/components/schemas/BackupSettings' }
         trashRetentionDays: { type: integer, minimum: 1 }
     BackupSettings:
@@ -371,7 +381,9 @@ components:
           type: string
           description: 每日時間（24 小時制，本機時區）
           pattern: '^(?:[01]\\d|2[0-3]):[0-5]\\d$'
-        remote: { type: string }
+        remote:
+          type: string
+          description: （保留欄位）遠端備份目的地/端點（未實作；目前僅保存設定值，不影響系統行為）。
     Project:
       type: object
       properties:

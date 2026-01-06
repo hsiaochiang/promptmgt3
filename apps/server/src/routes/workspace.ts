@@ -11,7 +11,7 @@ export interface WorkspaceSettings {
   rootPath: string;
   attachmentPath: string;
   tagsDict?: Record<string, string[]>;
-  commonOptions?: Record<string, any>;
+  commonOptions?: Record<string, string[]>;
   backup?: {
     dailySnapshot: boolean;
     schedule?: string;
