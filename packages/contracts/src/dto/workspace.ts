@@ -3,7 +3,10 @@ import { z } from 'zod';
 export const BackupSettingsSchema = z
   .object({
     dailySnapshot: z.boolean().default(false),
-    schedule: z.string().optional(),
+    schedule: z
+      .string()
+      .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'schedule must be in HH:mm (24h) format')
+      .optional(),
     remote: z.string().optional(),
   })
   .default({ dailySnapshot: false });

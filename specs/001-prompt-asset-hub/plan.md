@@ -41,7 +41,7 @@
 - Local-first：磁碟檔案為唯一權威（INV-001），可掃描重建（INV-002），不得有 UI 私有真實狀態（INV-003）
 - Settings 儲存：`rootPath`/`attachmentPath` 必須已存在；不存在回 400；server 不自動 mkdir（FR-011 / Clarifications 2026-01-06）
 - tagsDict 刪除：僅更新 tagsDict（建議/選單），不批次改寫既有檔案 tags（FR-009 / Clarifications 2026-01-06）
-- backupSettings.schedule：每日時間 `HH:mm`（24 小時制，本機時區）（FR-009 / Clarifications 2026-01-06）
+- backup.schedule：每日時間 `HH:mm`（24 小時制，本機時區）（FR-009 / Clarifications 2026-01-06）
 - trash restore rename：`newSlug` 僅替換原本 slug（同一路徑位置復原），不支援跨專案搬移復原（FR-001 / Clarifications 2026-01-06）
 - trash retention：server 啟動先跑一次，之後每日固定時間（例如 03:00，本機時區）執行（FR-001 / Clarifications 2026-01-06）
 

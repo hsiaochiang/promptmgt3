@@ -20,6 +20,9 @@ paths:
             schema: { $ref: '#/components/schemas/SettingsUpdate' }
       responses:
         '200': { description: 已更新, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
+        '400': { description: Bad Request（例如路徑不存在、schedule 格式不符）, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+        '403': { description: Forbidden（例如路徑不可寫）, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+        '500': { description: Internal Server Error, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
   /api/workspace/permissions:
     get:
       summary: 檢查路徑讀寫權限
@@ -274,8 +277,15 @@ paths:
 
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        message: { type: string }
     Settings:
       type: object
+      required: [rootPath, attachmentPath]
       properties:
         rootPath: { type: string }
         attachmentPath: { type: string }
@@ -285,13 +295,23 @@ components:
         trashRetentionDays: { type: integer, minimum: 1, description: '回收站自動清理保留天數（預設 30 天）' }
         updatedAt: { type: string, format: date-time }
     SettingsUpdate:
-      allOf:
-        - $ref: '#/components/schemas/Settings'
+      type: object
+      description: Settings 的 partial update（所有欄位皆為選填）
+      properties:
+        rootPath: { type: string }
+        attachmentPath: { type: string }
+        tagsDict: { type: object }
+        commonOptions: { type: object }
+        backup: { $ref: '#/components/schemas/BackupSettings' }
+        trashRetentionDays: { type: integer, minimum: 1 }
     BackupSettings:
       type: object
       properties:
         dailySnapshot: { type: boolean }
-        schedule: { type: string }
+        schedule:
+          type: string
+          description: 每日時間（24 小時制，本機時區）
+          pattern: '^(?:[01]\\d|2[0-3]):[0-5]\\d$'
         remote: { type: string }
     Project:
       type: object

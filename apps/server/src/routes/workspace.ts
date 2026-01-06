@@ -2,6 +2,10 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import fs from 'fs/promises';
 import path from 'path';
 import { getWorkspaceConfigPath, getPahDir } from '../fs-layout/index.js';
+import {
+  WorkspaceSettingsUpdateSchema,
+  type WorkspaceSettingsUpdate,
+} from '@pah/contracts';
 
 export interface WorkspaceSettings {
   rootPath: string;
@@ -73,30 +77,38 @@ export async function checkPathPermissions(dirPath: string): Promise<{
   readable: boolean;
   writable: boolean;
   error?: string;
+  errorCode?: string;
 }> {
   try {
-    // Check if path exists and is accessible
+    const stat = await fs.stat(dirPath);
+    if (!stat.isDirectory()) {
+      return {
+        readable: false,
+        writable: false,
+        error: 'Path is not a directory',
+        errorCode: 'ENOTDIR',
+      };
+    }
+
     await fs.access(dirPath, fs.constants.R_OK | fs.constants.W_OK);
     return { readable: true, writable: true };
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      // Path doesn't exist - try to create it
-      try {
-        await fs.mkdir(dirPath, { recursive: true });
-        return { readable: true, writable: true };
-      } catch (createError) {
-        return {
-          readable: false,
-          writable: false,
-          error: `Cannot create directory: ${createError instanceof Error ? createError.message : String(createError)}`,
-        };
-      }
+    const errorCode = (error as NodeJS.ErrnoException).code;
+
+    if (errorCode === 'ENOENT') {
+      return {
+        readable: false,
+        writable: false,
+        error: 'Path does not exist',
+        errorCode,
+      };
     }
 
     return {
       readable: false,
       writable: false,
       error: error instanceof Error ? error.message : String(error),
+      errorCode,
     };
   }
 }
@@ -120,36 +132,51 @@ export async function registerWorkspaceRoutes(server: FastifyInstance, rootPath:
 
   // POST /api/workspace/settings
   server.post<{
-    Body: Partial<WorkspaceSettings>;
+    Body: unknown;
   }>('/api/workspace/settings', async (request, reply) => {
     try {
+      const update = WorkspaceSettingsUpdateSchema.parse(request.body) as WorkspaceSettingsUpdate;
       const currentSettings = await loadWorkspaceSettings(rootPath);
-      const updatedSettings = {
+
+      const updatedSettings: WorkspaceSettings = {
         ...currentSettings,
-        ...request.body,
+        ...update,
       };
 
-      // Validate paths if they're being updated
-      if (request.body.rootPath) {
-        const pathCheck = await checkPathPermissions(request.body.rootPath);
-        if (!pathCheck.writable) {
-          return reply.code(403).send({
-            error: 'Root path is not writable',
-            message: pathCheck.error || 'Permission denied',
-          });
-        }
-        updatedSettings.rootPath = request.body.rootPath;
+      if (update.backup) {
+        updatedSettings.backup = {
+          ...(currentSettings.backup ?? { dailySnapshot: false }),
+          ...update.backup,
+        };
       }
 
-      if (request.body.attachmentPath) {
-        const pathCheck = await checkPathPermissions(request.body.attachmentPath);
+      // Validate paths if they're being updated
+      if (update.rootPath) {
+        const pathCheck = await checkPathPermissions(update.rootPath);
         if (!pathCheck.writable) {
-          return reply.code(403).send({
-            error: 'Attachment path is not writable',
+          const statusCode = pathCheck.errorCode === 'ENOENT' || pathCheck.errorCode === 'ENOTDIR' ? 400 : 403;
+          return reply.code(statusCode).send({
+            error:
+              statusCode === 400 ? 'Root path does not exist' : 'Root path is not writable',
             message: pathCheck.error || 'Permission denied',
           });
         }
-        updatedSettings.attachmentPath = request.body.attachmentPath;
+        updatedSettings.rootPath = update.rootPath;
+      }
+
+      if (update.attachmentPath) {
+        const pathCheck = await checkPathPermissions(update.attachmentPath);
+        if (!pathCheck.writable) {
+          const statusCode = pathCheck.errorCode === 'ENOENT' || pathCheck.errorCode === 'ENOTDIR' ? 400 : 403;
+          return reply.code(statusCode).send({
+            error:
+              statusCode === 400
+                ? 'Attachment path does not exist'
+                : 'Attachment path is not writable',
+            message: pathCheck.error || 'Permission denied',
+          });
+        }
+        updatedSettings.attachmentPath = update.attachmentPath;
       }
 
       await saveWorkspaceSettings(rootPath, updatedSettings);
@@ -174,6 +201,7 @@ export async function registerWorkspaceRoutes(server: FastifyInstance, rootPath:
     }
 
     const result = await checkPathPermissions(targetPath);
-    return result;
+    const { errorCode: _errorCode, ...payload } = result;
+    return payload;
   });
 }

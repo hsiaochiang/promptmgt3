@@ -25,7 +25,7 @@
 ### Session 2026-01-06
 
 - Q: Settings.tagsDict 刪除 tag 時，是否要批次改寫既有檔案移除該 tag？ → A: 不批次改寫既有檔案；僅更新 tagsDict（影響建議/選單），既有檔案中的 tags 保留。
-- Q: backupSettings.schedule 的格式要採用哪一種？ → A: 使用每日時間 `HH:mm`（24 小時制，本機時區）。
+- Q: backup.schedule 的格式要採用哪一種？ → A: 使用每日時間 `HH:mm`（24 小時制，本機時區）。
 - Q: 回收站復原的 `strategy=rename` 時，`newSlug` 的適用範圍？ → A: `newSlug` 僅替換原本的 slug（同一路徑位置復原）；不支援跨專案搬移復原。
 - Q: 回收站自動清理（retention）要怎麼觸發？ → A: server 啟動時先跑一次，之後每日固定時間跑（例如 03:00，本機時區）。
 - Q: 儲存 settings 時，`rootPath`/`attachmentPath` 不存在要怎麼處理？ → A: 直接回 400 並要求使用者先建立資料夾；server 不自動建立目錄。
@@ -146,7 +146,7 @@
 - **FR-009**: 設定頁需允許設定資料根目錄、附件目錄、全域標籤（新增/改名/刪除/合併）、常用選項清單、備份設定；設定需驗證路徑與衝突。
 	- 回收站保留天數（trash retention days）：預設 30 天，可於設定調整。
 	- tagsDict 刪除語意：刪除 tag 不會批次改寫既有 Project/Prompt 檔案；僅影響 tagsDict（建議/選單），既有檔案中的 tags 保留。
-	- backupSettings.schedule 格式：採每日時間 `HH:mm`（24 小時制，本機時區）；格式不符時需顯示可理解錯誤並阻擋保存。
+	- backup.schedule 格式：採每日時間 `HH:mm`（24 小時制，本機時區）；格式不符時需顯示可理解錯誤並阻擋保存。
 - **FR-010**: 所有操作需提供回饋：保存/備份/同步成功與錯誤訊息，錯誤不應阻塞其他可行操作。
 - **FR-011**: 系統採單人本機模式，無登入/角色/權限管理；僅檢查資料根目錄與附件目錄存在且具讀寫權限，若無權限需提示並阻止寫入。
 	- 路徑存在性：儲存設定時 `rootPath` 與 `attachmentPath` 必須已存在；若不存在需回 400 並提示先建立資料夾（server 不自動 mkdir）。

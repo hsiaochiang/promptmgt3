@@ -5,7 +5,7 @@
 > 原則：磁碟檔案是唯一權威；任何 UI 顯示所需資料都必須可由掃描檔案重建。
 
 - Workspace
-	- 權威設定檔：`<rootPath>/.pah/workspace.json`（tagsDict/commonOptions/backupSettings 等）
+	- 權威設定檔：`<rootPath>/.pah/workspace.json`（tagsDict/commonOptions/backup 等）
 	- 事件紀錄（append-only）：`<rootPath>/.pah/events/<YYYY-MM>.ndjson`
 - Project
 	- `projects/<projectSlug>/project.md`（frontmatter + markdown body）
@@ -90,7 +90,7 @@
 - attachmentPath (string)
 - tagsDict (map: category -> tags)
 - commonOptions (e.g., models/sources)
-- backupSettings: { dailySnapshot: boolean, schedule: time, remote?: string }
+- backup: { dailySnapshot: boolean, schedule: time, remote?: string }
 - trashRetentionDays: number（預設 30；到期自動清理回收站）
 - integrations: { authInfo?: string }
 - updatedAt (datetime)
