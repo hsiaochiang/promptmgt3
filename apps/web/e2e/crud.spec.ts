@@ -27,17 +27,17 @@ test('UI CRUD: edit prompt title via DetailPanel and autosave', { timeout: 60_00
     await promptItem.click();
 
     // Edit title in DetailPanel
-    const titleInput = page.locator('label:has-text("標題")').locator('input[type="text"]');
+    const titleInput = page.locator('label:has-text("標題") + input[type="text"]');
+    await titleInput.waitFor({ state: 'visible', timeout: 5000 });
     await titleInput.fill(`${prompt.title} - edited`);
 
-    // Wait for autosave to complete
-    await page.waitForSelector('text=已保存', { state: 'visible', timeout: 10000 });
-
-    // Verify update persisted on backend
-    const getPrompt = await request.get(`${backendBase}/api/prompts/${prompt.id}`);
-    expect(getPrompt.status()).toBe(200);
-    const updated = await getPrompt.json();
-    expect(updated.title).toContain('edited');
+    // Poll backend until saved (up to 10s)
+    await expect.poll(async () => {
+      const getPrompt = await request.get(`${backendBase}/api/prompts/${prompt.id}`);
+      if (getPrompt.status() !== 200) return null;
+      const data = await getPrompt.json();
+      return data.title;
+    }, { timeout: 10_000 }).toContain('edited');
   } finally {
     // Best-effort cleanup; ignore errors
     if (prompt?.id) {

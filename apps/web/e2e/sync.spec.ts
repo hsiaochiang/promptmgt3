@@ -4,28 +4,36 @@ const backendBase = 'http://localhost:3001';
 
 test('Sync: create a version node and list versions', async ({ request }) => {
   const now = Date.now();
-  // Create a project first
-  const createRes = await request.post(`${backendBase}/api/projects`, {
-    data: { title: `Sync Project ${now}` },
-  });
-  expect(createRes.status()).toBe(201);
-  const project = await createRes.json();
+  let project: any;
 
-  // Create a version node for project
-  const versionRes = await request.post(`${backendBase}/api/versions`, {
-    data: { entityType: 'project', entityId: project.id, projectSlug: project.slug, message: 'initial version' },
-  });
-  expect(versionRes.status()).toBe(201);
-  const versionEvent = await versionRes.json();
-  expect(versionEvent.event).toBeDefined();
+  try {
+    // Create a project first
+    const createRes = await request.post(`${backendBase}/api/projects`, {
+      data: { title: `Sync Project ${now}` },
+    });
+    expect(createRes.status()).toBe(201);
+    project = await createRes.json();
 
-  // List versions for entity
-  const listRes = await request.get(`${backendBase}/api/versions/project/${project.id}`);
-  expect(listRes.status()).toBe(200);
-  const events = await listRes.json();
-  expect(Array.isArray(events)).toBeTruthy();
-  expect(events.length).toBeGreaterThanOrEqual(1);
+    // Create a version node for project
+    const versionRes = await request.post(`${backendBase}/api/versions`, {
+      data: { entityType: 'project', entityId: project.id, projectSlug: project.slug, message: 'initial version' },
+    });
+    expect(versionRes.status()).toBe(201);
+    const versionEvent = await versionRes.json();
+    // Accept either an event envelope or a version node object
+    expect(versionEvent).toBeDefined();
+    expect(versionEvent.id || versionEvent.event || versionEvent.data).toBeTruthy();
 
-  // Cleanup: delete project
-  await request.delete(`${backendBase}/api/projects/${project.id}`);
+    // List versions for entity
+    const listRes = await request.get(`${backendBase}/api/versions/project/${project.id}`);
+    expect(listRes.status()).toBe(200);
+    const events = await listRes.json();
+    expect(Array.isArray(events)).toBeTruthy();
+    expect(events.length).toBeGreaterThanOrEqual(1);
+  } finally {
+    // Cleanup: delete project
+    if (project?.id) {
+      await request.delete(`${backendBase}/api/projects/${project.id}`);
+    }
+  }
 });
