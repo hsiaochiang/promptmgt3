@@ -1,0 +1,31 @@
+import { test, expect } from '@playwright/test';
+
+const backendBase = 'http://localhost:3001';
+
+test('Sync: create a version node and list versions', async ({ request }) => {
+  const now = Date.now();
+  // Create a project first
+  const createRes = await request.post(`${backendBase}/api/projects`, {
+    data: { title: `Sync Project ${now}` },
+  });
+  expect(createRes.status()).toBe(201);
+  const project = await createRes.json();
+
+  // Create a version node for project
+  const versionRes = await request.post(`${backendBase}/api/versions`, {
+    data: { entityType: 'project', entityId: project.id, projectSlug: project.slug, message: 'initial version' },
+  });
+  expect(versionRes.status()).toBe(201);
+  const versionEvent = await versionRes.json();
+  expect(versionEvent.event).toBeDefined();
+
+  // List versions for entity
+  const listRes = await request.get(`${backendBase}/api/versions/project/${project.id}`);
+  expect(listRes.status()).toBe(200);
+  const events = await listRes.json();
+  expect(Array.isArray(events)).toBeTruthy();
+  expect(events.length).toBeGreaterThanOrEqual(1);
+
+  // Cleanup: delete project
+  await request.delete(`${backendBase}/api/projects/${project.id}`);
+});
