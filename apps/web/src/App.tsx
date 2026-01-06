@@ -46,38 +46,43 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-white font-sans text-gray-900 selection:bg-[#CDE8F0] relative">
+    <div className="flex flex-row h-screen bg-white font-sans text-gray-900 selection:bg-[#CDE8F0] relative">
       <PrototypeGlobalStyles />
-      {/* Sidebar */}
+      
+      {/* Sidebar - Left Column (basis-60 or w-64) */}
       <Sidebar
         currentSection={state.currentSection}
         onSectionChange={handleSectionChange}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* List - Middle Column (flex-[1.2]) */}
+      <div className="flex-[1.2] flex flex-col overflow-hidden border-r border-gray-200">
         {/* Backup Status Banner */}
         <BackupStatusBanner />
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex overflow-hidden">
-          <MainContent
-            section={state.currentSection}
-            viewMode={state.viewMode}
-            onViewModeChange={handleViewModeChange}
-            onSelectPrompt={handleSelectPrompt}
-            selectedPromptId={state.selectedPromptId}
-          />
-
-          {/* Detail Panel - Right Side */}
-          {state.selectedPrompt && (
-            <DetailPanel
-              prompt={state.selectedPrompt}
-              onClose={() => handleSelectPrompt(null)}
-              onUpdate={(updated) => setState(prev => ({ ...prev, selectedPrompt: updated }))}
-            />
-          )}
-        </div>
+        
+        <MainContent
+          section={state.currentSection}
+          viewMode={state.viewMode}
+          onViewModeChange={handleViewModeChange}
+          onSelectPrompt={handleSelectPrompt}
+          selectedPromptId={state.selectedPromptId}
+        />
       </div>
+
+      {/* Detail - Right Column (flex-[1.8]) */}
+      {state.selectedPrompt ? (
+        <div className="flex-[1.8] overflow-hidden">
+          <DetailPanel
+            prompt={state.selectedPrompt}
+            onClose={() => handleSelectPrompt(null)}
+            onUpdate={(updated) => setState(prev => ({ ...prev, selectedPrompt: updated }))}
+          />
+        </div>
+      ) : (
+        <div className="flex-[1.8] bg-gray-50 flex items-center justify-center text-gray-400 text-xs">
+          選擇項目以檢視詳細資料
+        </div>
+      )}
     </div>
   );
 }

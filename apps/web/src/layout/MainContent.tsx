@@ -5,6 +5,7 @@ import { InboxView } from '../features/inbox/InboxView';
 import { SettingsView } from '../features/settings/SettingsView';
 import { HistoryView } from '../features/history/HistoryView';
 import { TrashView } from '../features/trash/TrashView';
+import { ArchiveView } from '../features/archive/ArchiveView';
 import type { PromptEntity } from '@pah/contracts';
 
 type ViewMode = 'list' | 'board';
@@ -80,7 +81,7 @@ const ExpandableSearch = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onBlur={handleBlur}
-            className="w-full bg-transparent border-none text-[11px] text-gray-700 focus:ring-0 px-2 py-1 placeholder-gray-400"
+            className="w-full bg-transparent border-none text-xs text-gray-700 focus:ring-0 px-2 py-1 placeholder-gray-400"
             placeholder={placeholder}
           />
           <button
@@ -129,7 +130,7 @@ export function MainContent({
               : '設定';
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden">
+    <div className="h-full flex flex-col bg-white overflow-hidden">
       {/* Header & Tabs - Prototype style */}
       <div className="px-8 pt-8 pb-4 flex-shrink-0">
         <div className="flex justify-between items-end mb-6">
@@ -184,11 +185,7 @@ export function MainContent({
         )}
         {section === 'inbox' && <InboxView />}
         {section === 'trash' && <TrashView />}
-        {section === 'archive' && (
-          <div className="p-8 text-center text-gray-400 text-[11px]">
-            封存功能開發中...
-          </div>
-        )}
+        {section === 'archive' && <ArchiveView />}
         {section === 'history' && <HistoryView />}
         {section === 'settings' && <SettingsView />}
       </div>

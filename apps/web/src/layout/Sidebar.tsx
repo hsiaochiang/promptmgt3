@@ -32,7 +32,7 @@ const NavItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-[11px] transition-colors ${
+    className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-xs transition-colors ${
       isActive
         ? 'bg-slate-900 text-white font-medium'
         : 'text-gray-600 hover:bg-[#EAEAEA]'
@@ -64,7 +64,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
     >
       <div className="h-12 flex items-center px-4 hover:bg-gray-200/50 cursor-pointer transition-colors m-2 rounded">
         <div
-          className={`font-bold text-[11px] text-gray-800 flex items-center gap-2 truncate ${
+          className={`font-bold text-xs text-gray-800 flex items-center gap-2 truncate ${
             !isSidebarOpen && 'hidden'
           }`}
         >

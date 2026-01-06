@@ -128,22 +128,26 @@ tests/
 
 ## UI Implementation Strategy (Strict Visual Enforcement)
 
-**CRITICAL INSTRUCTION**: The `ui_prototype.jsx` file is the **absolute source of truth** for visual design and CSS classes.
+**CRITICAL MANDATE**: The `ui_prototype.jsx` file provided in `design-context.md` is NOT a mock-up. It is the **Production Code** for the UI.
 
-1.  **Direct Porting**:
-    - Do NOT invent new styles.
-    - You MUST copy the Tailwind CSS classes EXACTLY as they appear in `ui_prototype.jsx` for the Sidebar, List items, Cards, and Layouts.
-    - Do not "simplify" or "refactor" the CSS classes unless explicitly necessary for responsiveness.
+### 1. The "Copy-Paste" Rule (Zero Deviation)
+* **Sidebar**: You MUST use the exact structure and Tailwind classes from the prototype's `<aside>` element.
+    * **Required**: `bg-white` (container), `w-64` (width), `border-r` (border).
+    * **Project List Items**: MUST use the conditional styling logic: `p.id === selectedProjectId ? "bg-slate-900 text-white" : "bg-slate-50 hover:bg-slate-100"`.
+    * **FORBIDDEN**: Do not use generic `shadcn/ui` sidebar components if they conflict with these specific color/spacing rules.
+* **Inbox**: MUST use the specific Amber styling (`bg-amber-50`, `border-amber-300`, `text-amber-700`). Any other color is a defect.
 
-2.  **Component Mapping**:
-    - **Sidebar**: Must match the prototype's `aside` block (e.g., specific padding, font-size, and the `bg-slate-900 text-white` active state).
-    - **Inbox**: Must use the `amber` color scheme (`bg-amber-50`, `border-amber-300`) as defined in the prototype.
-    - **Typography**: Adhere strictly to the text sizes (`text-xs`, `text-[10px]`) defined in the prototype to maintain high information density.
+### 2. Layout Structure (The 3-Column Requirement)
+The application MUST implement the specific **3-Column Layout** defined in the prototype:
+1.  **Left (Sidebar)**: Projects & Inbox list (`basis-60` or `w-64`).
+2.  **Middle (List)**: Prompt items list (`flex-[1.2]`).
+3.  **Right (Detail)**: Editor & Snippets (`flex-[1.8]`).
+* **Constraint**: Do NOT implement a 2-column layout (Sidebar + Main Content). The "Main Content" must be split into "List" and "Detail" panels visible at the same time.
 
-3.  **Extending the Design**:
-    - For pages NOT in the prototype (e.g., History, Recycle Bin):
-    - **Extrapolate**: You must reuse the *exact same* UI primitives (Buttons, Cards, Input fields) from the prototype.
-    - **Consistency**: A "Recycle Bin Table" must look like the "Prompt List". Do not use native HTML tables or default browser inputs.
+### 3. Typography & Density
+* **Constraint**: This is a high-density productivity tool.
+* **Rule**: Use `text-xs` (12px) and `text-[10px]` heavily as shown in the prototype.
+* **Forbidden**: Do not "clean up" the UI by increasing font sizes to `text-sm` or `text-base`. Keep it compact.
     
 
 **Structure Decision**: 採用「本機 server + web UI」的 web application monorepo；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 作為漂移 gate。

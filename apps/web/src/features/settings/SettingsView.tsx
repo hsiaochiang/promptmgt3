@@ -1,18 +1,8 @@
 import { useState, useEffect } from 'react';
+import type { WorkspaceSettings } from '@pah/contracts';
+import { MOCK_SETTINGS } from '../../data/mockData';
 
-interface WorkspaceSettings {
-  rootPath: string;
-  attachmentPath: string;
-  tagsDict?: Record<string, string[]>;
-  commonOptions?: Record<string, string[]>;
-  backup?: {
-    dailySnapshot: boolean;
-    schedule?: string;
-    remote?: string;
-  };
-  trashRetentionDays?: number;
-  updatedAt: string;
-}
+const USE_MOCK_DATA = true; // Set to false to use real API
 
 export function SettingsView() {
   const [settings, setSettings] = useState<WorkspaceSettings | null>(null);
@@ -28,12 +18,20 @@ export function SettingsView() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/workspace/settings');
-      if (!response.ok) {
-        throw new Error('Failed to load settings');
+      
+      if (USE_MOCK_DATA) {
+        // Use mock data for visual comparison
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setSettings(MOCK_SETTINGS);
+      } else {
+        // Use real API
+        const response = await fetch('http://localhost:3001/api/workspace/settings');
+        if (!response.ok) {
+          throw new Error('Failed to load settings');
+        }
+        const data = await response.json();
+        setSettings(data);
       }
-      const data = await response.json();
-      setSettings(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {

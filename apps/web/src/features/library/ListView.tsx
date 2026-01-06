@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { PromptEntity } from '@pah/contracts';
 import { FileText, Maximize2 } from 'lucide-react';
+import { MOCK_PROMPTS } from '../../data/mockData';
 
 type ViewMode = 'list' | 'board';
 
@@ -10,6 +11,8 @@ interface ListViewProps {
   onSelectPrompt: (prompt: PromptEntity | null) => void;
   selectedPromptId: string | null;
 }
+
+const USE_MOCK_DATA = true; // Set to false to use real API
 
 export function ListView({
   viewMode,
@@ -21,17 +24,25 @@ export function ListView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch prompts from server
+  // Fetch prompts from server or use mock data
   useEffect(() => {
     const fetchPrompts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3001/api/prompts');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch prompts: ${response.statusText}`);
+        
+        if (USE_MOCK_DATA) {
+          // Use mock data for visual comparison
+          await new Promise(resolve => setTimeout(resolve, 300)); // Simulate loading
+          setPrompts(MOCK_PROMPTS);
+        } else {
+          // Use real API
+          const response = await fetch('http://localhost:3001/api/prompts');
+          if (!response.ok) {
+            throw new Error(`Failed to fetch prompts: ${response.statusText}`);
+          }
+          const data = await response.json();
+          setPrompts(data);
         }
-        const data = await response.json();
-        setPrompts(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load prompts');
       } finally {
@@ -56,7 +67,7 @@ export function ListView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400 text-[11px]">載入中...</div>
+        <div className="text-gray-400 text-xs">載入中...</div>
       </div>
     );
   }
@@ -64,15 +75,15 @@ export function ListView({
   if (error) {
     return (
       <div className="p-8 text-center">
-        <div className="text-red-600 mb-2 text-[11px]">載入失敗</div>
-        <div className="text-[11px] text-gray-500">{error}</div>
+        <div className="text-red-600 mb-2 text-xs">載入失敗</div>
+        <div className="text-xs text-gray-500">{error}</div>
       </div>
     );
   }
 
   if (filteredPrompts.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-400 text-[11px]">
+      <div className="p-8 text-center text-gray-400 text-xs">
         {searchQuery ? '找不到符合的提示詞' : '尚無提示詞'}
       </div>
     );
@@ -102,7 +113,7 @@ export function ListView({
         >
           <div className="flex-[2] flex items-center py-1.5 px-3 border-r border-gray-100 overflow-hidden">
             <FileText size={16} className="text-gray-400 flex-shrink-0 mr-2" />
-            <span className="text-gray-700 font-medium text-[11px] group-hover:underline decoration-gray-300 underline-offset-2 truncate">
+            <span className="text-gray-700 font-medium text-xs group-hover:underline decoration-gray-300 underline-offset-2 truncate">
               {prompt.title}
             </span>
           </div>
@@ -111,7 +122,7 @@ export function ListView({
             <StatusBadge status={prompt.status} />
           </div>
 
-          <div className="w-24 py-1.5 px-3 border-r border-gray-100 text-[11px] text-gray-500 flex items-center">
+          <div className="w-24 py-1.5 px-3 border-r border-gray-100 text-xs text-gray-500 flex items-center">
             {prompt.priority}
           </div>
 
@@ -176,7 +187,7 @@ function BoardView({
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <span className="font-medium text-gray-800 leading-tight text-[11px]">{prompt.title}</span>
+                    <span className="font-medium text-gray-800 leading-tight text-xs">{prompt.title}</span>
                     {prompt.priority === 'P0' && (
                       <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1" title="High Priority" />
                     )}

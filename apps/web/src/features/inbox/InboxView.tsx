@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { InboxItemEntity } from '@pah/contracts';
+import { MOCK_INBOX_ITEMS } from '../../data/mockData';
+
+const USE_MOCK_DATA = true; // Set to false to use real API
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);
@@ -18,10 +21,18 @@ export function InboxView() {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:3001/api/inbox');
-        if (!res.ok) throw new Error('載入暫存項失敗');
-        const data = await res.json();
-        setItems(data);
+        
+        if (USE_MOCK_DATA) {
+          // Use mock data for visual comparison
+          await new Promise(resolve => setTimeout(resolve, 300)); // Simulate loading
+          setItems(MOCK_INBOX_ITEMS);
+        } else {
+          // Use real API
+          const res = await fetch('http://localhost:3001/api/inbox');
+          if (!res.ok) throw new Error('載入暫存項失敗');
+          const data = await res.json();
+          setItems(data);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : '載入暫存區失敗');
       } finally {

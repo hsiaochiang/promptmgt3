@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import type { TrashItem, TrashEntityType, RestoreConflict } from '@pah/contracts';
 import { fetchTrashList, purgeTrashItem, restoreTrashItem } from './api';
 import { RestoreConflictDialog } from './RestoreConflictDialog';
+import { MOCK_TRASH_ITEMS } from '../../data/mockData';
+
+const USE_MOCK_DATA = true; // Set to false to use real API
 
 export function TrashView() {
   const [items, setItems] = useState<TrashItem[]>([]);
@@ -22,16 +25,39 @@ export function TrashView() {
   const loadTrash = async () => {
     setLoading(true);
     try {
-      const response = await fetchTrashList({
-        q: searchQuery || undefined,
-        entityType: entityTypeFilter,
-        page,
-        perPage,
-      });
+      if (USE_MOCK_DATA) {
+        // Use mock data for visual comparison
+        await new Promise(resolve => setTimeout(resolve, 300));
+        let filtered = MOCK_TRASH_ITEMS;
+        
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          filtered = filtered.filter(item => 
+            item.titleSnapshot?.toLowerCase().includes(query) ||
+            item.originalRelativePath.toLowerCase().includes(query)
+          );
+        }
+        
+        if (entityTypeFilter) {
+          filtered = filtered.filter(item => item.entityType === entityTypeFilter);
+        }
+        
+        setItems(filtered);
+        setTotal(filtered.length);
+        setHasMore(false);
+      } else {
+        // Use real API
+        const response = await fetchTrashList({
+          q: searchQuery || undefined,
+          entityType: entityTypeFilter,
+          page,
+          perPage,
+        });
 
-      setItems(response.items);
-      setTotal(response.total);
-      setHasMore(response.hasMore);
+        setItems(response.items);
+        setTotal(response.total);
+        setHasMore(response.hasMore);
+      }
     } catch (error) {
       console.error('Failed to load trash:', error);
       alert('載入回收站失敗');

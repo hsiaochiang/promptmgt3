@@ -192,7 +192,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
     <div className={`h-full bg-white shadow-2xl flex flex-col transform transition-all duration-300 ${isExpanded ? 'w-full' : 'w-[600px]'}`}>
       {/* Top Bar - Prototype style */}
       <div className="h-12 flex items-center justify-between px-4 hover:bg-transparent">
-        <div className="flex items-center gap-2 text-[11px] text-gray-400 transition-colors">
+        <div className="flex items-center gap-2 text-xs text-gray-400 transition-colors">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-1 hover:bg-gray-100 hover:text-gray-600 rounded text-gray-400 transition-colors"
@@ -289,7 +289,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
               <select
                 value={formData.priority}
                 onChange={(e) => handleFieldChange('priority', e.target.value)}
-                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-[11px] text-gray-700 border-none focus:ring-0 cursor-pointer w-full"
+                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-xs text-gray-700 border-none focus:ring-0 cursor-pointer w-full"
               >
                 <option value="P0">P0</option>
                 <option value="P1">P1</option>
@@ -311,12 +311,12 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
                   )
                 }
                 placeholder="以逗號分隔"
-                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-[11px] text-gray-700 border-none focus:ring-0 w-full placeholder-gray-300"
+                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-xs text-gray-700 border-none focus:ring-0 w-full placeholder-gray-300"
               />
             </PropertyRow>
 
             <PropertyRow label="更新時間" icon={<Calendar size={14} className="text-gray-400" />}>
-              <span className="text-[11px] text-gray-500 px-1.5">
+              <span className="text-xs text-gray-500 px-1.5">
                 {new Date(formData.updatedAt).toLocaleString('zh-TW')}
               </span>
             </PropertyRow>

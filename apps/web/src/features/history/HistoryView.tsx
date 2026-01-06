@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { MOCK_SNAPSHOTS, MOCK_VERSIONS } from '../../data/mockData';
+
+const USE_MOCK_DATA = true; // Set to false to use real API
 
 interface VersionEvent {
   id: string;
@@ -31,27 +34,37 @@ export function HistoryView({ entityType, entityId }: HistoryViewProps) {
       setLoading(true);
       setError(null);
 
-      // Fetch versions (entity-specific or all)
-      let versionsUrl = 'http://localhost:3001/api/versions';
-      if (entityType && entityId) {
-        versionsUrl = `http://localhost:3001/api/versions/${entityType}/${entityId}`;
-      }
-      
-      const versionsResponse = await fetch(versionsUrl);
-      if (!versionsResponse.ok) {
-        throw new Error('Failed to fetch versions');
-      }
-      const versionsData = await versionsResponse.json();
-      setVersions(versionsData);
-
-      // Fetch snapshots (only if viewing all history)
-      if (!entityType && !entityId) {
-        const snapshotsResponse = await fetch('http://localhost:3001/api/snapshots');
-        if (!snapshotsResponse.ok) {
-          throw new Error('Failed to fetch snapshots');
+      if (USE_MOCK_DATA) {
+        // Use mock data for visual comparison
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setVersions(MOCK_VERSIONS);
+        if (!entityType && !entityId) {
+          setSnapshots(MOCK_SNAPSHOTS);
         }
-        const snapshotsData = await snapshotsResponse.json();
-        setSnapshots(snapshotsData);
+      } else {
+        // Use real API
+        // Fetch versions (entity-specific or all)
+        let versionsUrl = 'http://localhost:3001/api/versions';
+        if (entityType && entityId) {
+          versionsUrl = `http://localhost:3001/api/versions/${entityType}/${entityId}`;
+        }
+        
+        const versionsResponse = await fetch(versionsUrl);
+        if (!versionsResponse.ok) {
+          throw new Error('Failed to fetch versions');
+        }
+        const versionsData = await versionsResponse.json();
+        setVersions(versionsData);
+
+        // Fetch snapshots (only if viewing all history)
+        if (!entityType && !entityId) {
+          const snapshotsResponse = await fetch('http://localhost:3001/api/snapshots');
+          if (!snapshotsResponse.ok) {
+            throw new Error('Failed to fetch snapshots');
+          }
+          const snapshotsData = await snapshotsResponse.json();
+          setSnapshots(snapshotsData);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load history');
