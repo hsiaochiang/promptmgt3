@@ -91,14 +91,6 @@ export function InboxView() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-8 flex items-center justify-center">
-        <div className="text-gray-400 text-[11px]">載入暫存區中...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="pb-20 pt-2">
       <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900">
@@ -113,7 +105,10 @@ export function InboxView() {
             <span>{items.length}</span>
           </div>
           <div className="flex-1 overflow-auto divide-y divide-amber-200">
-            {items.length === 0 && (
+            {loading && (
+              <div className="p-4 text-[11px] text-amber-900/70 text-center">載入暫存區中...</div>
+            )}
+            {!loading && items.length === 0 && (
               <div className="p-4 text-[11px] text-amber-900/70 text-center">目前沒有暫存項。</div>
             )}
             {items.map(item => (

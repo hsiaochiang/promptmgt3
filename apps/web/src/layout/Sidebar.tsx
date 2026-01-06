@@ -32,14 +32,14 @@ const NavItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-xs transition-colors ${
+    className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-sm transition-colors ${
       isActive
-        ? 'bg-slate-900 text-white font-medium'
+        ? 'bg-[#E3E3E1] text-gray-900 font-medium'
         : 'text-gray-600 hover:bg-[#EAEAEA]'
     }`}
     title={isCollapsed ? label : ''}
   >
-    <Icon size={18} className={isActive ? 'text-white' : 'text-gray-500'} />
+    <Icon size={18} className={isActive ? 'text-gray-800' : 'text-gray-500'} />
     {!isCollapsed && <span className="truncate">{label}</span>}
   </button>
 );
@@ -64,7 +64,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
     >
       <div className="h-12 flex items-center px-4 hover:bg-gray-200/50 cursor-pointer transition-colors m-2 rounded">
         <div
-          className={`font-bold text-xs text-gray-800 flex items-center gap-2 truncate ${
+          className={`font-bold text-sm text-gray-800 flex items-center gap-2 truncate ${
             !isSidebarOpen && 'hidden'
           }`}
         >

@@ -20,7 +20,7 @@ import crypto from 'node:crypto';
 import { scanWorkspace } from '../../../apps/server/src/indexing/index.js';
 import { createSnapshot } from '../../../apps/server/src/backup/snapshot.js';
 import { SearchRequestSchema, SearchResponseSchema } from '@pah/contracts';
-import Fastify from 'fastify';
+import { createTestFastify } from '../../../apps/server/src/testkit/fastify.js';
 import { registerSearchRoutes } from '../../../apps/server/src/routes/search.js';
 
 describe('Performance Benchmarks', () => {
@@ -139,7 +139,7 @@ describe('Performance Benchmarks', () => {
   describe('Search API Performance', () => {
     it('should respond to search request in < 1000ms for medium fixture with valid schema', async () => {
       // Setup Fastify server with search routes
-      const server = Fastify({ logger: false });
+      const server = createTestFastify();
       await registerSearchRoutes(server, mediumFixtureDir);
 
       const searchRequest = SearchRequestSchema.parse({
@@ -178,7 +178,7 @@ describe('Performance Benchmarks', () => {
     });
 
     it('should handle empty query (list all) efficiently', async () => {
-      const server = Fastify({ logger: false });
+      const server = createTestFastify();
       await registerSearchRoutes(server, smallFixtureDir);
 
       const searchRequest = SearchRequestSchema.parse({
@@ -209,7 +209,7 @@ describe('Performance Benchmarks', () => {
     });
 
     it('should validate SearchResponse schema compliance under load', async () => {
-      const server = Fastify({ logger: false });
+      const server = createTestFastify();
       await registerSearchRoutes(server, mediumFixtureDir);
 
       // Test multiple concurrent search requests

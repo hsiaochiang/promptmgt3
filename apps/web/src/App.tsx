@@ -5,6 +5,7 @@ import { DetailPanel } from './layout/DetailPanel';
 import { BackupStatusBanner } from './features/backup/BackupStatusBanner';
 import { PrototypeGlobalStyles } from './ui/PrototypeGlobalStyles';
 import type { PromptEntity } from '@pah/contracts';
+import { CheckCircle } from 'lucide-react';
 
 type ViewMode = 'list' | 'board';
 type SidebarSection = 'library' | 'inbox' | 'trash' | 'archive' | 'history' | 'settings';
@@ -23,6 +24,13 @@ function App() {
     selectedPromptId: null,
     selectedPrompt: null,
   });
+
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const showNotification = (message: string) => {
+    setNotification(message);
+    window.setTimeout(() => setNotification(null), 3000);
+  };
 
   const handleSectionChange = (section: SidebarSection) => {
     setState(prev => ({
@@ -76,11 +84,19 @@ function App() {
             prompt={state.selectedPrompt}
             onClose={() => handleSelectPrompt(null)}
             onUpdate={(updated) => setState(prev => ({ ...prev, selectedPrompt: updated }))}
+            onNotify={showNotification}
           />
         </div>
       ) : (
         <div className="flex-[1.8] bg-gray-50 flex items-center justify-center text-gray-400 text-xs">
           選擇項目以檢視詳細資料
+        </div>
+      )}
+
+      {notification && (
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2.5 rounded shadow-xl flex items-center gap-3 text-sm animate-fade-in-up z-50">
+          <CheckCircle size={16} className="text-green-400" />
+          {notification}
         </div>
       )}
     </div>

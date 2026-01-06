@@ -37,7 +37,7 @@ const GhostButton = ({
   <button
     onClick={onClick}
     title={title}
-    className={`flex items-center gap-2 px-2 py-1 rounded-[3px] text-[11px] transition-colors duration-200 
+    className={`flex items-center gap-2 px-2 py-1 rounded-[3px] text-sm transition-colors duration-200 
       ${active ? 'bg-gray-200 text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'} 
       ${className}`}
   >

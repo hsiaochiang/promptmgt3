@@ -126,28 +126,24 @@ tests/
 └── unit/
 ```
 
-## UI Implementation Strategy (Strict Visual Enforcement)
+## UI Implementation Strategy (Strict Porting Mandate)
 
-**CRITICAL MANDATE**: The `ui_prototype.jsx` file provided in `design-context.md` is NOT a mock-up. It is the **Production Code** for the UI.
+**CRITICAL ARCHITECTURAL DECISION**:
+The application MUST be implemented as a **Single-View Application** controlled by React State, NOT by Next.js Page Routing (except for the root).
 
-### 1. The "Copy-Paste" Rule (Zero Deviation)
-* **Sidebar**: You MUST use the exact structure and Tailwind classes from the prototype's `<aside>` element.
-    * **Required**: `bg-white` (container), `w-64` (width), `border-r` (border).
-    * **Project List Items**: MUST use the conditional styling logic: `p.id === selectedProjectId ? "bg-slate-900 text-white" : "bg-slate-50 hover:bg-slate-100"`.
-    * **FORBIDDEN**: Do not use generic `shadcn/ui` sidebar components if they conflict with these specific color/spacing rules.
-* **Inbox**: MUST use the specific Amber styling (`bg-amber-50`, `border-amber-300`, `text-amber-700`). Any other color is a defect.
+1.  **Layout Structure (Based on `ui_prototype_v3.jsx`)**:
+    -   **Container**: `flex h-screen overflow-hidden`.
+    -   **Sidebar**: Fixed width (`w-60`), collapsible, using `bg-[#F7F7F5]`.
+    -   **Main Content**: `flex-1`, scrollable area.
+    -   **Detail Panel**: An **Overlay/Slide-over** component (`absolute top-0 right-0 z-50`), NOT a separate page.
 
-### 2. Layout Structure (The 3-Column Requirement)
-The application MUST implement the specific **3-Column Layout** defined in the prototype:
-1.  **Left (Sidebar)**: Projects & Inbox list (`basis-60` or `w-64`).
-2.  **Middle (List)**: Prompt items list (`flex-[1.2]`).
-3.  **Right (Detail)**: Editor & Snippets (`flex-[1.8]`).
-* **Constraint**: Do NOT implement a 2-column layout (Sidebar + Main Content). The "Main Content" must be split into "List" and "Detail" panels visible at the same time.
+2.  **Visual Precision**:
+    -   **Typography**: Use `text-xs` (12px) and `text-sm` (14px) exactly as defined in the source.
+    -   **Colors**: Use the specific hex code `bg-[#F7F7F5]` for backgrounds, not generic `bg-gray-100`.
+    -   **Components**: Port the `GhostButton`, `StatusBadge`, and `SidePanel` components exactly from `design-context.md`.
 
-### 3. Typography & Density
-* **Constraint**: This is a high-density productivity tool.
-* **Rule**: Use `text-xs` (12px) and `text-[10px]` heavily as shown in the prototype.
-* **Forbidden**: Do not "clean up" the UI by increasing font sizes to `text-sm` or `text-base`. Keep it compact.
+3.  **State Management**:
+    -   Use `zustand` to manage the `activeSection` (Projects/Prompts) and `selectedItem` (Detail Panel) state globally, mirroring the `useState` logic in the prototype.
     
 
 **Structure Decision**: 採用「本機 server + web UI」的 web application monorepo；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 作為漂移 gate。

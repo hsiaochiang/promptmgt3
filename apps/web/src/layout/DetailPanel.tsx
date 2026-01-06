@@ -9,9 +9,10 @@ interface DetailPanelProps {
   prompt: PromptEntity;
   onClose: () => void;
   onUpdate: (updated: PromptEntity) => void;
+  onNotify?: (message: string) => void;
 }
 
-export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
+export function DetailPanel({ prompt, onClose, onUpdate, onNotify }: DetailPanelProps) {
   const [formData, setFormData] = useState(prompt);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -37,7 +38,10 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
 
   // Autosave handler
   const saveToServer = useCallback(
-    async (data: PromptEntity, options?: { skipConflictCheck?: boolean }) => {
+    async (
+      data: PromptEntity,
+      options?: { skipConflictCheck?: boolean; notifySuccess?: boolean },
+    ) => {
       setIsSaving(true);
       setSaveError(null);
 
@@ -86,6 +90,10 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
         setUnsavedSnapshot(null);
         onUpdate(updated);
         setStatus({ status: 'idle' });
+
+        if (options?.notifySuccess) {
+          onNotify?.('儲存成功');
+        }
       } catch (error) {
         setSaveError(error instanceof Error ? error.message : '保存失敗');
         console.error('Save error:', error);
@@ -97,7 +105,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
         setIsSaving(false);
       }
     },
-    [lastKnownUpdatedAt, onUpdate, setStatus],
+    [lastKnownUpdatedAt, onNotify, onUpdate, setStatus],
   );
 
   // Use autosave hook with 2-second debounce
@@ -110,6 +118,10 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
 
   const handleRetry = () => {
     saveToServer(formData);
+  };
+
+  const handleManualSave = () => {
+    saveToServer(formData, { notifySuccess: true });
   };
 
   const handleCopyUnsaved = () => {
@@ -189,7 +201,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   };
 
   return (
-    <div className={`h-full bg-white shadow-2xl flex flex-col transform transition-all duration-300 ${isExpanded ? 'w-full' : 'w-[600px]'}`}>
+    <div className={`h-full bg-white shadow-2xl flex flex-col transform transition-all duration-300 animate-slide-in-right ${isExpanded ? 'w-full' : 'w-[600px]'}`}>
       {/* Top Bar - Prototype style */}
       <div className="h-12 flex items-center justify-between px-4 hover:bg-transparent">
         <div className="flex items-center gap-2 text-xs text-gray-400 transition-colors">
@@ -338,7 +350,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
             <div className="flex justify-between items-center mb-4 border-t border-gray-100 pt-6">
               <h3 className="text-sm font-bold text-gray-900">內容編輯</h3>
               <button
-                onClick={() => saveToServer(formData)}
+                onClick={handleManualSave}
                 className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
               >
                 Saved

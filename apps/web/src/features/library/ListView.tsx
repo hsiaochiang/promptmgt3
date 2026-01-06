@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { PromptEntity } from '@pah/contracts';
 import { FileText, Maximize2 } from 'lucide-react';
 import { MOCK_PROMPTS } from '../../data/mockData';
+import { Badge, StatusBadge } from '../../ui/PrototypeBadges';
 
 type ViewMode = 'list' | 'board';
 
@@ -119,7 +120,15 @@ export function ListView({
           </div>
 
           <div className="w-28 py-1.5 px-3 border-r border-gray-100 flex items-center">
-            <StatusBadge status={prompt.status} />
+            <StatusBadge
+              status={prompt.status}
+              labels={{
+                draft: '草稿',
+                tuning: '調整中',
+                ready: '就緒',
+                disabled: '停用',
+              }}
+            />
           </div>
 
           <div className="w-24 py-1.5 px-3 border-r border-gray-100 text-xs text-gray-500 flex items-center">
@@ -128,9 +137,9 @@ export function ListView({
 
           <div className="flex-1 py-1.5 px-3 border-r border-gray-100 flex gap-1 overflow-hidden items-center">
             {(prompt.tags ?? []).slice(0, 2).map((t, i) => (
-              <span key={i} className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1 rounded">
+              <Badge key={i} color="gray">
                 {t}
-              </span>
+              </Badge>
             ))}
           </div>
 
@@ -211,24 +220,4 @@ function BoardView({
   );
 }
 
-function StatusBadge({ status }: { status: PromptEntity['status'] }) {
-  const styles: Record<PromptEntity['status'], string> = {
-    draft: 'text-gray-500 bg-gray-50 border border-dashed border-gray-300',
-    tuning: 'text-yellow-700 bg-yellow-50',
-    ready: 'text-green-700 bg-green-50',
-    disabled: 'text-gray-400 bg-gray-100 line-through',
-  };
-
-  const labels: Record<PromptEntity['status'], string> = {
-    draft: '草稿',
-    tuning: '調整中',
-    ready: '就緒',
-    disabled: '停用',
-  };
-
-  return (
-    <span className={`text-xs px-2 py-0.5 rounded-[3px] ${styles[status]}`}>
-      {labels[status]}
-    </span>
-  );
-}
+// StatusBadge 使用 PrototypeBadges.tsx，以確保樣式映射與 prototype 一致
