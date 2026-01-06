@@ -6,7 +6,7 @@ import { BackupStatusBanner } from './features/backup/BackupStatusBanner';
 import type { PromptEntity } from '@pah/contracts';
 
 type ViewMode = 'list' | 'board';
-type SidebarSection = 'library' | 'inbox' | 'archive' | 'history' | 'settings';
+type SidebarSection = 'library' | 'inbox' | 'trash' | 'archive' | 'history' | 'settings';
 
 export interface AppState {
   currentSection: SidebarSection;

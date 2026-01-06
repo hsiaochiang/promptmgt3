@@ -3,10 +3,11 @@ import { ListView } from '../features/library/ListView';
 import { InboxView } from '../features/inbox/InboxView';
 import { SettingsView } from '../features/settings/SettingsView';
 import { HistoryView } from '../features/history/HistoryView';
+import { TrashView } from '../features/trash/TrashView';
 import type { PromptEntity } from '@pah/contracts';
 
 type ViewMode = 'list' | 'board';
-type SidebarSection = 'library' | 'inbox' | 'archive' | 'history' | 'settings';
+type SidebarSection = 'library' | 'inbox' | 'trash' | 'archive' | 'history' | 'settings';
 
 interface MainContentProps {
   section: SidebarSection;
@@ -89,6 +90,7 @@ export function MainContent({
           />
         )}
         {section === 'inbox' && <InboxView />}
+        {section === 'trash' && <TrashView />}
         {section === 'archive' && (
           <div className="p-8 text-center text-secondary">
             封存功能開發中...

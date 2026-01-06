@@ -1,4 +1,4 @@
-type SidebarSection = 'library' | 'inbox' | 'archive' | 'history' | 'settings';
+type SidebarSection = 'library' | 'inbox' | 'trash' | 'archive' | 'history' | 'settings';
 
 interface SidebarProps {
   currentSection: SidebarSection;
@@ -9,6 +9,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
   const sections: { id: SidebarSection; label: string; icon: string }[] = [
     { id: 'library', label: '資料庫', icon: '📚' },
     { id: 'inbox', label: '暫存區', icon: '📥' },
+    { id: 'trash', label: '回收站', icon: '🗑️' },
     { id: 'archive', label: '封存', icon: '📦' },
     { id: 'history', label: '歷史記錄', icon: '🕐' },
     { id: 'settings', label: '設定', icon: '⚙️' },
