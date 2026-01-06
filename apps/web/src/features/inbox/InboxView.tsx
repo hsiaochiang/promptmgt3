@@ -83,53 +83,48 @@ export function InboxView() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-secondary">載入暫存區中...</div>
+        <div className="text-gray-400 text-[11px]">載入暫存區中...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 flex h-full">
-      <div className="max-w-5xl mx-auto flex-1 flex flex-col">
-        <h2 className="text-xl font-semibold mb-4">暫存區</h2>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
-          <p className="text-sm text-yellow-800">
-            💡 <strong>注意：</strong>暫存區項目的歸檔功能由外部工具處理。
-            此處僅提供標題、簡單備註與內容刪減等最小編修。
-          </p>
+    <div className="pb-20 pt-2">
+      <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900">
+        💡 <span className="font-medium">注意：</span>暫存區項目的歸檔功能由外部工具處理；此處僅提供標題、簡單備註與內容刪減等最小編修。
+      </div>
+
+      <div className="flex gap-4 min-h-[340px]">
+        {/* List */}
+        <div className="w-1/3 border border-amber-300 rounded overflow-hidden flex flex-col bg-amber-50/30">
+          <div className="border-b border-amber-300 px-3 py-2 text-xs text-amber-900 flex justify-between">
+            <span>匯入項目</span>
+            <span>{items.length}</span>
+          </div>
+          <div className="flex-1 overflow-auto divide-y divide-amber-200">
+            {items.length === 0 && (
+              <div className="p-4 text-[11px] text-amber-900/70 text-center">目前沒有暫存項。</div>
+            )}
+            {items.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelect(item)}
+                className={`w-full text-left px-3 py-2 text-[11px] hover:bg-amber-50/60 transition-colors ${
+                  selectedId === item.id ? 'bg-amber-50 border-l-2 border-amber-400' : ''
+                }`}
+              >
+                <div className="font-medium truncate text-gray-900">{item.title}</div>
+                <div className="text-xs text-gray-500 truncate font-mono">
+                  {new Date(item.importedAt).toLocaleString('zh-TW')}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex gap-4 flex-1 min-h-[300px]">
-          {/* List */}
-          <div className="w-1/3 border border-subtle rounded-md overflow-hidden flex flex-col">
-            <div className="border-b border-subtle px-3 py-2 text-xs text-secondary flex justify-between">
-              <span>匯入項目</span>
-              <span>{items.length}</span>
-            </div>
-            <div className="flex-1 overflow-auto divide-y divide-subtle">
-              {items.length === 0 && (
-                <div className="p-4 text-sm text-secondary text-center">目前沒有暫存項。</div>
-              )}
-              {items.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleSelect(item)}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-hover ${
-                    selectedId === item.id ? 'bg-blue-50' : ''
-                  }`}
-                >
-                  <div className="font-medium truncate">{item.title}</div>
-                  <div className="text-xs text-tertiary truncate">
-                    {new Date(item.importedAt).toLocaleString('zh-TW')}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Detail */}
-          <div className="flex-1 border border-subtle rounded-md p-4 flex flex-col">
+        {/* Detail */}
+        <div className="flex-1 border border-gray-200 rounded p-4 flex flex-col bg-white">
             {error && (
               <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
                 {error}
@@ -142,52 +137,52 @@ export function InboxView() {
             )}
 
             {!selectedId ? (
-              <div className="flex-1 flex items-center justify-center text-secondary text-sm">
+              <div className="flex-1 flex items-center justify-center text-gray-400 text-[11px]">
                 請從左側選擇一個暫存項目進行編輯。
               </div>
             ) : (
               <>
                 <div className="space-y-4 flex-1 overflow-auto">
                   <div>
-                    <label className="block text-sm font-medium mb-1">標題</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-600">標題</label>
                     <input
                       type="text"
                       value={form.title}
                       onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                      className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">備註</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-600">備註</label>
                     <textarea
                       rows={3}
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                      className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">原始內容（可刪減）</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-600">原始內容（可刪減）</label>
                     <textarea
                       rows={8}
                       value={form.rawContent}
                       onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
-                      className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                      className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0 font-mono"
                     />
-                    <p className="mt-1 text-xs text-secondary">
+                    <p className="mt-1 text-xs text-gray-500">
                       僅建議做刪減與整理，不會執行歸檔；正式歸檔由外部工具處理。
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-subtle pt-3 flex justify-end">
+                <div className="mt-4 border-t border-gray-100 pt-3 flex justify-end">
                   <button
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gray-900 text-white rounded text-[11px] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? '保存中...' : '保存暫存項'}
                   </button>
@@ -195,7 +190,6 @@ export function InboxView() {
               </>
             )}
           </div>
-        </div>
       </div>
     </div>
   );

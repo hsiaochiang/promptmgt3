@@ -36,3 +36,8 @@ Thumbs.db
 
 # Project specific
 .pah/
+
+# Playwright & Testing
+test-results/
+playwright-report/
+blob-report/

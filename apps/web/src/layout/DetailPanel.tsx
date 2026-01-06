@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useAutosave } from '../hooks/useAutosave';
-import { MarkdownEditor } from '../components/MarkdownEditor';
 import type { PromptEntity } from '@pah/contracts';
 import { useSyncStatus } from '../features/sync/SyncProvider';
 import { ConflictBanner } from '../features/conflict/ConflictBanner';
+import { Calendar, CheckCircle, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
 
 interface DetailPanelProps {
   prompt: PromptEntity;
@@ -20,6 +20,7 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   const [unsavedSnapshot, setUnsavedSnapshot] = useState<PromptEntity | null>(null);
   const [lastKnownUpdatedAt, setLastKnownUpdatedAt] = useState<string | null>(prompt.updatedAt ?? null);
   const [creatingVersion, setCreatingVersion] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const { lastStatus, setStatus } = useSyncStatus();
   const hasConflict = lastStatus.status === 'conflict';
@@ -188,24 +189,42 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
   };
 
   return (
-    <div className="w-[600px] border-l border-subtle bg-white flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-subtle p-4 flex items-center justify-between">
-        <h2 className="font-semibold">編輯提示詞</h2>
-        <div className="flex items-center gap-2">
+    <div className={`h-full bg-white shadow-2xl flex flex-col transform transition-all duration-300 ${isExpanded ? 'w-full' : 'w-[600px]'}`}>
+      {/* Top Bar - Prototype style */}
+      <div className="h-12 flex items-center justify-between px-4 hover:bg-transparent">
+        <div className="flex items-center gap-2 text-[11px] text-gray-400 transition-colors">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 hover:bg-gray-100 hover:text-gray-600 rounded text-gray-400 transition-colors"
+            title={isExpanded ? '還原' : '展開為全頁'}
+          >
+            {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} className="rotate-45" />}
+          </button>
+
+          <div className="flex items-center gap-2 cursor-default">
+            <span className="hover:text-gray-900 hover:underline decoration-gray-300 underline-offset-2 cursor-pointer">
+              資料庫
+            </span>
+            <span>/</span>
+            <span className="truncate max-w-[200px] text-gray-800 font-medium">{formData.title}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
           <button
             onClick={handleCreateVersion}
             disabled={creatingVersion || hasUnsavedChanges}
-            className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             title={hasUnsavedChanges ? '請先保存變更再建立版本節點' : '建立版本節點'}
           >
             {creatingVersion ? '建立中...' : '📌 版本節點'}
           </button>
           <button
             onClick={onClose}
-            className="text-secondary hover:text-gray-900 text-xl leading-none"
+            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 transition-colors"
+            title="關閉"
           >
-            ×
+            <ChevronRight size={20} />
           </button>
         </div>
       </div>
@@ -221,113 +240,141 @@ export function DetailPanel({ prompt, onClose, onUpdate }: DetailPanelProps) {
       )}
 
       {/* Save Status */}
-      <div className="px-4 py-2 border-b border-subtle bg-subtle text-xs">
+      <div className="px-4 py-2 border-b border-gray-100 bg-[#F7F7F5] text-xs">
         {isSaving && <span className="text-blue-600">⏳ 保存中...</span>}
         {!isSaving && lastSaved && (
-          <span className="text-green-600">
-            ✓ 已保存 · {lastSaved.toLocaleTimeString('zh-TW')}
-          </span>
+          <span className="text-green-600">✓ 已保存 · {lastSaved.toLocaleTimeString('zh-TW')}</span>
         )}
         {saveError && (
           <div className="flex items-center gap-2 text-red-600">
             <span>✗ {saveError}</span>
-            <button
-              onClick={handleRetry}
-              className="underline hover:no-underline"
-            >
+            <button onClick={handleRetry} className="underline hover:no-underline">
               重試
             </button>
-            <button
-              onClick={handleCopyUnsaved}
-              className="underline hover:no-underline"
-            >
+            <button onClick={handleCopyUnsaved} className="underline hover:no-underline">
               複製內容
             </button>
           </div>
         )}
       </div>
 
-      {/* Form Content */}
-      <div className="flex-1 overflow-auto p-4 space-y-4">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium mb-1">標題</label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => handleFieldChange('title', e.target.value)}
-            className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Status and Priority */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">狀態</label>
-            <select
-              value={formData.status}
-              onChange={(e) => handleFieldChange('status', e.target.value)}
-              className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="draft">草稿</option>
-              <option value="tuning">調整中</option>
-              <option value="ready">就緒</option>
-              <option value="disabled">停用</option>
-            </select>
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto px-12 py-8 custom-scrollbar">
+        <div className={`mx-auto ${isExpanded ? 'max-w-4xl' : ''}`}>
+          <div className="mb-6">
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => handleFieldChange('title', e.target.value)}
+              className="w-full text-4xl font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 focus:outline-none p-0 bg-transparent leading-tight mb-2"
+              placeholder="Untitled"
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">優先級</label>
-            <select
-              value={formData.priority}
-              onChange={(e) => handleFieldChange('priority', e.target.value)}
-              className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="P0">P0</option>
-              <option value="P1">P1</option>
-              <option value="P2">P2</option>
-            </select>
+
+          <div className="space-y-1 mb-8">
+            <PropertyRow label="狀態" icon={<CheckCircle size={14} className="text-gray-400" />}>
+              <select
+                value={formData.status}
+                onChange={(e) => handleFieldChange('status', e.target.value)}
+                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-[11px] text-gray-700 border-none focus:ring-0 cursor-pointer w-full"
+              >
+                <option value="draft">草稿</option>
+                <option value="tuning">調整中</option>
+                <option value="ready">就緒</option>
+                <option value="disabled">停用</option>
+              </select>
+            </PropertyRow>
+
+            <PropertyRow label="優先級" icon={<span className="text-gray-400 text-xs">⚑</span>}>
+              <select
+                value={formData.priority}
+                onChange={(e) => handleFieldChange('priority', e.target.value)}
+                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-[11px] text-gray-700 border-none focus:ring-0 cursor-pointer w-full"
+              >
+                <option value="P0">P0</option>
+                <option value="P1">P1</option>
+                <option value="P2">P2</option>
+              </select>
+            </PropertyRow>
+
+            <PropertyRow label="標籤" icon={<span className="text-gray-400 text-xs">#</span>}>
+              <input
+                type="text"
+                value={(formData.tags ?? []).join(', ')}
+                onChange={(e) =>
+                  handleFieldChange(
+                    'tags',
+                    e.target.value
+                      .split(',')
+                      .map(t => t.trim())
+                      .filter(Boolean),
+                  )
+                }
+                placeholder="以逗號分隔"
+                className="bg-transparent hover:bg-gray-100 rounded px-1.5 py-0.5 text-[11px] text-gray-700 border-none focus:ring-0 w-full placeholder-gray-300"
+              />
+            </PropertyRow>
+
+            <PropertyRow label="更新時間" icon={<Calendar size={14} className="text-gray-400" />}>
+              <span className="text-[11px] text-gray-500 px-1.5">
+                {new Date(formData.updatedAt).toLocaleString('zh-TW')}
+              </span>
+            </PropertyRow>
           </div>
-        </div>
 
-        {/* Tags */}
-        <div>
-          <label className="block text-sm font-medium mb-1">標籤</label>
-          <input
-            type="text"
-            value={formData.tags?.join(', ') || ''}
-            onChange={(e) =>
-              handleFieldChange(
-                'tags',
-                e.target.value.split(',').map(t => t.trim()).filter(Boolean)
-              )
-            }
-            placeholder="以逗號分隔"
-            className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+          <hr className="border-gray-100 mb-8" />
 
-        {/* Body - Markdown Editor */}
-        <div>
-          <label className="block text-sm font-medium mb-1">正文</label>
-          <MarkdownEditor
-            value={formData.body}
-            onChange={(value) => handleFieldChange('body', value)}
-            entityType="prompt"
-            entityId={formData.id}
-          />
-        </div>
+          <div className="mb-8">
+            <h3 className="text-sm font-bold text-gray-900 mb-2">備註</h3>
+            <textarea
+              className="w-full min-h-[60px] p-3 bg-gray-50 rounded border border-transparent focus:bg-white focus:border-blue-200 focus:ring-0 text-gray-700 text-[11px] leading-relaxed resize-none transition-all placeholder-gray-400"
+              value={formData.notes ?? ''}
+              onChange={(e) => handleFieldChange('notes', e.target.value)}
+              placeholder="輸入備註..."
+            />
+          </div>
 
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium mb-1">備註</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => handleFieldChange('notes', e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="h-full flex flex-col">
+            <div className="flex justify-between items-center mb-4 border-t border-gray-100 pt-6">
+              <h3 className="text-sm font-bold text-gray-900">內容編輯</h3>
+              <button
+                onClick={() => saveToServer(formData)}
+                className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+              >
+                Saved
+              </button>
+            </div>
+            <textarea
+              className="w-full min-h-[400px] bg-transparent border-none focus:ring-0 font-mono text-[11px] leading-relaxed text-gray-700 resize-none p-0 placeholder-gray-300"
+              value={formData.body}
+              onChange={(e) => handleFieldChange('body', e.target.value)}
+              placeholder="# 開始撰寫提示詞..."
+            />
+          </div>
+
+          <div className="h-20"></div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PropertyRow({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[120px_1fr] items-start py-1 group">
+      <div className="flex items-center gap-2 text-[11px] text-gray-400 pt-1">
+        {icon}
+        <span className="truncate">{label}</span>
+      </div>
+      <div className="min-h-[28px] flex items-center w-full">{children}</div>
     </div>
   );
 }

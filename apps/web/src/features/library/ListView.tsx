@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { PromptEntity } from '@pah/contracts';
+import { FileText, Maximize2 } from 'lucide-react';
 
 type ViewMode = 'list' | 'board';
 
@@ -55,7 +56,7 @@ export function ListView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-secondary">載入中...</div>
+        <div className="text-gray-400 text-[11px]">載入中...</div>
       </div>
     );
   }
@@ -63,15 +64,15 @@ export function ListView({
   if (error) {
     return (
       <div className="p-8 text-center">
-        <div className="text-red-600 mb-2">載入失敗</div>
-        <div className="text-sm text-secondary">{error}</div>
+        <div className="text-red-600 mb-2 text-[11px]">載入失敗</div>
+        <div className="text-[11px] text-gray-500">{error}</div>
       </div>
     );
   }
 
   if (filteredPrompts.length === 0) {
     return (
-      <div className="p-8 text-center text-secondary">
+      <div className="p-8 text-center text-gray-400 text-[11px]">
         {searchQuery ? '找不到符合的提示詞' : '尚無提示詞'}
       </div>
     );
@@ -82,42 +83,54 @@ export function ListView({
   }
 
   return (
-    <div className="divide-y divide-subtle">
-      {filteredPrompts.map((prompt) => (
+    <div className="pb-20 pt-2">
+      <div className="flex text-xs font-medium text-gray-400 border-b border-gray-200 pb-2 mb-2 px-2 select-none sticky top-0 bg-white z-10">
+        <div className="flex-[2] py-2 px-3 border-r border-gray-100">名稱</div>
+        <div className="w-28 py-2 px-3 border-r border-gray-100">狀態</div>
+        <div className="w-24 py-2 px-3 border-r border-gray-100">優先級</div>
+        <div className="flex-1 py-2 px-3 border-r border-gray-100">標籤</div>
+        <div className="w-28 py-2 px-3 text-right">更新</div>
+      </div>
+
+      {filteredPrompts.map(prompt => (
         <div
           key={prompt.id}
           onClick={() => onSelectPrompt(prompt)}
-          className={`p-4 cursor-pointer hover:bg-hover transition-colors ${
+          className={`flex items-center hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors relative group ${
             selectedPromptId === prompt.id ? 'bg-blue-50' : ''
           }`}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium truncate">{prompt.title}</h3>
-              {prompt.body && (
-                <p className="text-sm text-secondary mt-1 line-clamp-2">
-                  {prompt.body.substring(0, 150)}...
-                </p>
-              )}
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(prompt.status)}`}>
-                  {getStatusLabel(prompt.status)}
-                </span>
-                <span className="text-xs text-tertiary">{prompt.priority}</span>
-                {prompt.tags && prompt.tags.length > 0 && (
-                  <div className="flex gap-1">
-                    {prompt.tags.slice(0, 3).map((tag, i) => (
-                      <span key={i} className="text-xs text-secondary">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="text-xs text-tertiary whitespace-nowrap">
-              {new Date(prompt.updatedAt).toLocaleDateString('zh-TW')}
-            </div>
+          <div className="flex-[2] flex items-center py-1.5 px-3 border-r border-gray-100 overflow-hidden">
+            <FileText size={16} className="text-gray-400 flex-shrink-0 mr-2" />
+            <span className="text-gray-700 font-medium text-[11px] group-hover:underline decoration-gray-300 underline-offset-2 truncate">
+              {prompt.title}
+            </span>
+          </div>
+
+          <div className="w-28 py-1.5 px-3 border-r border-gray-100 flex items-center">
+            <StatusBadge status={prompt.status} />
+          </div>
+
+          <div className="w-24 py-1.5 px-3 border-r border-gray-100 text-[11px] text-gray-500 flex items-center">
+            {prompt.priority}
+          </div>
+
+          <div className="flex-1 py-1.5 px-3 border-r border-gray-100 flex gap-1 overflow-hidden items-center">
+            {(prompt.tags ?? []).slice(0, 2).map((t, i) => (
+              <span key={i} className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1 rounded">
+                {t}
+              </span>
+            ))}
+          </div>
+
+          <div className="w-28 py-1.5 px-3 text-right text-xs text-gray-400 font-mono flex items-center justify-end">
+            {new Date(prompt.updatedAt).toLocaleDateString('zh-TW')}
+          </div>
+
+          <div className="absolute right-2 opacity-0 group-hover:opacity-100 flex gap-1">
+            <button className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-200 rounded">
+              <Maximize2 size={12} />
+            </button>
           </div>
         </div>
       ))}
@@ -134,40 +147,52 @@ function BoardView({
   onSelectPrompt: (prompt: PromptEntity) => void;
   selectedPromptId: string | null;
 }) {
-  const statuses = ['draft', 'tuning', 'ready', 'disabled'];
-  const groupedPrompts = statuses.reduce((acc, status) => {
-    acc[status] = prompts.filter(p => p.status === status);
-    return acc;
-  }, {} as Record<string, PromptEntity[]>);
+  const columns = [
+    { id: 'draft', label: '草稿' },
+    { id: 'tuning', label: '調整中' },
+    { id: 'ready', label: '就緒' },
+    { id: 'disabled', label: '停用' },
+  ] as const;
 
   return (
-    <div className="p-4 grid grid-cols-4 gap-4 h-full">
-      {statuses.map((status) => (
-        <div key={status} className="flex flex-col">
-          <div className="font-medium mb-2 px-2">
-            {getStatusLabel(status)} ({groupedPrompts[status].length})
+    <div className="flex gap-4 h-full min-w-[800px] overflow-x-auto p-8 bg-[#F7F7F5]">
+      {columns.map(col => (
+        <div key={col.id} className="flex-1 flex flex-col min-w-[260px]">
+          <div className="flex items-center justify-between px-1 mb-2">
+            <span className="font-semibold text-gray-500 text-xs uppercase tracking-wide">{col.label}</span>
+            <span className="text-xs text-gray-400 font-mono">
+              {prompts.filter(p => p.status === col.id).length}
+            </span>
           </div>
-          <div className="flex-1 space-y-2 overflow-auto">
-            {groupedPrompts[status].map((prompt) => (
-              <div
-                key={prompt.id}
-                onClick={() => onSelectPrompt(prompt)}
-                className={`p-3 bg-white border border-subtle rounded-md cursor-pointer hover:shadow-md transition-shadow ${
-                  selectedPromptId === prompt.id ? 'ring-2 ring-blue-500' : ''
-                }`}
-              >
-                <h4 className="font-medium text-sm mb-1">{prompt.title}</h4>
-                {prompt.tags && prompt.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {prompt.tags.slice(0, 2).map((tag, i) => (
-                      <span key={i} className="text-xs text-secondary">
-                        #{tag}
+          <div className="flex-1 overflow-y-auto space-y-2.5 pb-20 custom-scrollbar">
+            {prompts
+              .filter(p => p.status === col.id)
+              .map(prompt => (
+                <div
+                  key={prompt.id}
+                  onClick={() => onSelectPrompt(prompt)}
+                  className={`bg-white p-3 rounded-[3px] shadow-sm hover:shadow-md cursor-pointer transition-all border border-gray-200/50 hover:border-gray-300 group ${
+                    selectedPromptId === prompt.id ? 'ring-2 ring-blue-500' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <span className="font-medium text-gray-800 leading-tight text-[11px]">{prompt.title}</span>
+                    {prompt.priority === 'P0' && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1" title="High Priority" />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(prompt.tags ?? []).slice(0, 3).map((tag, i) => (
+                      <span
+                        key={`${prompt.id}:${tag}:${i}`}
+                        className="text-[10px] px-1.5 py-0.5 bg-gray-50 text-gray-500 rounded-[2px] border border-gray-100"
+                      >
+                        {tag}
                       </span>
                     ))}
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
           </div>
         </div>
       ))}
@@ -175,22 +200,24 @@ function BoardView({
   );
 }
 
-function getStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
+function StatusBadge({ status }: { status: PromptEntity['status'] }) {
+  const styles: Record<PromptEntity['status'], string> = {
+    draft: 'text-gray-500 bg-gray-50 border border-dashed border-gray-300',
+    tuning: 'text-yellow-700 bg-yellow-50',
+    ready: 'text-green-700 bg-green-50',
+    disabled: 'text-gray-400 bg-gray-100 line-through',
+  };
+
+  const labels: Record<PromptEntity['status'], string> = {
     draft: '草稿',
     tuning: '調整中',
     ready: '就緒',
     disabled: '停用',
   };
-  return labels[status] || status;
-}
 
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-700',
-    tuning: 'bg-yellow-100 text-yellow-700',
-    ready: 'bg-green-100 text-green-700',
-    disabled: 'bg-red-100 text-red-700',
-  };
-  return colors[status] || 'bg-gray-100 text-gray-700';
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-[3px] ${styles[status]}`}>
+      {labels[status]}
+    </span>
+  );
 }

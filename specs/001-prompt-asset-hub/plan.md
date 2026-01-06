@@ -126,6 +126,26 @@ tests/
 └── unit/
 ```
 
+## UI Implementation Strategy (Strict Visual Enforcement)
+
+**CRITICAL INSTRUCTION**: The `ui_prototype.jsx` file is the **absolute source of truth** for visual design and CSS classes.
+
+1.  **Direct Porting**:
+    - Do NOT invent new styles.
+    - You MUST copy the Tailwind CSS classes EXACTLY as they appear in `ui_prototype.jsx` for the Sidebar, List items, Cards, and Layouts.
+    - Do not "simplify" or "refactor" the CSS classes unless explicitly necessary for responsiveness.
+
+2.  **Component Mapping**:
+    - **Sidebar**: Must match the prototype's `aside` block (e.g., specific padding, font-size, and the `bg-slate-900 text-white` active state).
+    - **Inbox**: Must use the `amber` color scheme (`bg-amber-50`, `border-amber-300`) as defined in the prototype.
+    - **Typography**: Adhere strictly to the text sizes (`text-xs`, `text-[10px]`) defined in the prototype to maintain high information density.
+
+3.  **Extending the Design**:
+    - For pages NOT in the prototype (e.g., History, Recycle Bin):
+    - **Extrapolate**: You must reuse the *exact same* UI primitives (Buttons, Cards, Input fields) from the prototype.
+    - **Consistency**: A "Recycle Bin Table" must look like the "Prompt List". Do not use native HTML tables or default browser inputs.
+    
+
 **Structure Decision**: 採用「本機 server + web UI」的 web application monorepo；跨層資料形狀集中於 `packages/contracts`，並以 OpenAPI + contract tests 作為漂移 gate。
 
 ## Phase 0 — Research

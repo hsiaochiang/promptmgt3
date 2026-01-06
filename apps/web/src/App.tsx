@@ -3,6 +3,7 @@ import { Sidebar } from './layout/Sidebar';
 import { MainContent } from './layout/MainContent';
 import { DetailPanel } from './layout/DetailPanel';
 import { BackupStatusBanner } from './features/backup/BackupStatusBanner';
+import { PrototypeGlobalStyles } from './ui/PrototypeGlobalStyles';
 import type { PromptEntity } from '@pah/contracts';
 
 type ViewMode = 'list' | 'board';
@@ -45,7 +46,8 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-white text-gray-900">
+    <div className="flex h-screen bg-white font-sans text-gray-900 selection:bg-[#CDE8F0] relative">
+      <PrototypeGlobalStyles />
       {/* Sidebar */}
       <Sidebar
         currentSection={state.currentSection}
