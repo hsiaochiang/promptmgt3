@@ -1,41 +1,12 @@
-import { useState, type ComponentType } from 'react';
-import {
-  Layout,
-  Clipboard,
-  Settings,
-  ChevronRight,
-  Trash2,
-  History,
-  Archive,
-  Inbox,
-} from 'lucide-react';
+import { Layout, Kanban, List as ListIcon, Clipboard, Settings, ChevronRight } from 'lucide-react';
+import { useUiStore } from '../state/uiStore';
 
-type SidebarSection = 'library' | 'inbox' | 'trash' | 'archive' | 'history' | 'settings';
-
-interface SidebarProps {
-  currentSection: SidebarSection;
-  onSectionChange: (section: SidebarSection) => void;
-}
-
-const NavItem = ({
-  icon: Icon,
-  label,
-  isActive,
-  onClick,
-  isCollapsed,
-}: {
-  icon: ComponentType<{ size?: number | string; className?: string }>;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-  isCollapsed: boolean;
-}) => (
+// Helper components
+const NavItem = ({ icon: Icon, label, isActive, onClick, isCollapsed }: any) => (
   <button
     onClick={onClick}
     className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-sm transition-colors ${
-      isActive
-        ? 'bg-[#E3E3E1] text-gray-900 font-medium'
-        : 'text-gray-600 hover:bg-[#EAEAEA]'
+      isActive ? 'bg-[#E3E3E1] text-gray-900 font-medium' : 'text-gray-600 hover:bg-[#EAEAEA]'
     }`}
     title={isCollapsed ? label : ''}
   >
@@ -44,7 +15,7 @@ const NavItem = ({
   </button>
 );
 
-const SectionHeader = ({ label, isCollapsed }: { label: string; isCollapsed: boolean }) => {
+const SectionHeader = ({ label, isCollapsed }: any) => {
   if (isCollapsed) return <div className="h-4"></div>;
   return (
     <div className="px-3 py-2 mt-4 mb-1 text-xs font-bold text-gray-500 uppercase tracking-wide">
@@ -53,14 +24,23 @@ const SectionHeader = ({ label, isCollapsed }: { label: string; isCollapsed: boo
   );
 };
 
-export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+export function Sidebar() {
+  const {
+    activeSection,
+    projectSubView,
+    promptSubView,
+    isSidebarOpen,
+    setActiveSection,
+    setProjectSubView,
+    setPromptSubView,
+    toggleSidebar,
+  } = useUiStore();
 
   return (
     <aside
       className={`flex-shrink-0 bg-[#F7F7F5] flex flex-col transition-all duration-300 ${
         isSidebarOpen ? 'w-60' : 'w-12'
-      } overflow-hidden`}
+      } overflow-hidden border-r border-gray-200`}
     >
       <div className="h-12 flex items-center px-4 hover:bg-gray-200/50 cursor-pointer transition-colors m-2 rounded">
         <div
@@ -74,71 +54,66 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
           我的工作區
         </div>
         <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          onClick={toggleSidebar}
           className={`ml-auto p-1 text-gray-400 hover:text-gray-600 rounded ${
             !isSidebarOpen && 'w-full flex justify-center'
           }`}
         >
-          {isSidebarOpen ? <ChevronRight size={16} className="rotate-180" /> : <ChevronRight size={16} />}
+          {isSidebarOpen ? (
+            <ChevronRight size={16} className="rotate-180" />
+          ) : (
+            <ChevronRight size={16} />
+          )}
         </button>
       </div>
 
       <nav className="flex-1 px-2 py-2 overflow-y-auto custom-scrollbar">
-        <SectionHeader label="Library" isCollapsed={!isSidebarOpen} />
+        <SectionHeader label="Projects" isCollapsed={!isSidebarOpen} />
         <NavItem
           icon={Layout}
-          label="資料庫"
-          isActive={currentSection === 'library'}
+          label="專案列表"
+          isActive={activeSection === 'projects' && projectSubView === 'list'}
           isCollapsed={!isSidebarOpen}
-          onClick={() => onSectionChange('library')}
+          onClick={() => { setActiveSection('projects'); setProjectSubView('list'); }}
+        />
+        <NavItem
+          icon={Kanban}
+          label="專案看板"
+          isActive={activeSection === 'projects' && projectSubView === 'board'}
+          isCollapsed={!isSidebarOpen}
+          onClick={() => { setActiveSection('projects'); setProjectSubView('board'); }}
         />
 
-        <SectionHeader label="Inbox" isCollapsed={!isSidebarOpen} />
+        <SectionHeader label="Prompts" isCollapsed={!isSidebarOpen} />
         <NavItem
-          icon={Inbox}
-          label="暫存區"
-          isActive={currentSection === 'inbox'}
+          icon={ListIcon}
+          label="提示詞列表"
+          isActive={activeSection === 'prompts' && promptSubView === 'list'}
           isCollapsed={!isSidebarOpen}
-          onClick={() => onSectionChange('inbox')}
-        />
-
-        <SectionHeader label="Storage" isCollapsed={!isSidebarOpen} />
-        <NavItem
-          icon={Trash2}
-          label="回收站"
-          isActive={currentSection === 'trash'}
-          isCollapsed={!isSidebarOpen}
-          onClick={() => onSectionChange('trash')}
+          onClick={() => { setActiveSection('prompts'); setPromptSubView('list'); }}
         />
         <NavItem
-          icon={Archive}
-          label="封存"
-          isActive={currentSection === 'archive'}
+          icon={Kanban}
+          label="提示詞看板"
+          isActive={activeSection === 'prompts' && promptSubView === 'board'}
           isCollapsed={!isSidebarOpen}
-          onClick={() => onSectionChange('archive')}
+          onClick={() => { setActiveSection('prompts'); setPromptSubView('board'); }}
         />
 
         <SectionHeader label="Tools" isCollapsed={!isSidebarOpen} />
         <NavItem
-          icon={History}
-          label="歷史記錄"
-          isActive={currentSection === 'history'}
-          isCollapsed={!isSidebarOpen}
-          onClick={() => onSectionChange('history')}
-        />
-        <NavItem
           icon={Clipboard}
           label="剪貼簿"
-          isActive={false}
+          isActive={activeSection === 'clipboard'}
           isCollapsed={!isSidebarOpen}
-          onClick={() => {}}
+          onClick={() => setActiveSection('clipboard')}
         />
         <NavItem
           icon={Settings}
           label="設定"
-          isActive={currentSection === 'settings'}
+          isActive={activeSection === 'settings'}
           isCollapsed={!isSidebarOpen}
-          onClick={() => onSectionChange('settings')}
+          onClick={() => setActiveSection('settings')}
         />
       </nav>
     </aside>

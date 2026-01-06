@@ -29,6 +29,15 @@
 - Q: 回收站復原的 `strategy=rename` 時，`newSlug` 的適用範圍？ → A: `newSlug` 僅替換原本的 slug（同一路徑位置復原）；不支援跨專案搬移復原。
 - Q: 回收站自動清理（retention）要怎麼觸發？ → A: server 啟動時先跑一次，之後每日固定時間跑（例如 03:00，本機時區）。
 - Q: 儲存 settings 時，`rootPath`/`attachmentPath` 不存在要怎麼處理？ → A: 直接回 400 並要求使用者先建立資料夾；server 不自動建立目錄。
+- Q: Sidebar 導覽要嚴格照 prototype（僅 Projects/Prompts/Clipboard/Settings）還是需納入規格入口（Inbox/Archive/Trash）？ → A: 採混合：保留 prototype 的 Projects/Prompts 四項（列表/看板），並在 Tools 區加入 Inbox/Archive/Trash；Clipboard/Settings 仍保留。
+- Q: Archive 要作為 Tools 的獨立入口，或是 Projects/Prompts 的封存子視圖？ → A: Archive 是 Tools 的獨立入口（activeSection=archive），進去後以單一頁面同時顯示已封存專案 + 已封存提示詞（含類型篩選切換）。
+- Q: Project.status 的允許值要採用哪一組？ → A: `planned | in_progress | paused | done`（對齊 prototype 的 4 欄）。
+- Q: Prompt.status 的允許值要採用哪一組？ → A: `draft | needs_review | ready | deprecated`。
+- Q: Prompt.priority 的允許值要採用哪一組？ → A: `high | medium | low`（固定枚舉）。
+- Q: FR-002「記住上次視圖狀態與篩選條件」的狀態要存哪裡？ → A: 寫入 WorkspaceSettings（走 API 落盤）；不使用 localStorage 作為權威狀態來源。
+- Q: Tools → Archive（已封存）視圖要顯示哪些內容？ → A: 同一頁顯示已封存專案 + 已封存提示詞，並可用篩選切換類型。
+- Q: Snippet（剪貼簿/常用片語）要如何落盤？ → A: 以檔案落盤：每個 Snippet 一個檔，放在 `<rootPath>/.pah/snippets/`；掃描可重建。
+- Q: UI-003 的 Detail Panel 要用固定右欄或 overlay？ → A: 使用 overlay 右滑面板（有 backdrop，點背景可關閉），不佔固定欄位。
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -130,6 +139,9 @@
 ### Functional Requirements
 
 - **FR-001**: 系統必須允許建立、編輯、封存、刪除專案與提示詞，並保存標題、摘要/正文、狀態、優先級、標籤、備註、來源連結、更新時間。
+	- Project.status 枚舉：`planned | in_progress | paused | done`。
+	- Prompt.status 枚舉：`draft | needs_review | ready | deprecated`。
+	- Prompt.priority 枚舉：`high | medium | low`。
 	- 刪除語意：刪除必須移到回收站（`<rootPath>/.pah/trash/`）且可復原；封存僅為 `archived=true`（不移動檔案）。
 	- 附件處理：刪除/復原必須一併移動該實體的附件資料夾（`<attachmentPath>/<entityType>/<entityId>/`）。
 	- 復原衝突：若復原目的地已存在同名/同路徑檔案或附件資料夾，必須要求使用者選擇（覆蓋/改名/取消）。
@@ -137,6 +149,8 @@
 	- 回收站自動清理（retention）：server 啟動時先執行一次清理；之後每日固定時間執行（例如 03:00，本機時區）；清理失敗需可觀測並允許重試。
 	- 回收站操作：提供回收站列表與永久刪除（不可復原）能力；永久刪除需明確確認，並提供可理解的回饋。
 - **FR-002**: 專案與提示詞列表須支援列表/看板視圖切換，並記住上次視圖狀態與套用的篩選條件。
+	- 持久化：視圖/篩選屬於 UI 偏好，需透過 WorkspaceSettings API 落盤保存並可於重啟後重建；不得以 localStorage 作為權威來源。
+	- 已封存視圖（Archive）：作為 Tools 的獨立入口（非 Projects/Prompts 子視圖），以單一視圖呈現已封存專案與已封存提示詞，並提供類型篩選切換。
 - **FR-003**: 提示詞詳情頁必須支援正文與中繼資料同頁編輯，並在停止輸入 ≤ 2 秒內自動保存，顯示成功時間/失敗訊息。
 - **FR-004**: 支援拖曳圖片/附件到編輯區，系統需移動至附件目錄、產生檔名並插入引用連結。
 - **FR-005**: 提供搜尋與篩選：可依標題、標籤、正文全文檢索，並以狀態、優先級、標籤快速篩選；結果應可直接開啟詳情。
@@ -154,15 +168,23 @@
 
 ### UI / 互動模式需求（可驗收）
 
-- **UI-001（Sidebar）**：必須提供左側 Sidebar 作為主要導航，至少包含：專案/提示詞入口、暫存區、封存視圖、設定。
+
+- **UI-001（Sidebar）**：必須提供左側 Sidebar 作為主要導航，並採用「prototype + 規格入口」混合結構：
+	- **Projects**：專案列表 / 專案看板
+	- **Prompts**：提示詞列表 / 提示詞看板
+	- **Tools**：暫存區（Inbox）/ 已封存（Archive）/ 回收站（Trash）/ 剪貼簿（Clipboard）/ 設定（Settings）
+		- Archive：Tools 的獨立入口（非 Projects/Prompts 子視圖）；同一頁顯示已封存專案 + 已封存提示詞，並可用篩選切換類型。
 	- 需包含「回收站」入口，提供回收站視圖（搜尋/篩選、復原、永久刪除）。
 	- Sidebar 必須顯示目前選取的節點並維持單一選取狀態。
 	- **驗收**：在 Sidebar 切換「提示詞」與「暫存區」，主內容區立即切換且不遺失目前篩選條件（除非使用者明確重設）。
 
 - **UI-002（列表/看板切換）**：資產集合視圖必須支援「列表」與「看板」切換；切換不改變資料集合，只改變呈現方式。
 	- **驗收**：在列表套用搜尋/篩選後切到看板，再切回列表，結果集保持一致。
+	- **驗收補充**：重啟服務/重新載入頁面後，系統可從 WorkspaceSettings 還原上次的視圖模式與篩選條件；不得依賴 localStorage 才能恢復。
 
-- **UI-003（右側 Detail Panel）**：選取列表/看板中的項目時，必須於右側 Detail Panel 顯示詳情並支援同頁編輯（正文 + 中繼資料）。
+
+- **UI-003（右側 Detail Panel）**：選取列表/看板中的項目時，必須以「右側 overlay 滑入面板」顯示詳情並支援同頁編輯（正文 + 中繼資料）。
+	- 需有 backdrop，並支援點擊 backdrop 關閉面板。
 	- Detail Panel 需顯示保存狀態（Saving/Saved/Failed + 時間戳），並在失敗時提供可重試入口。
 	- **驗收**：停筆 ≤ 2 秒觸發 autosave，狀態正確更新；重新載入後內容一致。
 
@@ -177,8 +199,12 @@
 
 - **Workspace**: 根目錄、附件目錄、全域標籤字典、常用選項、備份設定、外部整合授權資訊。
 - **Project**: 識別碼、標題、摘要、狀態、專案類型、標籤、關聯檔案、更新時間、封存狀態。
+	- status: `planned | in_progress | paused | done`
 - **Prompt**: 識別碼、所屬專案、標題、狀態（草稿/待優化/可用/停用）、優先級、標籤、來源連結、備註、正文、更新時間、封存狀態。
+	- status: `draft | needs_review | ready | deprecated`
+	- priority: `high | medium | low`
 - **Snippet**: 識別碼、標題、分類、內容、最近使用時間（供片語快速插入）。
+	- 落盤：每個 Snippet 為單一檔案，集中於 `<rootPath>/.pah/snippets/`；可掃描重建。
 - **InboxItem**: 識別碼、標題、來源平台/連結、匯入時間、原始內容、清理狀態、建議歸檔目的地與標籤。
 - **Attachment**: 檔名、類型、來源、儲存位置、關聯對象（Project/Prompt/InboxItem）。
 - **VersionEvent**: 事件類型（匯入成功/歸檔/刪除/每日快照/手動備份）、事件時間、訊息、受影響範圍。
@@ -187,6 +213,7 @@
 
 - **INV-001（檔案為唯一權威）**：磁碟上的檔案內容（frontmatter + markdown body + 附件檔案）是唯一真實來源；任何 UI 顯示狀態都必須可由檔案推導。
 - **INV-002（掃描可重建）**：在清空記憶體索引/重啟服務後，只要掃描資料根目錄即可完整重建 Sidebar、列表/看板、Detail Panel 所需的所有顯示資料。
+	- Snippet 也必須可由掃描 `<rootPath>/.pah/snippets/` 重建（不得只存在於前端 store 或 localStorage）。
 - **INV-003（不允許 UI 私有真實狀態）**：UI 不得持有無法落盤/無法重建的「私有真實狀態」（例如只存在於 localStorage 的權威欄位值、只存在於前端 store 的最終狀態）。
 	- 允許：純展示偏好（例如視圖模式、欄位寬度）作為非權威狀態。
 

@@ -19,7 +19,8 @@
     "lucide-react": "^0.562.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@playwright/test": "^1.38.0",

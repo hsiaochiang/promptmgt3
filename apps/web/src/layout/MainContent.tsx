@@ -1,22 +1,17 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import { Kanban, List as ListIcon, Search, X } from 'lucide-react';
-import { ListView } from '../features/library/ListView';
+import { ProjectView } from '../features/projects/ProjectView';
+import { PromptView } from '../features/prompts/PromptView';
 import { InboxView } from '../features/inbox/InboxView';
 import { SettingsView } from '../features/settings/SettingsView';
 import { HistoryView } from '../features/history/HistoryView';
 import { TrashView } from '../features/trash/TrashView';
 import { ArchiveView } from '../features/archive/ArchiveView';
-import type { PromptEntity } from '@pah/contracts';
-
-type ViewMode = 'list' | 'board';
-type SidebarSection = 'library' | 'inbox' | 'trash' | 'archive' | 'history' | 'settings';
+import type { ActiveSection } from '../state/uiStore';
+import { useUiStore } from '../state/uiStore';
 
 interface MainContentProps {
-  section: SidebarSection;
-  viewMode: ViewMode;
-  onViewModeChange: (mode: ViewMode) => void;
-  onSelectPrompt: (prompt: PromptEntity | null) => void;
-  selectedPromptId: string | null;
+  activeSection: ActiveSection;
 }
 
 const GhostButton = ({
@@ -107,27 +102,28 @@ const ExpandableSearch = ({
   );
 };
 
-export function MainContent({
-  section,
-  viewMode,
-  onViewModeChange,
-  onSelectPrompt,
-  selectedPromptId,
-}: MainContentProps) {
+export function MainContent({ activeSection }: MainContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { 
+    projectSubView, 
+    promptSubView, 
+    setProjectSubView, 
+    setPromptSubView 
+  } = useUiStore();
 
   const title =
-    section === 'library'
-      ? '資料庫'
-      : section === 'inbox'
-        ? '暫存區'
-        : section === 'trash'
-          ? '回收站'
-          : section === 'archive'
-            ? '封存'
-            : section === 'history'
-              ? '歷史記錄'
-              : '設定';
+    activeSection === 'projects'
+      ? '專案管理'
+      : activeSection === 'prompts'
+        ? '提示詞管理'
+        : activeSection === 'clipboard'
+          ? '剪貼簿'
+          : '設定';
+
+  // 簡單的 View Mode 切換邏輯
+  const currentSubView = activeSection === 'projects' ? projectSubView : promptSubView;
+  const setSubView = activeSection === 'projects' ? setProjectSubView : setPromptSubView;
+  const showViewToggle = activeSection === 'projects' || activeSection === 'prompts';
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
@@ -139,18 +135,18 @@ export function MainContent({
 
         <div className="flex justify-between items-center border-b border-gray-100 pb-1">
           <div className="flex gap-1">
-            {section === 'library' && (
+            {showViewToggle && (
               <>
                 <GhostButton
-                  active={viewMode === 'list'}
-                  onClick={() => onViewModeChange('list')}
+                  active={currentSubView === 'list'}
+                  onClick={() => setSubView('list')}
                   icon={ListIcon}
                 >
                   列表
                 </GhostButton>
                 <GhostButton
-                  active={viewMode === 'board'}
-                  onClick={() => onViewModeChange('board')}
+                  active={currentSubView === 'board'}
+                  onClick={() => setSubView('board')}
                   icon={Kanban}
                 >
                   看板
@@ -163,7 +159,7 @@ export function MainContent({
             <ExpandableSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={section === 'library' ? '搜尋提示詞...' : `搜尋${title}...`}
+              placeholder={`搜尋${title}...`}
             />
           </div>
         </div>
@@ -171,22 +167,12 @@ export function MainContent({
 
       {/* Content */}
       <div
-        className={`flex-1 overflow-y-auto overflow-x-hidden ${
-          section === 'library' && viewMode === 'board' ? 'bg-[#F7F7F5] p-0' : 'bg-white px-8'
-        } custom-scrollbar`}
+        className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar ${
+          currentSubView === 'board' ? 'bg-[#F7F7F5] p-0' : 'bg-white px-8'
+        }`}
       >
-        {section === 'library' && (
-          <ListView
-            viewMode={viewMode}
-            searchQuery={searchQuery}
-            onSelectPrompt={onSelectPrompt}
-            selectedPromptId={selectedPromptId}
-          />
-        )}
-        {section === 'inbox' && <InboxView />}
-        {section === 'trash' && <TrashView />}
-        {section === 'archive' && <ArchiveView />}
-        {section === 'history' && <HistoryView />}
+        {activeSection === 'projects' && <ProjectView />}
+        {activeSection === 'prompts' && <PromptView />}
         {section === 'settings' && <SettingsView />}
       </div>
     </div>
