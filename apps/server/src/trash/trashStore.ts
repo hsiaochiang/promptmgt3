@@ -15,6 +15,7 @@ import {
   getTrashItemManifestPath,
 } from '../fs-layout/index.js';
 import { loadWorkspaceSettings } from '../routes/workspace.js';
+import { normalizeSlug } from '../utils/slug.js';
 
 type TrashManifest = TrashItem & {
   sizeBytes?: number;
@@ -218,18 +219,21 @@ export async function purgeTrashItem(options: { rootPath: string; trashId: strin
 function computeRestoreTarget(originalRelativePath: string, request: TrashRestoreRequest): string {
   if (request.strategy !== 'rename' || !request.newSlug) return originalRelativePath;
 
+  // Normalize the slug to ensure consistency
+  const normalizedSlug = normalizeSlug(request.newSlug);
+
   // Heuristic rename: replace the last slug segment before optional extension.
   // - .../<slug>.md -> .../<newSlug>.md
   // - .../<slug>/... -> .../<newSlug>/... is handled by callers that pass a directory path
   const parts = originalRelativePath.split('/');
   const last = parts[parts.length - 1];
   if (last.endsWith('.md')) {
-    parts[parts.length - 1] = `${request.newSlug}.md`;
+    parts[parts.length - 1] = `${normalizedSlug}.md`;
     return parts.join('/');
   }
 
   // If last segment is a directory name
-  parts[parts.length - 1] = request.newSlug;
+  parts[parts.length - 1] = normalizedSlug;
   return parts.join('/');
 }
 

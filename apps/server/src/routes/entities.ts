@@ -18,6 +18,7 @@ import {
   scanWorkspace,
 } from '../indexing/index.js';
 import { moveEntityToTrash } from '../trash/trashStore.js';
+import { normalizeSlug } from '../utils/slug.js';
 
 /**
  * Register project routes
@@ -71,7 +72,7 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
 
       // Generate ID and slug
       const id = uuidv4();
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = normalizeSlug(title);
       const now = new Date().toISOString();
 
       // Create project entity
@@ -263,7 +264,7 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
 
       // Generate ID and slug
       const id = uuidv4();
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = normalizeSlug(title);
       const now = new Date().toISOString();
 
       // Create prompt entity
