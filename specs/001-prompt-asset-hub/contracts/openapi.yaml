@@ -44,6 +44,10 @@ paths:
         - in: query
           name: status
           schema: { type: string }
+        - in: query
+          name: archived
+          description: 是否包含已封存專案（預設 false）
+          schema: { type: boolean, default: false }
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Project' } } } } }
     post:
@@ -68,6 +72,10 @@ paths:
         - in: query
           name: priority
           schema: { type: string }
+        - in: query
+          name: archived
+          description: 是否包含已封存提示詞（預設 false）
+          schema: { type: boolean, default: false }
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Prompt' } } } } }
     post:
@@ -258,7 +266,7 @@ paths:
         '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/InboxItem' } } } }
         '404': { description: Not Found }
     delete:
-      summary: 刪除暫存項
+      summary: 刪除暫存項（永久刪除；不進回收站）
       parameters:
         - in: path
           name: id
@@ -269,7 +277,7 @@ paths:
         '404': { description: Not Found }
   /api/search:
     post:
-      summary: 搜尋資產（title/tags/body）
+      summary: 搜尋資產（title/tags/body；預設只搜 Project/Prompt 且 archived=false，不含 Inbox/Trash）
       requestBody:
         required: true
         content:
@@ -528,7 +536,24 @@ components:
       type: object
       properties:
         query: { type: string }
-        viewScope: { type: string }
+        includeArchived:
+          type: boolean
+          default: false
+          description: 是否包含已封存（預設 false）
+        includeInbox:
+          type: boolean
+          default: false
+          description: 是否包含 InboxItem（預設 false）
+        includeTrash:
+          type: boolean
+          default: false
+          description: 是否包含 Trash（預設 false）
+        entityTypes:
+          type: array
+          description: 要搜尋的實體類型（預設 [project,prompt]）
+          items:
+            type: string
+            enum: [project, prompt]
         page: { type: integer }
         perPage: { type: integer }
     SearchResponse:

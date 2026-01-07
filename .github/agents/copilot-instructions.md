@@ -29,7 +29,7 @@ TypeScript 5.x（前後端共用），Node.js 20 LTS: Follow standard convention
 
 ## Recent Changes
 - 001-prompt-asset-hub: Added TypeScript 5.3（Node.js 20 LTS）、React 18
-- 001-prompt-asset-hub: Added TypeScript（strict）+ Node.js 20 LTS
+- 001-prompt-asset-hub: Added TypeScript 5.3（Node.js 20 LTS）、React 18
 - 001-prompt-asset-hub: Added TypeScript（strict）+ Node.js 20 LTS
 
 

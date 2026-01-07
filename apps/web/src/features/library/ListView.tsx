@@ -197,7 +197,7 @@ function BoardView({
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className="font-medium text-gray-800 leading-tight text-xs">{prompt.title}</span>
-                    {prompt.priority === 'P0' && (
+                    {prompt.priority === 'high' && (
                       <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1" title="High Priority" />
                     )}
                   </div>

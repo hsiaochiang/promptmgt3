@@ -26,7 +26,7 @@ describe('Contract Tests - OpenAPI spec', () => {
     const searchIndex = specText.indexOf('/api/search:');
     expect(searchIndex).toBeGreaterThan(-1);
 
-    const slice = specText.slice(searchIndex, searchIndex + 400);
+    const slice = specText.slice(searchIndex, searchIndex + 500);
     expect(slice).toContain('post:');
     expect(slice).toContain('SearchRequest');
     expect(slice).toContain('SearchResponse');

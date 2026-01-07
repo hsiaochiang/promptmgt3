@@ -128,27 +128,15 @@
 - updatedAt (datetime)
 
 ### Prompt
-- id (uuid)
-- slug (string)
-- projectId (string)
-- title (string)
-- status (enum: draft/needs_review/ready/deprecated)
+	- slug 規則：僅允許 ASCII kebab-case（`a-z0-9-`）；空白→`-`、連續 `-` 合併；其他字元轉換或移除。
 - priority (enum: high/medium/low)
-- tags (string[])
-- sourceLink (string)
-- notes (string)
-- body (markdown)
-- attachments (AttachmentRef[])
+	- 附件命名：上傳時產生 UUID 檔名並保留副檔名（避免覆蓋與跨平台檔名問題）
+	- Snapshot：若附件缺失或單一檔案複製失敗，允許記為 warning（manifest 可追溯）並允許重試；不得靜默。
 - updatedAt (datetime)
-- archived (boolean)
-
-### Snippet
-- id (uuid)
-- title (string)
-- category (enum: role/format/constraint/style/uncategorized)
-- content (string)
+> 註：搜尋（FR-005）的預設範圍為 Active 主資產：Project/Prompt 且 `archived=false`；不含 Trash、不含 Inbox。
 - lastUsedAt (datetime)
-
+#### InboxItem delete 語意
+- 永久刪除：不進回收站且不可復原；對應落盤檔案為 `inbox/<inboxId>.md` 的刪除。
 ### InboxItem
 - id (uuid)
 - title (string)

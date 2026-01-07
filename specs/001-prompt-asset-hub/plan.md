@@ -1,39 +1,44 @@
 # 實作計畫：001-prompt-asset-hub — 檔案為核心的提示詞資產管理主系統
 
-**Language**: zh-TW（繁體中文）  
-**Branch**: `001-prompt-asset-hub` | **Date**: 2026-01-06 | **Spec**: ./spec.md  
+Language: zh-TW（繁體中文）
+
+**Branch**: `001-prompt-asset-hub` | **Date**: 2026-01-07 | **Spec**: ./spec.md  
 **Input**: 規格來源 `/specs/001-prompt-asset-hub/spec.md`
 
 <!-- Language requirement: All specifications and plans MUST be written in Traditional Chinese (zh-TW). -->
 
-**備註**：此文件由 `/speckit.plan` 產生後再補齊內容；執行流程請參考 `.specify/templates/commands/plan.md`。
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## 摘要
 
-本功能提供一套「檔案為唯一權威（local-first）」的提示詞資產管理：以專案/提示詞為核心，支援列表/看板、搜尋/篩選、Detail Panel 同頁編輯與 ≤2s autosave、附件拖放、回收站（可復原 + retention）、以及版本節點/每日快照。
+本功能提供一套「檔案為唯一權威（local-first）」的提示詞資產管理：以 Project/Prompt 為核心，支援列表/看板、搜尋/篩選、Detail Panel 同頁編輯與 ≤2s autosave、附件拖放（UUID 檔名）、回收站（可復原 + retention）、版本節點/每日快照（含附件複本），以及 Tools 區的 Inbox/Archive/Trash/Clipboard/Settings。
 
-技術上採用 monorepo：
-- 後端：Fastify（本機單人模式 API）+ chokidar 監控檔案異動，資料落盤於 `<rootPath>` 與 `<attachmentPath>`。
-- 前端：React + Vite + Tailwind，UI 視覺/互動以 `0resource/ui_prototype_v3.jsx` 為 Golden Reference。
-- Contracts-first：DTO/Schema 以 `packages/contracts` 與 specs 的 OpenAPI 為契約來源，並以 Vitest 契約測試護欄。
+技術上採 monorepo：
+- 後端：Fastify（本機單人模式 API）+ chokidar 監控檔案異動
+- 前端：React + Vite + Tailwind（UI vocabulary 對齊 `0resource/ui_prototype_v3.jsx`）
+- Contracts-first：以 `packages/contracts` + `specs/001-prompt-asset-hub/contracts/openapi.yaml` 為契約，並由 Vitest contract tests 保護
 
-## 技術背景
+## 技術背景（Technical Context）
 
 <!--
-  提示：本段落以「可直接拿來實作/驗收」為原則，描述技術堆疊、限制、效能目標與測試護欄。
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
 -->
 
-**語言／版本**：TypeScript 5.3（Node.js 20 LTS）、React 18
+**Language/Version**: TypeScript 5.3（Node.js 20 LTS）、React 18
+
+**語言／版本**：TypeScript 5.3（Node.js 20 LTS）、React 18  
 **主要相依套件**：
 - Backend: Fastify 4.x、chokidar、gray-matter、zod、ws
 - Frontend: Vite 5、Tailwind 3、zustand、lucide-react
-**儲存**：檔案系統（Markdown + frontmatter + 附件目錄），內部資料置於 `<rootPath>/.pah/`（workspace settings、trash、cache、events）
+**儲存**：檔案系統（Markdown + frontmatter + 附件目錄），系統資料置於 `<rootPath>/.pah/`（workspace settings、trash、cache、events、snippets）
 **測試**：Vitest（unit/contract/integration）、Playwright（web e2e）
 **目標平台**：本機桌面環境（Windows 優先；設計需可跨平台）
 **專案型態**：Monorepo（`apps/server` + `apps/web` + `packages/contracts`）
 **效能目標**：
 - 搜尋/篩選：在 5,000 筆資產下，95% 查詢 < 1 秒（見 spec SC-002）
-- 本機 API / 檔案操作：baseline p95 < 100ms（視 feature 逐步量測與調整）
+- 本機 API / 檔案操作：baseline p95 < 100ms（基準；逐步量測與調整）
 - Autosave：停止輸入 ≤ 2 秒觸發並提供 Saving/Saved/Failed 回饋
 **限制條件**：
 - 單人本機模式：不做登入/權限模型；但需檢查 rootPath/attachmentPath 存在且具讀寫權限
@@ -43,6 +48,8 @@
 **規模／範圍**：以 1 位使用者、5,000 筆 Project/Prompt/InboxItem 為 MVP 目標規模
 
 ## 憲法檢核（Constitution Check）
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 *Gate：必須在 Phase 0 之前通過，並於 Phase 1 設計完成後再次檢查。*
 
@@ -63,11 +70,11 @@
 - [x] 回饋機制：使用者操作 200ms 內提供可見回饋（saving/toast/error）
 
 **Performance Requirements**:
-- [x] 響應時間目標：搜尋 p95<1s、一般 IO/API baseline p95<100ms（見 Technical Context）
+- [x] 響應時間目標：搜尋 p95<1s、一般 IO/API baseline p95<100ms
 - [x] 資源限制：以 5,000 筆資產為 MVP；快照/附件複製需可觀測並可重試
-- [x] 基準測試計畫：索引重建、搜尋、寫檔、快照建立耗時（見 research.md Notes）
+- [x] 基準測試計畫：索引重建、搜尋、寫檔、快照/回收站 list（見 tasks T076）
 
-**Gate 結論**: PASS（可進入 Phase 0；若後續發現 contracts 與 spec enum 不一致，需在 Phase 1/2 以契約更新處理）
+**Gate 結論**: PASS
 
 ## 專案結構
 
@@ -84,12 +91,16 @@ specs/[###-feature]/
 ```
 
 ### 原始碼（Repo Root）
+
 ```text
 apps/
   server/
     src/
       routes/
       fs-layout/
+      trash/
+      backup/
+      watch/
       ...
   web/
     src/
@@ -97,6 +108,7 @@ apps/
       features/
       state/
       ui/
+      ...
 packages/
   contracts/
     src/
@@ -114,26 +126,32 @@ tests/
 
 ## Phase Plan（到 Phase 2 規劃為止）
 
-> 說明：Phase 3+ 的實作任務、順序與分工以 `tasks.md` 為準；本文件在此僅先定義到 Phase 2 的規劃與 Gate。
-
 ### Phase 0 — Outline & Research
-- 整理並對齊已定案澄清（Archive/enum/snippets path/overlay detail panel）到 research.md（決策 + rationale + alternatives）。
-- 盤點現行實作與 spec 的差異（例如：Snippet 目前在 server `fs-layout` 指向 `<rootPath>/snippets`，需遷移至 `<rootPath>/.pah/snippets`）。
+- 將 2026-01-07 新澄清（搜尋 scope、附件 UUID 檔名、id/slug、階層式路徑、slug 規則）補齊到 research.md（Decision/Rationale/Alternatives）。
+- 修補 research.md 中尚未完成的 retention 決策段落（D9）。
 
 ### Phase 1 — Design & Contracts
-- 更新 data-model.md：檔案 mapping、frontmatter 欄位、enum（Project/Prompt status、Prompt priority）、Snippet 落盤路徑。
-- 更新 specs/contracts/openapi.yaml：補上 enum、archived 篩選等契約細節。
-- 更新 quickstart.md：確保操作路徑與最新 Sidebar/Archive/Trash/Detail overlay 一致。
+- 更新 data-model.md：
+	- slug 規則（ASCII kebab-case）
+	- 附件命名（UUID + 副檔名，不再用 suffix 避免同名）
+	- 搜尋預設 scope（Project/Prompt 且 archived=false；不含 Inbox/Trash）
+- 更新 OpenAPI：
+	- /api/search 的預設行為與可選 scope 參數
+	- /api/projects 與 /api/prompts 支援 archived filter（預設 false）
+	- /api/inbox delete 語意（永久刪除、不進回收站）
+- 更新 quickstart.md：讓驗收步驟與上述決策一致。
 
-### Phase 2 — Task Planning（由 /speckit.tasks 產出）
-- 以 contracts-first 將 contracts package（`packages/contracts`）與 server/web 行為對齊最新 enum 與 Snippet 路徑。
-- 增補契約測試/整合測試，確保 UI regression（含截圖/錄影）與核心 flows 不回歸。
+### Phase 1 — Agent Context Update
+- 執行 `.specify/scripts/powershell/update-agent-context.ps1 -AgentType copilot` 更新 agent context（僅加入本次新增技術/決策）。
 
-## 複雜度追蹤
+### Phase 2 — Task Planning
+- 以 tasks.md 為主，確保 contracts-first 的變更點（search scope、archived filter、attachment uuid、partial failure warnings）都能落到具體任務與測試。
 
-> 只有在憲法檢核有違規且必須提出理由時才需要填寫
+## Complexity Tracking
 
-| 違規項目 | 必要原因 | 為何不採用更簡單方案 |
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

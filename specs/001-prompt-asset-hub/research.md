@@ -37,6 +37,8 @@
   - 無 debounce：IO 壓力大。
   - 延遲過長：體感落差、易資料遺失。
 
+**補充（2026-01-07）**：附件上傳檔名採 UUID（保留副檔名），避免同名覆蓋與跨平台檔名問題。
+
 ### D6: 刪除語意採回收站（Soft Delete）
 - **Decision**: 「刪除」不做永久刪除；刪除 = 移至 `<rootPath>/.pah/trash/`，可復原。永久刪除需在回收站中明確觸發並二次確認。
 - **Rationale**: 避免誤刪；符合本機工具的可逆操作期待；也與版本/快照的可回溯理念一致。
@@ -59,8 +61,59 @@
   - 永遠自動改名：雖安全但會造成使用者困惑，且可能破壞預期路徑/slug。
 
 ### D9: 回收站自動清理（Retention）
+
+- **Decision**: 回收站預設保留 30 天（可設定）；server 啟動時先清理一次，之後每日固定時間（預設 03:00，本機時區）執行；清理失敗需可觀測並允許重試。
+- **Rationale**: 控制磁碟佔用並維持「可復原」的安全性；固定時間排程符合本機工具期待，啟動先跑可避免長時間未啟動造成的累積。
+- **Alternatives**:
   - 不清理：磁碟佔用不可控。
   - 固定天數不可調：無法滿足不同使用情境。
+  - 僅靠使用者手動清理：容易遺忘且不符合 retention 要求。
+
+### D12: 搜尋預設範圍（Active only）
+
+- **Decision**: 搜尋（FR-005）的預設範圍為主資產 Active：只搜尋 Project/Prompt 且 `archived=false`；不含 Trash、不含 Inbox。
+- **Rationale**: 避免已刪除/工具資料混入主要工作流；使用者所在視圖即為工作集合，預設結果更可預期。
+- **Alternatives**:
+  - 連同 archived：結果更全面但容易稀釋「正在處理」的集合。
+  - 連同 inbox/trash：在資訊噪音與誤觸上成本較高。
+
+### D13: 附件檔名策略（UUID + 副檔名）
+
+- **Decision**: 拖曳圖片/附件上傳時，一律產生 UUID 檔名並保留副檔名。
+- **Rationale**: 最大化避免檔名衝突、Windows 保留字/非法字元，以及不同來源檔名造成的不可預期；也利於快照/版本複製的一致性。
+- **Alternatives**:
+  - 保留原始檔名 + suffix：可讀性高但仍會遇到跨平台檔名/保留字問題。
+  - 讓使用者輸入：互動成本高，不符合拖放的順暢體驗。
+
+### D14: 實體識別與路徑策略（id=UUID，路徑=slug）
+
+- **Decision**: Project/Prompt 以 `id=UUID` 作為唯一識別（frontmatter）；檔案路徑使用 `slug`（可改名）；rename/restore 只改 slug，不改 id。
+- **Rationale**: 兼顧穩定關聯（id）與可讀路徑（slug）；支援改名/復原衝突處理時語意清晰。
+- **Alternatives**:
+  - id=slug：改名變成換 id，會破壞引用/附件關聯。
+  - 路徑也用 UUID：穩定但可讀性差，不利於使用者在檔案系統中手動管理。
+
+### D15: 落盤佈局（Prompt 階層式置於 Project 之下）
+
+- **Decision**: Prompt 檔案放在 Project 資料夾底下（階層式），例如 `projects/<projectSlug>/prompts/<promptSlug>.md`。
+- **Rationale**: 符合「檔案為核心」與使用者直覺的檔案組織方式；也利於專案搬移/備份與掃描重建。
+- **Alternatives**:
+  - Prompts 平鋪：索引查找方便，但檔案系統可讀性降低，且需要更多關聯查詢。
+
+### D16: slug 規則（ASCII kebab-case）
+
+- **Decision**: slug 僅允許 ASCII kebab-case（`a-z0-9-`）；空白→`-`、連續 `-` 合併；其他字元轉換或移除。
+- **Rationale**: 最小化跨平台檔名問題（Windows/zip/git/URL）；也讓 restore/rename 衝突處理更一致。
+- **Alternatives**:
+  - 允許 Unicode：可保留中文但會遇到更多檔案系統/工具相容性邊界。
+  - 手動輸入：一致性不足且增加互動成本。
+
+### D17: InboxItem delete 語意（永久刪除，不進回收站）
+
+- **Decision**: InboxItem delete 為永久刪除：不進 `<rootPath>/.pah/trash/` 且不可復原；需明確確認並提供成功/失敗回饋。
+- **Rationale**: Inbox 屬工具性暫存資料，刪除代表「不再保留」；避免將暫存項與主要資產回收站混在一起造成噪音。
+- **Alternatives**:
+  - 進回收站：一致性高，但會使 Trash 視圖混雜工具資料，降低主要刪除/復原流程的可讀性。
 
 
 ### D10. Domain enums are fixed by spec (contracts-first)
