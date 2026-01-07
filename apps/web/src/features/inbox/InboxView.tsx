@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { InboxItemEntity } from '@pah/contracts';
 import { MOCK_INBOX_ITEMS } from '../../data/mockData';
 
-const USE_MOCK_DATA = true; // Set to false to use real API
+const USE_MOCK_DATA = false; // Set to false to use real API
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);

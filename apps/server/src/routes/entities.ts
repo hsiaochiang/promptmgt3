@@ -244,6 +244,7 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
   });
 
   // POST /api/prompts - Create a new prompt
+  console.log('>>> WOS DEBUG: Registering POST /api/prompts route');
   server.post<{
     Body: Partial<PromptEntity>;
   }>('/api/prompts', async (request, reply) => {
