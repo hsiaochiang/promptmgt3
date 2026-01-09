@@ -64,7 +64,7 @@ description: "任務清單：001-prompt-asset-hub"
 - [x] T017 [P] 對齊 WorkspaceSettings contract tests（含 UI 偏好 roundtrip + schema defaults）於 tests/contract/workspace-settings-dto.spec.ts、tests/contract/api-workspace-settings.spec.ts
 - [x] T018 對齊 server workspace settings merge/落盤與路徑驗證（rootPath/attachmentPath 必須存在；不 mkdir）於 apps/server/src/routes/workspace.ts
 - [x] T019 [P] 新增 web 端 workspace settings client（get/update）於 apps/web/src/features/settings/api.ts
-- [ ] T020 將 UI 偏好改為「以 WorkspaceSettings 為權威」的載入/保存流程於 apps/web/src/state/uiStore.ts、apps/web/src/App.tsx
+- [x] T020 將 UI 偏好改為「以 WorkspaceSettings 為權威」的載入/保存流程於 apps/web/src/state/uiStore.ts、apps/web/src/App.tsx
 
 - [x] T021 [P] 對齊附件落盤命名策略（UUID + 副檔名）與回傳欄位於 apps/server/src/attachments/index.ts、apps/server/src/routes/attachments.ts
 - [ ] T022 [P] 更新附件 helper unit tests（確保 UUID 命名且保留副檔名、避免覆蓋）於 tests/unit/attachments.spec.ts

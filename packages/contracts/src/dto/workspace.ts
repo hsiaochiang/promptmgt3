@@ -24,6 +24,15 @@ export const WorkspaceSettingsSchema = z.object({
   commonOptions: CommonOptionsSchema,
   backup: BackupSettingsSchema.optional(),
   trashRetentionDays: z.number().int().min(1).default(30),
+
+  // UI Preferences (Persisted state)
+  uiPreferences: z.object({
+    activeSection: z.string().optional(),
+    projectSubView: z.enum(['list', 'board', 'archive']).optional(),
+    promptSubView: z.enum(['list', 'board', 'archive']).optional(),
+    sidebarOpen: z.boolean().optional(),
+  }).optional(),
+
   updatedAt: z.string().datetime().optional(),
 });
 

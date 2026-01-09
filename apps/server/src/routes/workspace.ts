@@ -18,6 +18,12 @@ export interface WorkspaceSettings {
     remote?: string;
   };
   trashRetentionDays?: number;
+  uiPreferences?: {
+    activeSection?: string;
+    projectSubView?: 'list' | 'board' | 'archive';
+    promptSubView?: 'list' | 'board' | 'archive';
+    sidebarOpen?: boolean;
+  };
   updatedAt: string;
 }
 
@@ -43,6 +49,12 @@ export async function loadWorkspaceSettings(rootPath: string): Promise<Workspace
         dailySnapshot: false,
       },
       trashRetentionDays: 30,
+      uiPreferences: {
+        activeSection: 'projects',
+        projectSubView: 'list',
+        promptSubView: 'list',
+        sidebarOpen: true,
+      },
       updatedAt: new Date().toISOString(),
     };
   }
@@ -157,6 +169,13 @@ export async function registerWorkspaceRoutes(server: FastifyInstance, rootPath:
         updatedSettings.backup = {
           ...(currentSettings.backup ?? { dailySnapshot: false }),
           ...update.backup,
+        };
+      }
+
+      if (update.uiPreferences) {
+        updatedSettings.uiPreferences = {
+          ...(currentSettings.uiPreferences ?? {}),
+          ...update.uiPreferences,
         };
       }
 
