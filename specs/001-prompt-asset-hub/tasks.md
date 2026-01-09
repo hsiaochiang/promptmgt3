@@ -34,11 +34,11 @@ description: "任務清單：001-prompt-asset-hub"
 
 **Purpose**: monorepo 啟動、型別檢查、測試命令可重跑，並與 quickstart 對齊。
 
-- [ ] T001 對齊 monorepo scripts（dev:server/dev:web/type-check/test）於 package.json、apps/server/package.json、apps/web/package.json
-- [ ] T002 [P] 強化 TS project references 與 strict/noEmit 設定於 tsconfig.json、apps/server/tsconfig.json、apps/web/tsconfig.json、packages/contracts/tsconfig.json
-- [ ] T003 [P] 驗證並更新 Vitest 設定（contract/integration 覆蓋與執行命令）於 vitest.config.ts、vitest.coverage.contracts.config.ts
-- [ ] T004 [P] 驗證並更新 Playwright 設定（baseURL、trace/video）於 apps/web/playwright.config.ts
-- [ ] T005 [P] 校準 quickstart 的 smoke steps 與驗收路徑於 specs/001-prompt-asset-hub/quickstart.md
+- [x] T001 對齊 monorepo scripts（dev:server/dev:web/type-check/test）於 package.json、apps/server/package.json、apps/web/package.json
+- [x] T002 [P] 強化 TS project references 與 strict/noEmit 設定於 tsconfig.json、apps/server/tsconfig.json、apps/web/tsconfig.json、packages/contracts/tsconfig.json
+- [x] T003 [P] 驗證並更新 Vitest 設定（contract/integration 覆蓋與執行命令）於 vitest.config.ts、vitest.coverage.contracts.config.ts
+- [x] T004 [P] 驗證並更新 Playwright 設定（baseURL、trace/video）於 apps/web/playwright.config.ts
+- [x] T005 [P] 校準 quickstart 的 smoke steps 與驗收路徑於 specs/001-prompt-asset-hub/quickstart.md
 
 ---
 
@@ -46,27 +46,27 @@ description: "任務清單：001-prompt-asset-hub"
 
 **Purpose**: contracts-first、enum/DTO、檔案佈局與 settings 落盤等地基；此 Phase 完成前不得開始任何 User Story。
 
-- [ ] T006 以 OpenAPI 作為 REST 契約基準，建立/維護 contract drift guard 於 specs/001-prompt-asset-hub/contracts/openapi.yaml、tests/contract/openapi.spec.ts
+- [x] T006 以 OpenAPI 作為 REST 契約基準，建立/維護 contract drift guard 於 specs/001-prompt-asset-hub/contracts/openapi.yaml、tests/contract/openapi.spec.ts
 
-- [ ] T007 [P] 對齊 Project frontmatter enum（planned/in_progress/paused/done）於 packages/contracts/src/frontmatter/project.ts
-- [ ] T008 [P] 對齊 Prompt frontmatter enum（status/priority）於 packages/contracts/src/frontmatter/prompt.ts
-- [ ] T009 [P] 對齊 Inbox frontmatter（若有）與 delete 語意備註於 packages/contracts/src/frontmatter/inbox.ts
-- [ ] T010 [P] 更新 frontmatter 契約測試以符合 enum 與必填欄位於 tests/contract/frontmatter.spec.ts
-- [ ] T011 [P] 對齊 server 端 Project/Prompt enum 驗證與序列化於 apps/server/src/routes/entities.ts
+- [x] T007 [P] 對齊 Project frontmatter enum（planned/in_progress/paused/done）於 packages/contracts/src/frontmatter/project.ts
+- [x] T008 [P] 對齊 Prompt frontmatter enum（status/priority）於 packages/contracts/src/frontmatter/prompt.ts
+- [x] T009 [P] 對齊 Inbox frontmatter（若有）與 delete 語意備註於 packages/contracts/src/frontmatter/inbox.ts
+- [x] T010 [P] 更新 frontmatter 契約測試以符合 enum 與必填欄位於 tests/contract/frontmatter.spec.ts
+- [x] T011 [P] 對齊 server 端 Project/Prompt enum 驗證與序列化於 apps/server/src/routes/entities.ts
 
-- [ ] T012 [P] 建立 slug 正規化 helper（ASCII kebab-case）並覆蓋邊界案例於 apps/server/src/utils/slug.ts、tests/unit/slug.spec.ts
-- [ ] T013 將 slug 規則套用到 Project/Prompt create/rename 與 restore(rename) 流程於 apps/server/src/routes/entities.ts、apps/server/src/trash/trashStore.ts
+- [x] T012 [P] 建立 slug 正規化 helper（ASCII kebab-case）並覆蓋邊界案例於 apps/server/src/utils/slug.ts、tests/unit/slug.spec.ts
+- [x] T013 將 slug 規則套用到 Project/Prompt create/rename 與 restore(rename) 流程於 apps/server/src/routes/entities.ts、apps/server/src/trash/trashStore.ts
 
-- [ ] T014 [P] 釐清並對齊 SearchRequest/SearchResponse 契約（OpenAPI vs contracts DTO）於 specs/001-prompt-asset-hub/contracts/openapi.yaml、packages/contracts/src/dto/search.ts
+- [x] T014 [P] 釐清並對齊 SearchRequest/SearchResponse 契約（OpenAPI vs contracts DTO）於 specs/001-prompt-asset-hub/contracts/openapi.yaml、packages/contracts/src/dto/search.ts
 - [ ] T015 [P] 更新 search DTO contract tests 以符合最終契約（含預設 scope=Active only）於 tests/contract/search-dto.spec.ts、tests/contract/api-search.spec.ts
 
-- [ ] T016 [P] 擴充 WorkspaceSettings DTO（含 UI 偏好：視圖/篩選條件）於 packages/contracts/src/dto/workspace.ts
-- [ ] T017 [P] 對齊 WorkspaceSettings contract tests（含 UI 偏好 roundtrip + schema defaults）於 tests/contract/workspace-settings-dto.spec.ts、tests/contract/api-workspace-settings.spec.ts
-- [ ] T018 對齊 server workspace settings merge/落盤與路徑驗證（rootPath/attachmentPath 必須存在；不 mkdir）於 apps/server/src/routes/workspace.ts
-- [ ] T019 [P] 新增 web 端 workspace settings client（get/update）於 apps/web/src/features/settings/api.ts
+- [x] T016 [P] 擴充 WorkspaceSettings DTO（含 UI 偏好：視圖/篩選條件）於 packages/contracts/src/dto/workspace.ts
+- [x] T017 [P] 對齊 WorkspaceSettings contract tests（含 UI 偏好 roundtrip + schema defaults）於 tests/contract/workspace-settings-dto.spec.ts、tests/contract/api-workspace-settings.spec.ts
+- [x] T018 對齊 server workspace settings merge/落盤與路徑驗證（rootPath/attachmentPath 必須存在；不 mkdir）於 apps/server/src/routes/workspace.ts
+- [x] T019 [P] 新增 web 端 workspace settings client（get/update）於 apps/web/src/features/settings/api.ts
 - [ ] T020 將 UI 偏好改為「以 WorkspaceSettings 為權威」的載入/保存流程於 apps/web/src/state/uiStore.ts、apps/web/src/App.tsx
 
-- [ ] T021 [P] 對齊附件落盤命名策略（UUID + 副檔名）與回傳欄位於 apps/server/src/attachments/index.ts、apps/server/src/routes/attachments.ts
+- [x] T021 [P] 對齊附件落盤命名策略（UUID + 副檔名）與回傳欄位於 apps/server/src/attachments/index.ts、apps/server/src/routes/attachments.ts
 - [ ] T022 [P] 更新附件 helper unit tests（確保 UUID 命名且保留副檔名、避免覆蓋）於 tests/unit/attachments.spec.ts
 
 **Checkpoint**: Phase 2 完成後，至少 `tests/contract/openapi.spec.ts`、`tests/contract/*settings*`、`tests/contract/frontmatter.spec.ts`、`tests/contract/search-dto.spec.ts` 全通過。
@@ -91,27 +91,27 @@ description: "任務清單：001-prompt-asset-hub"
 
 ### Implementation for User Story 1
 
-- [ ] T030 [P] [US1] 對齊 FS layout：`.pah/trash` 路徑 helpers 於 apps/server/src/fs-layout/index.ts
-- [ ] T031 [P] [US1] 實作 trash 存放與 manifest 寫入（含 attachments 搬移）於 apps/server/src/trash/trashStore.ts
-- [ ] T032 [P] [US1] 實作 trash 列表查詢（q/entityType/page/perPage）於 apps/server/src/trash/listTrash.ts
-- [ ] T033 [P] [US1] 實作 trash 永久刪除（purge）於 apps/server/src/trash/purgeTrash.ts
-- [ ] T034 [P] [US1] 實作 trash 復原（overwrite/rename；衝突回 409 RestoreConflict）於 apps/server/src/trash/restoreTrash.ts
-- [ ] T035 [P] [US1] 新增 retention job（啟動先跑 + 每日固定時間；預設 03:00，本機時區）於 apps/server/src/trash/retention.ts
-- [ ] T036 [US1] 註冊 trash routes 於 apps/server/src/routes/trash.ts、apps/server/src/index.ts
+- [x] T030 [P] [US1] 對齊 FS layout：`.pah/trash` 路徑 helpers 於 apps/server/src/fs-layout/index.ts
+- [x] T031 [P] [US1] 實作 trash 存放與 manifest 寫入（含 attachments 搬移）於 apps/server/src/trash/trashStore.ts
+- [x] T032 [P] [US1] 實作 trash 列表查詢（q/entityType/page/perPage）於 apps/server/src/trash/listTrash.ts
+- [x] T033 [P] [US1] 實作 trash 永久刪除（purge）於 apps/server/src/trash/purgeTrash.ts
+- [x] T034 [P] [US1] 實作 trash 復原（overwrite/rename；衝突回 409 RestoreConflict）於 apps/server/src/trash/restoreTrash.ts
+- [x] T035 [P] [US1] 新增 retention job（啟動先跑 + 每日固定時間；預設 03:00，本機時區）於 apps/server/src/trash/retention.ts
+- [x] T036 [US1] 註冊 trash routes 於 apps/server/src/routes/trash.ts、apps/server/src/index.ts
 
-- [ ] T037 [US1] 對齊 Project/Prompt delete：soft delete → TrashItem 於 apps/server/src/routes/entities.ts
+- [x] T037 [US1] 對齊 Project/Prompt delete：soft delete → TrashItem 於 apps/server/src/routes/entities.ts
 - [ ] T038 [P] [US1] 實作檔案讀寫 API（autosave）於 apps/server/src/routes/files.ts
-- [ ] T039 [P] [US1] 對齊附件上傳 API 與 Markdown 引用（使用 UUID 檔名）於 apps/server/src/routes/attachments.ts
+- [x] T039 [P] [US1] 對齊附件上傳 API 與 Markdown 引用（使用 UUID 檔名）於 apps/server/src/routes/attachments.ts
 
-- [ ] T040 [P] [US1] 新增/對齊 web 端 entities client（projects/prompts CRUD）於 apps/web/src/features/library/api.ts
+- [x] T040 [P] [US1] 新增/對齊 web 端 entities client（projects/prompts CRUD）於 apps/web/src/features/library/api.ts
 - [ ] T041 [P] [US1] 新增回收站 client（list/restore/purge）於 apps/web/src/features/trash/api.ts
 
-- [ ] T042 [US1] 對齊 Sidebar 導覽：Projects/Prompts（list/board）+ Tools（Inbox/Archive/Trash/Clipboard/Settings）於 apps/web/src/layout/Sidebar.tsx
-- [ ] T043 [US1] 對齊主內容切換與 routing state（activeSection/subView）於 apps/web/src/layout/MainContent.tsx、apps/web/src/state/uiStore.ts
+- [x] T042 [US1] 對齊 Sidebar 導覽：Projects/Prompts（list/board）+ Tools（Inbox/Archive/Trash/Clipboard/Settings）於 apps/web/src/layout/Sidebar.tsx
+- [x] T043 [US1] 對齊主內容切換與 routing state（activeSection/subView）於 apps/web/src/layout/MainContent.tsx、apps/web/src/state/uiStore.ts
 
-- [ ] T044 [P] [US1] 實作 ProjectView（list/board + selection）於 apps/web/src/layout/ProjectView.tsx
-- [ ] T045 [P] [US1] 實作 PromptView（list/board + selection）於 apps/web/src/layout/PromptView.tsx
-- [ ] T046 [US1] 實作右側 overlay Detail Panel（Saving/Saved/Failed + delete/archive actions；拖放附件→上傳→插入引用）於 apps/web/src/layout/SidePanel.tsx
+- [x] T044 [P] [US1] 實作 ProjectView（list/board + selection）於 apps/web/src/layout/ProjectView.tsx
+- [x] T045 [P] [US1] 實作 PromptView（list/board + selection）於 apps/web/src/layout/PromptView.tsx
+- [x] T046 [US1] 實作右側 overlay Detail Panel（Saving/Saved/Failed + delete/archive actions；拖放附件→上傳→插入引用）於 apps/web/src/layout/SidePanel.tsx
 
 **Checkpoint**: US1 相關 contract/integration tests 全通過，且 quickstart 的「建立/編輯/autosave/刪除/復原」可獨立驗收（specs/001-prompt-asset-hub/quickstart.md）。
 
