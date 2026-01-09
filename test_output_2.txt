@@ -15,19 +15,31 @@
 ?胼?胼?胼 Failed Suites 2 ?胼?胼?胼??[39m
 
  FAIL  tests/integration/retention-policy.spec.ts [ tests/integration/retention-policy.spec.ts ]
-Error: Failed to load url ../apps/server/src/backup/retention (resolved id: ../apps/server/src/backup/retention) in D:/program/promptmgt3/tests/integration/retention-policy.spec.ts. Does the file exist?
- ??[22m loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+TypeError: test.beforeEach is not a function
+ ??[22m tests/integration/retention-policy.spec.ts:9:6
+      7| const TEST_ROOT = path.join(process.cwd(), 'tmp-test-retention');
+      8| 
+      9| test.beforeEach(async () => {
+       |      ^
+     10|   await fs.mkdir(TEST_ROOT, { recursive: true });
+     11| });
 
 ?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼[1/2]??[22m
 
  FAIL  tests/integration/snapshot-layout.spec.ts [ tests/integration/snapshot-layout.spec.ts ]
-Error: Failed to load url ../apps/server/src/backup/snapshot (resolved id: ../apps/server/src/backup/snapshot) in D:/program/promptmgt3/tests/integration/snapshot-layout.spec.ts. Does the file exist?
- ??[22m loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+TypeError: test.beforeEach is not a function
+ ??[22m tests/integration/snapshot-layout.spec.ts:10:6
+      8| const TEST_ROOT = path.join(process.cwd(), 'tmp-test-snapshot-layout');
+      9| 
+     10| test.beforeEach(async () => {
+       |      ^
+     11|   await fs.mkdir(TEST_ROOT, { recursive: true });
+     12| });
 
 ?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼[2/2]??[22m
 
 [2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
 [2m      Tests [22m [2mno tests[22m
-[2m   Start at [22m 06:34:36
-[2m   Duration [22m 378ms[2m (transform 59ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 300ms)[22m
+[2m   Start at [22m 06:35:00
+[2m   Duration [22m 375ms[2m (transform 106ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 250ms)[22m
 

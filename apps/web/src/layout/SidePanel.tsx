@@ -3,6 +3,7 @@ import { Maximize2, Minimize2, ChevronRight, Save, Trash2 } from 'lucide-react';
 import { useUiStore } from '../state/uiStore';
 import { getProject, getPrompt, updateProject, updatePrompt, deleteProject, deletePrompt } from '../features/library/api';
 import { ProjectEntity, PromptEntity } from '@pah/contracts';
+import { HistoryView } from '../features/history/HistoryView';
 
 type EntityData = (ProjectEntity | PromptEntity) & { type: 'project' | 'prompt' };
 
@@ -17,6 +18,7 @@ export function SidePanel() {
   // Local edit state
   const [editTitle, setEditTitle] = useState('');
   const [editBody, setEditBody] = useState('');
+  const [activeTab, setActiveTab] = useState<'editor' | 'history'>('editor');
 
   const loadData = useCallback(async () => {
     if (!selectedItem) {
@@ -139,6 +141,22 @@ export function SidePanel() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-gray-100 px-4 gap-4 text-xs font-medium bg-gray-50/50">
+        <button
+          onClick={() => setActiveTab('editor')}
+          className={`py-2 px-1 border-b-2 transition-colors ${activeTab === 'editor' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          編輯內容
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`py-2 px-1 border-b-2 transition-colors ${activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          歷史記錄
+        </button>
+      </div>
+
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto px-12 py-8 custom-scrollbar relative">
         {isLoading && (
@@ -153,42 +171,46 @@ export function SidePanel() {
           </div>
         )}
 
-        {data && (
-          <div className={`mx-auto ${isExpanded ? 'max-w-4xl' : ''}`}>
-            {/* Title */}
-            <div className="mb-6">
-              <input
-                type="text"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full text-4xl font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 focus:outline-none p-0 bg-transparent leading-tight mb-2"
-                placeholder="Untitled"
-              />
-            </div>
-
-            <hr className="border-gray-100 mb-8" />
-
-            {/* Editor */}
-            <div className="h-full flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-bold text-gray-900">內容編輯</h3>
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors ${isSaving ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-50'
-                    }`}
-                >
-                  <Save size={12} /> {isSaving ? 'Saving...' : 'Save'}
-                </button>
+        {activeTab === 'history' ? (
+          <HistoryView />
+        ) : (
+          data && (
+            <div className={`mx-auto ${isExpanded ? 'max-w-4xl' : ''}`}>
+              {/* Title */}
+              <div className="mb-6">
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full text-4xl font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 focus:outline-none p-0 bg-transparent leading-tight mb-2"
+                  placeholder="Untitled"
+                />
               </div>
-              <textarea
-                value={editBody}
-                onChange={(e) => setEditBody(e.target.value)}
-                className="w-full min-h-[400px] bg-transparent border-none focus:ring-0 font-mono text-sm leading-relaxed text-gray-700 resize-none p-0 placeholder-gray-300"
-                placeholder="# 開始撰寫..."
-              />
+
+              <hr className="border-gray-100 mb-8" />
+
+              {/* Editor */}
+              <div className="h-full flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-gray-900">內容編輯</h3>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors ${isSaving ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-50'
+                      }`}
+                  >
+                    <Save size={12} /> {isSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+                <textarea
+                  value={editBody}
+                  onChange={(e) => setEditBody(e.target.value)}
+                  className="w-full min-h-[400px] bg-transparent border-none focus:ring-0 font-mono text-sm leading-relaxed text-gray-700 resize-none p-0 placeholder-gray-300"
+                  placeholder="# 開始撰寫..."
+                />
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </div>

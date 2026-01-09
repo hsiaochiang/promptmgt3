@@ -3,7 +3,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { VersionEventSchema } from '../../packages/contracts/src/dto/version.js';
+import {
+  VersionEventSchema,
+  VersionNodeSchema,
+  VersionListResponseSchema,
+  CreateSnapshotRequestSchema
+} from '../../packages/contracts/src/dto/version.js';
 
 describe('Contract - Snapshot / VersionEvent DTO', () => {
   it('should accept valid VersionEvent payload', () => {
@@ -27,5 +32,49 @@ describe('Contract - Snapshot / VersionEvent DTO', () => {
 
     const result = VersionEventSchema.safeParse(invalid);
     expect(result.success).toBe(false);
+  });
+  describe('VersionNode Schema', () => {
+    it('should accept valid VersionNode', () => {
+      const valid = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        entityId: 'project-123',
+        entityType: 'project',
+        versionType: 'manual',
+        name: 'Milestone 1',
+        timestamp: new Date().toISOString(),
+        snapshotPath: '.pah/versions/p1/v1',
+        titleSnapshot: 'My Project',
+        fileSize: 1024,
+      };
+      expect(VersionNodeSchema.safeParse(valid).success).toBe(true);
+    });
+  });
+
+  describe('VersionListResponse Schema', () => {
+    it('should accept valid list response', () => {
+      const valid = {
+        items: [],
+        total: 0
+      };
+      expect(VersionListResponseSchema.safeParse(valid).success).toBe(true);
+    });
+  });
+
+  describe('CreateSnapshotRequest Schema', () => {
+    it('should require name for manual snapshot', () => {
+      const valid = {
+        entityId: 'p1',
+        entityType: 'project',
+        name: 'Backup',
+      };
+      expect(CreateSnapshotRequestSchema.safeParse(valid).success).toBe(true);
+
+      const invalid = {
+        entityId: 'p1',
+        entityType: 'project',
+        // name missing
+      };
+      expect(CreateSnapshotRequestSchema.safeParse(invalid).success).toBe(false);
+    });
   });
 });

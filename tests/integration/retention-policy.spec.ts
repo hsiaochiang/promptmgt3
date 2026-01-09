@@ -1,77 +1,63 @@
-/**
- * T072 [P] [US3] Integration test：retention 清理規則（基礎：只保留最近 N 天）
- */
+import { test, expect, beforeEach, afterEach } from 'vitest';
+import fs from 'fs/promises';
+import path from 'path';
+import { enforceSnapshotRetention } from '../../apps/server/src/backup/retention.ts';
+import { getSnapshotsDir } from '../../apps/server/src/fs-layout/index.ts';
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { nanoid } from 'nanoid';
-import { enforceSnapshotRetention } from '../../apps/server/src/backup/retention.js';
-import { getSnapshotsDir } from '../../apps/server/src/fs-layout/index.js';
+const TEST_ROOT = path.join(process.cwd(), 'tmp-test-retention');
 
-describe('Integration - Snapshot Retention Policy', () => {
-  const testDataDir = path.join(process.cwd(), 'test-data', 'retention-tests');
-  let rootPath: string;
+beforeEach(async () => {
+  await fs.mkdir(TEST_ROOT, { recursive: true });
+});
 
-  beforeEach(async () => {
-    rootPath = path.join(testDataDir, `ws-${nanoid()}`);
-    const snapshotsRoot = getSnapshotsDir(rootPath);
-    const days = ['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04'];
-    for (const day of days) {
-      const dayDir = path.join(snapshotsRoot, day);
-      await fs.mkdir(dayDir, { recursive: true });
-      await fs.writeFile(path.join(dayDir, 'dummy.txt'), day, 'utf-8');
-    }
-  });
+afterEach(async () => {
+  await fs.rm(TEST_ROOT, { recursive: true, force: true });
+});
 
-  afterEach(async () => {
-    await fs.rm(rootPath, { recursive: true, force: true });
-  });
+async function createMockSnapshot(root: string, date: string, pinned: boolean = false) {
+  const snapshotsDir = getSnapshotsDir(root);
+  const dayDir = path.join(snapshotsDir, date);
+  const snapDir = path.join(dayDir, `snapshot-mock-${Date.now()}`);
 
-  it('keeps only the newest N daily snapshot folders', async () => {
-    await enforceSnapshotRetention(rootPath, 2);
+  await fs.mkdir(snapDir, { recursive: true });
 
-    const snapshotsRoot = getSnapshotsDir(rootPath);
-    const entries = await fs.readdir(snapshotsRoot);
-    entries.sort();
+  const manifest = {
+    snapshotId: 'mock',
+    pinned,
+    createdAt: new Date().toISOString(),
+  };
 
-    expect(entries).toEqual(['2024-01-03', '2024-01-04']);
-  });
+  await fs.writeFile(path.join(snapDir, 'manifest.json'), JSON.stringify(manifest), 'utf-8');
+}
 
-  it('never deletes days that contain pinned snapshots', async () => {
-    const snapshotsRoot = getSnapshotsDir(rootPath);
-    const pinnedDayDir = path.join(snapshotsRoot, '2024-01-01');
-    const pinnedSnapshotDir = path.join(pinnedDayDir, 'snapshot-pinned');
+test('Retention Policy Integration', async () => {
+  // Create snapshots for 5 days
+  // Day 1 (Oldest) - Not Pinned
+  await createMockSnapshot(TEST_ROOT, '2023-01-01', false);
+  // Day 2 - Pinned
+  await createMockSnapshot(TEST_ROOT, '2023-01-02', true);
+  // Day 3 - Not Pinned
+  await createMockSnapshot(TEST_ROOT, '2023-01-03', false);
+  // Day 4 - Not Pinned
+  await createMockSnapshot(TEST_ROOT, '2023-01-04', false);
+  // Day 5 (Newest) - Not Pinned
+  await createMockSnapshot(TEST_ROOT, '2023-01-05', false);
 
-    await fs.mkdir(pinnedSnapshotDir, { recursive: true });
+  // Run retention with keepDays = 2
+  // Should keep: Day 4, Day 5 (Newest 2).
+  // AND Day 2 (Pinned).
+  // Should delete: Day 1, Day 3.
 
-    const manifest = {
-      snapshotId: 'snapshot-pinned',
-      scope: 'workspace',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      path: pinnedSnapshotDir,
-      stats: {
-        filesCount: 0,
-        attachmentsCount: 0,
-        sizeBytes: 0,
-      },
-      status: 'success' as const,
-      errors: [] as string[],
-      warnings: [] as string[],
-      pinned: true,
-    };
+  await enforceSnapshotRetention(TEST_ROOT, 2);
 
-    await fs.writeFile(
-      path.join(pinnedSnapshotDir, 'manifest.json'),
-      JSON.stringify(manifest, null, 2),
-      'utf-8',
-    );
+  const snapshotsDir = getSnapshotsDir(TEST_ROOT);
+  const days = await fs.readdir(snapshotsDir);
 
-    await enforceSnapshotRetention(rootPath, 2);
+  console.log('Days remaining:', days);
 
-    const entries = await fs.readdir(snapshotsRoot);
-    entries.sort();
-
-    expect(entries).toEqual(['2024-01-01', '2024-01-03', '2024-01-04']);
-  });
+  expect(days).toContain('2023-01-02'); // Pinned
+  expect(days).toContain('2023-01-04'); // Kept
+  expect(days).toContain('2023-01-05'); // Kept
+  expect(days).not.toContain('2023-01-01'); // Deleted
+  expect(days).not.toContain('2023-01-03'); // Deleted
 });

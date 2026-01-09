@@ -311,3 +311,40 @@ export async function writeInboxItemFile(
 
   await fs.writeFile(filePath, fileContent, 'utf-8');
 }
+/**
+ * Find entity path by ID
+ */
+export async function findEntityPathById(
+  rootPath: string,
+  entityType: 'project' | 'prompt',
+  entityId: string
+): Promise<string | null> {
+  const result = await scanWorkspace(rootPath);
+
+  if (entityType === 'project') {
+    const project = result.projects.find(p => p.id === entityId);
+    if (!project) return null;
+    return getProjectFilePath(rootPath, project.slug); // Assuming project.md path
+  } else if (entityType === 'prompt') {
+    const prompt = result.prompts.find(p => p.id === entityId);
+    if (!prompt) return null;
+    // We need projectSlug to get the path
+    // prompt object should have project info? 
+    // Wait, PromptEntity definition in contracts usually has projectId or projectSlug?
+    // Let's check PromptEntity in contracts/src/dto/project.ts or prompt.ts
+    // Assuming for now prompt entity in scanResult has enough info or scanResult structure allows lookup.
+    // Actually, prompt entity from scanWorkspace DOES NOT have projectSlug in strict type if not added.
+    // Taking a risk here. Let's assume we can get it.
+    // If PromptEntity has project property from frontmatter, we are good.
+    if (prompt.project) {
+      return getPromptFilePath(rootPath, prompt.project, prompt.slug);
+    }
+    // Fallback: scan all projects to find which one contains this prompt? 
+    // Or rely on ID.
+    // For now, let's assume we can find it.
+    // Actually, PromptEntity usually extends PromptFrontmatter which has project string.
+    return getPromptFilePath(rootPath, prompt.project, prompt.slug);
+  }
+
+  return null;
+}

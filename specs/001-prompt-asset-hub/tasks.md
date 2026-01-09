@@ -157,17 +157,14 @@ description: "任務清單：001-prompt-asset-hub"
 
 ### Tests for User Story 3 (Test-First)
 
-- [ ] T060 [P] [US3] snapshot/version contract tests（含 scope/manifest shape + warnings/partial failure 可追溯）於 tests/contract/api-snapshot-version.spec.ts
-- [ ] T061 [P] [US3] snapshot layout 整合測試（manifest/root/attachments + warnings 不可靜默）於 tests/integration/snapshot-layout.spec.ts
-- [ ] T062 [P] [US3] retention 整合測試（含 pinned/配額策略）於 tests/integration/retention-policy.spec.ts
-
-### Implementation for User Story 3
-
-- [ ] T063 [P] [US3] 後端：snapshot service（daily + manual；manifest 記錄 warnings/partial failure）於 apps/server/src/backup/snapshot.ts
-- [ ] T064 [P] [US3] 後端：version node service（entity scope）於 apps/server/src/backup/version-node/index.ts
-- [ ] T065 [P] [US3] 後端：retention 清理策略於 apps/server/src/backup/retention.ts
-- [ ] T066 [US3] 後端：routes 對齊 OpenAPI（snapshots/versions）於 apps/server/src/routes/snapshots.ts、specs/001-prompt-asset-hub/contracts/openapi.yaml
-- [ ] T067 [P] [US3] 前端：HistoryView（列表 + 開啟 + 建立快照/版本）於 apps/web/src/features/history/HistoryView.tsx
+- [x] T060 [P] [US3] snapshot/version contract tests（含 scope/manifest shape + warnings/partial failure 可追溯）於 tests/contract/api-snapshot-version.spec.ts
+- [x] T061 [P] [US3] snapshot layout 整合測試（manifest/root/attachments + warnings 不可靜默）於 tests/integration/snapshot-layout.spec.ts
+- [x] T062 [P] [US3] retention 整合測試（含 pinned/配額策略）於 tests/integration/retention-policy.spec.ts
+- [x] T063 [P] [US3] 後端：snapshot service（daily + manual；manifest 記錄 warnings/partial failure）於 apps/server/src/backup/snapshot.ts
+- [x] T064 [P] [US3] 後端：version node service（entity scope）於 apps/server/src/backup/version-node/index.ts
+- [x] T065 [P] [US3] 後端：retention 清理策略於 apps/server/src/backup/retention.ts
+- [x] T066 [US3] 後端：routes 對齊 OpenAPI（snapshots/versions）於 apps/server/src/routes/snapshots.ts、specs/001-prompt-asset-hub/contracts/openapi.yaml
+- [x] T067 [P] [US3] 前端：HistoryView（列表 + 開啟 + 建立快照/版本）於 apps/web/src/features/history/HistoryView.tsx
 
 ---
 

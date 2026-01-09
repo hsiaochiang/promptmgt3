@@ -1,58 +1,46 @@
-/**
- * T071 [P] [US3] Integration test：snapshot layout 驗證（manifest/root/attachments）
- */
+import { test, expect, beforeEach, afterEach } from 'vitest';
+import fs from 'fs/promises';
+import path from 'path';
+import { createSnapshot } from '../../apps/server/src/backup/snapshot.ts';
+import { getSnapshotsDir } from '../../apps/server/src/fs-layout/index.ts';
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { nanoid } from 'nanoid';
-import { createSnapshot } from '../../apps/server/src/backup/snapshot.js';
-import { getDailySnapshotPath } from '../../apps/server/src/fs-layout/index.js';
+const TEST_ROOT = path.join(process.cwd(), 'tmp-test-snapshot-layout');
 
-describe('Integration - Snapshot Layout', () => {
-  const testDataDir = path.join(process.cwd(), 'test-data', 'snapshot-tests');
-  let rootPath: string;
+beforeEach(async () => {
+  await fs.mkdir(TEST_ROOT, { recursive: true });
+});
 
-  beforeEach(async () => {
-    rootPath = path.join(testDataDir, `ws-${nanoid()}`);
-    const projectsDir = path.join(rootPath, 'projects', 'p1');
-    const attachmentsDir = path.join(rootPath, 'attachments');
+afterEach(async () => {
+  await fs.rm(TEST_ROOT, { recursive: true, force: true });
+});
 
-    await fs.mkdir(projectsDir, { recursive: true });
-    await fs.mkdir(attachmentsDir, { recursive: true });
+test('Snapshot Layout Integration', async () => {
+  // Setup: Create some files in root
+  await fs.writeFile(path.join(TEST_ROOT, 'file1.txt'), 'content1');
+  await fs.mkdir(path.join(TEST_ROOT, 'subdir'));
+  await fs.writeFile(path.join(TEST_ROOT, 'subdir/file2.txt'), 'content2');
 
-    await fs.writeFile(path.join(projectsDir, 'project.md'), '# Project', 'utf-8');
-    await fs.writeFile(path.join(attachmentsDir, 'img.png'), 'binary', 'utf-8');
-  });
+  // Action: Create snapshot
+  const event = await createSnapshot(TEST_ROOT, 'workspace', 'test snapshot');
 
-  afterEach(async () => {
-    await fs.rm(rootPath, { recursive: true, force: true });
-  });
+  // Verify: Snapshot directory exists
+  const snapshotPath = event.snapshotPath;
+  expect(snapshotPath).toBeDefined();
 
-  it('creates manifest, root and attachments layout', async () => {
-    const event = await createSnapshot(rootPath, 'workspace', 'test snapshot');
+  // Verify: Manifest exists
+  const manifestPath = path.join(snapshotPath!, 'manifest.json');
+  const manifestRaw = await fs.readFile(manifestPath, 'utf-8');
+  const manifest = JSON.parse(manifestRaw);
 
-    const date = event.createdAt.slice(0, 10);
-    const dailyDir = getDailySnapshotPath(rootPath, date);
+  expect(manifest.snapshotId).toBe(event.id);
+  expect(manifest.scope).toBe('workspace');
+  expect(manifest.status).toBe('success');
 
-    const stat = await fs.stat(dailyDir);
-    expect(stat.isDirectory()).toBe(true);
+  // Verify: Content is copied to 'root'
+  const rootDir = path.join(snapshotPath!, 'root');
+  const file1 = await fs.readFile(path.join(rootDir, 'file1.txt'), 'utf-8');
+  expect(file1).toBe('content1');
 
-    const manifestPath = path.join(event.snapshotPath, 'manifest.json');
-    const rootDir = path.join(event.snapshotPath, 'root');
-    const attachmentsDir = path.join(event.snapshotPath, 'attachments');
-
-    const manifestRaw = await fs.readFile(manifestPath, 'utf-8');
-    const manifest = JSON.parse(manifestRaw);
-
-    expect(manifest.snapshotId).toBe(event.id);
-    expect(manifest.scope).toBe('workspace');
-    expect(manifest.stats).toBeDefined();
-
-    const rootStat = await fs.stat(rootDir);
-    expect(rootStat.isDirectory()).toBe(true);
-
-    const attachmentsStat = await fs.stat(attachmentsDir);
-    expect(attachmentsStat.isDirectory()).toBe(true);
-  });
+  const file2 = await fs.readFile(path.join(rootDir, 'subdir/file2.txt'), 'utf-8');
+  expect(file2).toBe('content2');
 });

@@ -10,6 +10,15 @@
 - [ ] 至少 1 個 error/edge path 截圖或錄影（例如 autosave 失敗或衝突）
 - [ ] 本 checklist 已勾選（貼在 PR 描述或附檔）
 
+## 執行與佐證流程（PR 作者執行）
+
+- [ ] 使用 quickstart 預設工作區或等效資料集，啟動 `npm run dev:server` 與 `npm run dev:web`
+- [ ] Happy path 錄影：建立專案→新增提示詞→編輯正文停筆觸發 autosave（≤2s）→刪除並於 Trash 復原
+- [ ] Edge path 錄影：模擬 autosave 失敗（例如移除寫入權限或鎖檔）並確認 Failed 狀態可重試；或觸發外部修改衝突並展示「重新整理/覆寫」選項
+- [ ] 搜尋/篩選與列表/看板切換：套用關鍵字/標籤後切換 list/board，再重整頁面驗證偏好還原
+- [ ] 若有封存/回收站/Inbox/Clipboard/Snapshot 操作變更，至少展示 1 次成功與 1 次失敗回饋（含訊息用語一致性）
+- [ ] 證據檔命名：`ui-regression/<date>-<flow>.mp4/png`（例如 `ui-regression/2026-01-09-happy.mp4`），以附件附在 PR 或提供雲端連結
+
 ## L1 視覺語彙一致（Visual Vocabulary）
 
 - [ ] 版面密度與留白節奏符合 golden reference

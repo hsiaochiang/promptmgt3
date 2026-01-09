@@ -1,9 +1,9 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createSnapshot, listSnapshots } from '../backup/snapshot.js';
-import { createVersionNode, listVersionNodes, listAllVersionNodes } from '../backup/version-node/index.js';
+import { createVersionNode, listVersionNodes, listAllVersionNodes, restoreVersionNode } from '../backup/version-node/index.js';
 import { getBackupStatistics } from '../backup/statistics.js';
 import { getPromptFilePath, getProjectDir } from '../fs-layout/index.js';
-import type { VersionEvent, SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
+import type { VersionEvent, VersionNode, SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
 
 interface CreateSnapshotBody {
   message?: string;
@@ -15,7 +15,12 @@ interface CreateVersionNodeBody {
   entityId: string;
   projectSlug?: string;
   promptSlug?: string;
-  message?: string;
+  name?: string;
+  description?: string;
+}
+
+interface RestoreVersionBody {
+  targetVersionId: string;
 }
 
 // Global broadcast function reference (will be set by server)
@@ -33,7 +38,7 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
     try {
       const { message, scope = 'workspace' } = request.body || {};
       const event = await createSnapshot(rootPath, scope, message);
-      
+
       // Broadcast snapshot.created event
       if (broadcastFn) {
         const snapshotEvent: SnapshotCreatedPayload = {
@@ -51,7 +56,7 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
         };
         broadcastFn(snapshotEvent);
       }
-      
+
       reply.code(201);
       return event satisfies VersionEvent;
     } catch (error) {
@@ -67,7 +72,7 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
         };
         broadcastFn(failedEvent);
       }
-      
+
       reply.code(500).send({
         error: 'Failed to create snapshot',
         message: error instanceof Error ? error.message : String(error),
@@ -93,8 +98,8 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
     Body: CreateVersionNodeBody;
   }>('/api/versions', async (request, reply) => {
     try {
-      const { entityType, entityId, projectSlug, promptSlug, message } = request.body || {};
-      
+      const { entityType, entityId, projectSlug, promptSlug, name, description } = request.body || {};
+
       if (!entityType || !entityId) {
         reply.code(400).send({ error: 'Missing entityType or entityId' });
         return;
@@ -118,9 +123,9 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
         return;
       }
 
-      const event = await createVersionNode(rootPath, entityType, entityId, entityPath, message);
+      const event = await createVersionNode(rootPath, entityType, entityId, entityPath, name, description);
       reply.code(201);
-      return event satisfies VersionEvent;
+      return event;
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to create version node',
@@ -148,7 +153,7 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
   }>('/api/versions/:entityType/:entityId', async (request, reply) => {
     try {
       const { entityType, entityId } = request.params;
-      
+
       if (entityType !== 'project' && entityType !== 'prompt') {
         reply.code(400).send({ error: 'Invalid entityType' });
         return;
@@ -159,6 +164,24 @@ export async function registerSnapshotRoutes(server: FastifyInstance, rootPath: 
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to list version nodes for entity',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // POST /api/versions/:id/restore - restore a version
+  server.post<{
+    Params: { id: string };
+    Body: RestoreVersionBody;
+  }>('/api/versions/:id/restore', async (request, reply) => {
+    try {
+      const versionId = request.params.id;
+      await restoreVersionNode(rootPath, versionId);
+
+      reply.code(200).send({ message: 'Restored successfully' });
+    } catch (error) {
+      reply.code(500).send({
+        error: 'Failed to restore version',
         message: error instanceof Error ? error.message : String(error),
       });
     }
