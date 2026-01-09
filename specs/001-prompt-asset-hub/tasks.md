@@ -104,7 +104,7 @@ description: "任務清單：001-prompt-asset-hub"
 - [x] T039 [P] [US1] 對齊附件上傳 API 與 Markdown 引用（使用 UUID 檔名）於 apps/server/src/routes/attachments.ts
 
 - [x] T040 [P] [US1] 新增/對齊 web 端 entities client（projects/prompts CRUD）於 apps/web/src/features/library/api.ts
-- [ ] T041 [P] [US1] 新增回收站 client（list/restore/purge）於 apps/web/src/features/trash/api.ts
+- [x] T041 [P] [US1] 新增回收站 client（list/restore/purge）於 apps/web/src/features/trash/api.ts
 
 - [x] T042 [US1] 對齊 Sidebar 導覽：Projects/Prompts（list/board）+ Tools（Inbox/Archive/Trash/Clipboard/Settings）於 apps/web/src/layout/Sidebar.tsx
 - [x] T043 [US1] 對齊主內容切換與 routing state（activeSection/subView）於 apps/web/src/layout/MainContent.tsx、apps/web/src/state/uiStore.ts

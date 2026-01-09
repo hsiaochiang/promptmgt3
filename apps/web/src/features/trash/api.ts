@@ -6,7 +6,7 @@ import type {
   TrashEntityType,
 } from '@pah/contracts';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = '/api/trash';
 
 export interface FetchTrashListParams {
   q?: string;
@@ -20,13 +20,13 @@ export interface FetchTrashListParams {
  */
 export async function fetchTrashList(params?: FetchTrashListParams): Promise<TrashListResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params?.q) searchParams.set('q', params.q);
   if (params?.entityType) searchParams.set('entityType', params.entityType);
   if (params?.page) searchParams.set('page', String(params.page));
   if (params?.perPage) searchParams.set('perPage', String(params.perPage));
 
-  const url = `${API_BASE}/api/trash${searchParams.toString() ? `?${searchParams}` : ''}`;
+  const url = `${API_BASE}${searchParams.toString() ? `?${searchParams}` : ''}`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -40,7 +40,7 @@ export async function fetchTrashList(params?: FetchTrashListParams): Promise<Tra
  * Permanently delete (purge) a trash item
  */
 export async function purgeTrashItem(trashId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/trash/${trashId}`, {
+  const response = await fetch(`${API_BASE}/${trashId}`, {
     method: 'DELETE',
   });
 
@@ -62,7 +62,7 @@ export async function restoreTrashItem(
   trashId: string,
   request: TrashRestoreRequest
 ): Promise<RestoreTrashItemResult> {
-  const response = await fetch(`${API_BASE}/api/trash/${trashId}/restore`, {
+  const response = await fetch(`${API_BASE}/${trashId}/restore`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

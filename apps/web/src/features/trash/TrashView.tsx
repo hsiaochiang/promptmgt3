@@ -1,280 +1,170 @@
-import { useState, useEffect } from 'react';
-import type { TrashItem, TrashEntityType, RestoreConflict } from '@pah/contracts';
+import { useState, useEffect, useCallback } from 'react';
+import { Trash2, RotateCcw, X, AlertTriangle, File, Folder } from 'lucide-react';
 import { fetchTrashList, purgeTrashItem, restoreTrashItem } from './api';
-import { RestoreConflictDialog } from './RestoreConflictDialog';
-import { MOCK_TRASH_ITEMS } from '../../data/mockData';
-
-const USE_MOCK_DATA = true; // Set to false to use real API
+import type { TrashItem, RestoreConflict } from '@pah/contracts';
 
 export function TrashView() {
   const [items, setItems] = useState<TrashItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [entityTypeFilter, setEntityTypeFilter] = useState<TrashEntityType | undefined>();
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  
-  const [conflict, setConflict] = useState<{
-    trashId: string;
-    conflict: RestoreConflict;
-  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const perPage = 20;
+  // Conflict handling state
+  const [conflict, setConflict] = useState<{ id: string, data: RestoreConflict } | null>(null);
 
-  const loadTrash = async () => {
+  const loadTrash = useCallback(async () => {
     setLoading(true);
     try {
-      if (USE_MOCK_DATA) {
-        // Use mock data for visual comparison
-        await new Promise(resolve => setTimeout(resolve, 300));
-        let filtered = MOCK_TRASH_ITEMS;
-        
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          filtered = filtered.filter(item => 
-            item.titleSnapshot?.toLowerCase().includes(query) ||
-            item.originalRelativePath.toLowerCase().includes(query)
-          );
-        }
-        
-        if (entityTypeFilter) {
-          filtered = filtered.filter(item => item.entityType === entityTypeFilter);
-        }
-        
-        setItems(filtered);
-        setTotal(filtered.length);
-        setHasMore(false);
-      } else {
-        // Use real API
-        const response = await fetchTrashList({
-          q: searchQuery || undefined,
-          entityType: entityTypeFilter,
-          page,
-          perPage,
-        });
-
-        setItems(response.items);
-        setTotal(response.total);
-        setHasMore(response.hasMore);
-      }
-    } catch (error) {
-      console.error('Failed to load trash:', error);
-      alert('載入回收站失敗');
+      const data = await fetchTrashList({ page: 1, perPage: 100 });
+      setItems(data.items);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadTrash();
-  }, [searchQuery, entityTypeFilter, page]);
+  }, [loadTrash]);
 
-  const handleRestore = async (trashId: string) => {
+  const handlePurge = async (id: string) => {
+    if (!confirm('Permanently delete? This cannot be undone.')) return;
     try {
-      const result = await restoreTrashItem(trashId, { strategy: 'rename' });
-
-      if (result.conflict) {
-        // Show conflict dialog
-        setConflict({ trashId, conflict: result.conflict });
-      } else if (result.result) {
-        // Success
-        alert(`已復原: ${result.result.restoredRelativePath}`);
-        loadTrash();
-      }
-    } catch (error) {
-      console.error('Failed to restore:', error);
-      alert('復原失敗');
+      await purgeTrashItem(id);
+      await loadTrash();
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
-  const handleResolveConflict = async (strategy: 'overwrite' | 'rename', newSlug?: string) => {
-    if (!conflict) return;
-
+  const handleRestore = async (id: string, strategy: 'rename' | 'overwrite' = 'rename') => {
     try {
-      const result = await restoreTrashItem(conflict.trashId, {
-        strategy,
-        newSlug,
-      });
-
-      if (result.result) {
-        alert(`已復原: ${result.result.restoredRelativePath}`);
+      const res = await restoreTrashItem(id, { strategy });
+      if (res.conflict) {
+        setConflict({ id, data: res.conflict });
+      } else {
         setConflict(null);
-        loadTrash();
-      } else if (result.conflict) {
-        // Still conflict (shouldn't happen with overwrite/rename)
-        alert('復原失敗：仍有衝突');
+        await loadTrash();
+        // Notify others
+        window.dispatchEvent(new CustomEvent('entity-change'));
       }
-    } catch (error) {
-      console.error('Failed to resolve conflict:', error);
-      alert('復原失敗');
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
-  const handlePurge = async (trashId: string, titleSnapshot: string) => {
-    if (!confirm(`確定要永久刪除「${titleSnapshot}」嗎？此操作無法復原。`)) {
-      return;
-    }
-
-    try {
-      await purgeTrashItem(trashId);
-      alert('已永久刪除');
-      loadTrash();
-    } catch (error) {
-      console.error('Failed to purge:', error);
-      alert('永久刪除失敗');
-    }
-  };
-
-  const formatDate = (isoString: string) => {
-    return new Date(isoString).toLocaleString('zh-TW');
-  };
-
-  const entityTypeLabels: Record<TrashEntityType, string> = {
-    project: '專案',
-    prompt: '提示詞',
-    inboxItem: '暫存項',
-    snippet: '片段',
-    unknown: '未知',
-  };
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center p-12 text-gray-400">
+      <Trash2 size={48} className="mb-4 opacity-20" />
+      <p>回收站是空的</p>
+    </div>
+  );
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-subtle bg-white">
-        <h2 className="text-lg font-semibold mb-4">回收站</h2>
-        
-        <div className="flex gap-4 items-center">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="搜尋..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            className="flex-1 max-w-md px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+    <div className="h-full flex flex-col relative">
+      <div className="flex-none px-4 py-3 flex justify-between items-center bg-white border-b border-gray-100">
+        <h2 className="text-sm font-semibold text-gray-700">Trash ({items.length})</h2>
+        <button
+          onClick={() => loadTrash()}
+          className="text-xs text-blue-500 hover:underline"
+        >
+          Refresh
+        </button>
+      </div>
 
-          {/* Entity Type Filter */}
-          <select
-            value={entityTypeFilter || ''}
-            onChange={(e) => {
-              setEntityTypeFilter(e.target.value ? (e.target.value as TrashEntityType) : undefined);
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-subtle rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">全部類型</option>
-            <option value="project">專案</option>
-            <option value="prompt">提示詞</option>
-            <option value="inboxItem">暫存項</option>
-            <option value="snippet">片段</option>
-          </select>
+      {loading && items.length === 0 && (
+        <div className="p-8 text-center text-gray-400">Loading...</div>
+      )}
 
-          <button
-            type="button"
-            onClick={loadTrash}
-            className="px-4 py-2 text-sm border border-subtle rounded-md hover:bg-hover"
-          >
-            重新整理
-          </button>
+      {!loading && items.length === 0 && <EmptyState />}
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+        <div className="divide-y divide-gray-100">
+          {items.map((item) => (
+            <div key={item.trashId} className="group flex items-center p-4 hover:bg-gray-50 transition-colors">
+              <div className="mr-4 text-gray-400">
+                {item.entityType === 'project' ? <Folder size={20} /> : <File size={20} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-gray-900 truncate">{item.titleSnapshot}</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 capitalize">
+                    {item.entityType}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400 truncate font-mono">
+                  {item.originalRelativePath}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Deleted: {new Date(item.deletedAt).toLocaleString()}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => handleRestore(item.trashId)}
+                  className="p-1.5 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded transition-colors"
+                  title="Restore"
+                >
+                  <RotateCcw size={16} />
+                </button>
+                <button
+                  onClick={() => handlePurge(item.trashId)}
+                  className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded transition-colors"
+                  title="Delete Permanently"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-4">
-        {loading ? (
-          <div className="text-center text-secondary py-8">載入中...</div>
-        ) : items.length === 0 ? (
-          <div className="text-center text-secondary py-8">
-            {searchQuery || entityTypeFilter ? '沒有符合的項目' : '回收站是空的'}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {items.map((item) => (
-              <div
-                key={item.trashId}
-                className="p-4 border border-subtle rounded-md bg-white hover:shadow-sm transition-shadow"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs px-2 py-0.5 bg-subtle rounded">
-                        {entityTypeLabels[item.entityType]}
-                      </span>
-                      {item.attachmentsMoved && (
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
-                          含附件
-                        </span>
-                      )}
-                    </div>
-                    <div className="font-medium truncate">{item.titleSnapshot || '未命名'}</div>
-                    <div className="text-xs text-secondary mt-1">
-                      <div>路徑: {item.originalRelativePath}</div>
-                      <div>刪除時間: {formatDate(item.deletedAt)}</div>
-                      <div>將於 {formatDate(item.purgeAfter)} 自動清理</div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleRestore(item.trashId)}
-                      className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      復原
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handlePurge(item.trashId, item.titleSnapshot || '未命名')}
-                      className="px-3 py-1.5 text-sm border border-red-300 text-red-700 rounded-md hover:bg-red-50"
-                    >
-                      永久刪除
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {total > perPage && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-subtle">
-            <div className="text-sm text-secondary">
-              顯示 {(page - 1) * perPage + 1} - {Math.min(page * perPage, total)} / 共 {total} 項
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1.5 text-sm border border-subtle rounded-md hover:bg-hover disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                上一頁
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={!hasMore}
-                className="px-3 py-1.5 text-sm border border-subtle rounded-md hover:bg-hover disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                下一頁
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Conflict Dialog */}
+      {/* Conflict Dialog Overlay */}
       {conflict && (
-        <RestoreConflictDialog
-          conflict={conflict.conflict}
-          onResolve={handleResolveConflict}
-          onCancel={() => setConflict(null)}
-        />
+        <div className="absolute inset-0 bg-black/20 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full animate-fade-in-up">
+            <div className="flex items-center gap-3 text-amber-600 mb-4">
+              <AlertTriangle size={24} />
+              <h3 className="font-bold text-lg">Restore Conflict</h3>
+            </div>
+
+            <p className="text-gray-600 text-sm mb-4">
+              {conflict.data.message}
+            </p>
+
+            <div className="bg-gray-50 rounded p-3 mb-6 text-xs font-mono text-gray-500 max-h-32 overflow-y-auto">
+              {conflict.data.conflicts.map((c, i) => (
+                <div key={i} className="mb-1 last:mb-0">
+                  [{c.kind}] {c.path}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConflict(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRestore(conflict.id, 'rename')}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded text-sm font-medium"
+              >
+                Rename (Keep Both)
+              </button>
+              <button
+                onClick={() => handleRestore(conflict.id, 'overwrite')}
+                className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded text-sm font-medium"
+              >
+                Overwrite
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
