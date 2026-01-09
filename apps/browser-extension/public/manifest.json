@@ -8,8 +8,13 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "contextMenus",
+    "notifications"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": [
     "http://localhost:3001/*",
     "https://chatgpt.com/*",
