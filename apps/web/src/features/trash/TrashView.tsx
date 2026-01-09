@@ -7,7 +7,6 @@ export function TrashView() {
   const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Conflict handling state
   const [conflict, setConflict] = useState<{ id: string, data: RestoreConflict } | null>(null);
@@ -72,6 +71,13 @@ export function TrashView() {
           Refresh
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 px-4 py-2 text-sm border-b border-red-100 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)}><X size={14} /></button>
+        </div>
+      )}
 
       {loading && items.length === 0 && (
         <div className="p-8 text-center text-gray-400">Loading...</div>

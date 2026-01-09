@@ -1,8 +1,6 @@
 import {
     ProjectEntity,
-    PromptEntity,
-    ProjectFrontmatter,
-    PromptFrontmatter
+    PromptEntity
 } from '@pah/contracts';
 
 const API_BASE = '/api';
