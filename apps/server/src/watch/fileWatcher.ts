@@ -14,6 +14,12 @@ export function startFileWatcher(rootPath: string, onFileChanged: FileChangedHan
     ignoreInitial: true,
     persistent: true,
     depth: undefined,
+    ignored: [
+      /(^|[\/\\])\../, // Ignore dotfiles (like .git, .pah, .DS_Store)
+      /node_modules/,
+      '**/dist/**',
+      '**/coverage/**'
+    ]
   });
 
   const projectsDir = getProjectsDir(rootPath);

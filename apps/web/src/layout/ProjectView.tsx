@@ -14,7 +14,7 @@ export function ProjectView() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getProjects({ q: searchQuery });
+      const data = await getProjects(); // Backend doesn't support q yet, so we fetch all
       setProjects(data);
     } catch (err: any) {
       console.error(err);
@@ -22,7 +22,17 @@ export function ProjectView() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery]);
+  }, []); // Only fetch once (refresh on entity-change)
+
+  const filteredProjects = projects.filter(p => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      p.title.toLowerCase().includes(q) ||
+      p.tags.some(t => t.toLowerCase().includes(q)) ||
+      (p.summary || '').toLowerCase().includes(q)
+    );
+  });
 
   useEffect(() => {
     fetchProjects();
@@ -64,9 +74,9 @@ export function ProjectView() {
 
       <div className="flex-1 overflow-hidden">
         {projectSubView === 'board' ? (
-          <ProjectBoard projects={projects} />
+          <ProjectBoard projects={filteredProjects} />
         ) : (
-          <ProjectList projects={projects} />
+          <ProjectList projects={filteredProjects} />
         )}
       </div>
     </div>

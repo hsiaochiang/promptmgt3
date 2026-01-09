@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
@@ -7,6 +7,8 @@ import {
   type PromptEntity,
   ProjectFrontmatterSchema,
   PromptFrontmatterSchema,
+  type GetProjectsQuery,
+  type GetPromptsQuery,
 } from '@pah/contracts';
 import {
   getProjectFilePath,
@@ -25,10 +27,23 @@ import { normalizeSlug } from '../utils/slug.js';
  */
 export async function registerProjectRoutes(server: FastifyInstance, rootPath: string) {
   // GET /api/projects - List all projects
-  server.get('/api/projects', async (_request: FastifyRequest, reply: FastifyReply) => {
+  server.get<{
+    Querystring: GetProjectsQuery;
+  }>('/api/projects', async (request, reply) => {
     try {
+      const { archived } = request.query;
       const scanResult = await scanWorkspace(rootPath);
-      return scanResult.projects;
+
+      let projects = scanResult.projects;
+
+      // Default: exclude archived. If archived=true, include only archived.
+      if (archived === 'true') {
+        projects = projects.filter(p => p.archived);
+      } else {
+        projects = projects.filter(p => !p.archived);
+      }
+
+      return projects;
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to list projects',
@@ -144,12 +159,12 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
 
       // Handle slug rename
       let filePath = getProjectFilePath(rootPath, existing.slug);
-      
+
       if (request.body.slug && request.body.slug !== existing.slug) {
         // Rename directory if slug changed
         const oldDir = path.dirname(getProjectFilePath(rootPath, existing.slug));
         const newDir = path.dirname(getProjectFilePath(rootPath, request.body.slug));
-        
+
         await fs.rename(oldDir, newDir);
         filePath = getProjectFilePath(rootPath, request.body.slug);
       }
@@ -209,10 +224,23 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
  */
 export async function registerPromptRoutes(server: FastifyInstance, rootPath: string) {
   // GET /api/prompts - List all prompts
-  server.get('/api/prompts', async (_request: FastifyRequest, reply: FastifyReply) => {
+  server.get<{
+    Querystring: GetPromptsQuery;
+  }>('/api/prompts', async (request, reply) => {
     try {
+      const { archived } = request.query;
       const scanResult = await scanWorkspace(rootPath);
-      return scanResult.prompts;
+
+      let prompts = scanResult.prompts;
+
+      // Default: exclude archived. If archived=true, include only archived.
+      if (archived === 'true') {
+        prompts = prompts.filter(p => p.archived);
+      } else {
+        prompts = prompts.filter(p => !p.archived);
+      }
+
+      return prompts;
     } catch (error) {
       reply.code(500).send({
         error: 'Failed to list prompts',
@@ -345,12 +373,12 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
 
       // Handle slug rename
       let filePath = getPromptFilePath(rootPath, project.slug, existing.slug);
-      
+
       if (request.body.slug && request.body.slug !== existing.slug) {
         // Rename file if slug changed
         const oldPath = getPromptFilePath(rootPath, project.slug, existing.slug);
         const newPath = getPromptFilePath(rootPath, project.slug, request.body.slug);
-        
+
         await fs.rename(oldPath, newPath);
         filePath = newPath;
       }

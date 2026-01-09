@@ -133,17 +133,17 @@ description: "任務清單：001-prompt-asset-hub"
 
 ### Implementation for User Story 2
 
-- [ ] T052 [P] [US2] 後端：chokidar watcher 推播 file.changed（忽略 `.pah/**`）於 apps/server/src/watch/fileWatcher.ts
-- [ ] T053 [US2] 後端：搜尋端點與索引快取（預設只含 project/prompt 且 archived=false）於 apps/server/src/routes/search.ts、apps/server/src/search/index.ts
+- [x] T052 [P] [US2] 後端：chokidar watcher 推播 file.changed（忽略 `.pah/**`）於 apps/server/src/watch/fileWatcher.ts
+- [x] T053 [US2] 後端：搜尋端點與索引快取（預設只含 project/prompt 且 archived=false）於 apps/server/src/routes/search.ts、apps/server/src/routes/search.ts
 
-- [ ] T054 [P] [US2] 前端：搜尋輸入/篩選 UI（含 empty state + client-side 高亮）於 apps/web/src/layout/ProjectView.tsx、apps/web/src/layout/PromptView.tsx
+- [x] T054 [P] [US2] 前端：搜尋輸入/篩選 UI（含 empty state + client-side 高亮）於 apps/web/src/layout/ProjectView.tsx、apps/web/src/layout/PromptView.tsx
 - [ ] T055 [US2] 前端：將 view/filter 偏好寫入 WorkspaceSettings（API 落盤）於 apps/web/src/state/uiStore.ts、apps/web/src/features/settings/api.ts
 
-- [ ] T056 [P] [US2] 後端：支援 archived 篩選（projects/prompts list endpoints；預設 false）於 apps/server/src/routes/entities.ts
-- [ ] T057 [P] [US2] 契約測試：archived query 行為（預設 false；可顯式 true）於 tests/contract/api-project-prompt.spec.ts
+- [x] T056 [P] [US2] 後端：支援 archived 篩選（projects/prompts list endpoints；預設 false）於 apps/server/src/routes/entities.ts
+- [x] T057 [P] [US2] 契約測試：archived query 行為（預設 false；可顯式 true）於 tests/contract/api-project-prompt.spec.ts
 
-- [ ] T058 [P] [US2] 實作 ArchiveView（同頁顯示封存 projects + prompts + 類型篩選）於 apps/web/src/features/archive/ArchiveView.tsx
-- [ ] T059 [US2] 串接 Sidebar → Tools/Archive 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
+- [x] T058 [P] [US2] 實作 ArchiveView（同頁顯示封存 projects + prompts + 類型篩選）於 apps/web/src/features/archive/ArchiveView.tsx
+- [x] T059 [US2] 串接 Sidebar → Tools/Archive 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
 
 **Checkpoint**: US2 可在不開啟 US3/US4 的情況下完成驗收（spec.md 使用者故事 2）。
 

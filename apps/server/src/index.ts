@@ -13,6 +13,7 @@ import { registerFileRoutes } from './routes/files.js';
 import { registerAttachmentRoutes } from './routes/attachments.js';
 import { startFileWatcher } from './watch/fileWatcher.js';
 import { cleanupExpiredTrash, scheduleDailyCleanup } from './trash/retention.js';
+import { invalidateCache } from './indexing/index.js';
 import type { FileChangedPayload, StatusEvent } from '@pah/contracts';
 
 // Get root path from environment or use default
@@ -86,6 +87,7 @@ await registerAttachmentRoutes(server, ROOT_PATH);
 
 // Start file watcher for WebSocket sync
 startFileWatcher(ROOT_PATH, (payload: FileChangedPayload) => {
+  invalidateCache();
   broadcast(payload);
 });
 

@@ -1,42 +1,65 @@
 import { useState, useEffect } from 'react';
-import type { PromptEntity } from '@pah/contracts';
-import { FileText } from 'lucide-react';
-import { MOCK_ARCHIVED_PROMPTS } from '../../data/mockData';
+import { getProjects, getPrompts } from '../library/api';
+import { useUiStore } from '../../state/uiStore';
+import { ProjectEntity, PromptEntity } from '@pah/contracts';
+import { FileText, FolderOpen, Filter } from 'lucide-react';
 
-const USE_MOCK_DATA = true; // Set to false to use real API
+type ArchivedItem =
+  | (ProjectEntity & { type: 'project' })
+  | (PromptEntity & { type: 'prompt' });
 
 export function ArchiveView() {
-  const [prompts, setPrompts] = useState<PromptEntity[]>([]);
+  const { searchQuery } = useUiStore();
+  const [items, setItems] = useState<ArchivedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'project' | 'prompt'>('all');
 
   useEffect(() => {
     const fetchArchived = async () => {
       try {
         setLoading(true);
-        
-        if (USE_MOCK_DATA) {
-          // Use mock data for visual comparison
-          await new Promise(resolve => setTimeout(resolve, 300));
-          setPrompts(MOCK_ARCHIVED_PROMPTS);
-        } else {
-          // Use real API
-          const response = await fetch('http://localhost:3001/api/prompts?archived=true');
-          if (!response.ok) {
-            throw new Error('Failed to fetch archived prompts');
-          }
-          const data = await response.json();
-          setPrompts(data);
-        }
+        const [projects, prompts] = await Promise.all([
+          getProjects({ archived: true }),
+          getPrompts({ archived: true })
+        ]);
+
+        const combined: ArchivedItem[] = [
+          ...projects.map(p => ({ ...p, type: 'project' as const })),
+          ...prompts.map(p => ({ ...p, type: 'prompt' as const }))
+        ];
+
+        // Sort by updatedAt desc
+        combined.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+        setItems(combined);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load archived prompts');
+        setError(err instanceof Error ? err.message : 'Failed to load archived items');
       } finally {
         setLoading(false);
       }
     };
 
     fetchArchived();
+
+    // Listen for changes
+    const handler = () => fetchArchived();
+    window.addEventListener('entity-change', handler);
+    return () => window.removeEventListener('entity-change', handler);
   }, []);
+
+  const filteredItems = items.filter((item: ArchivedItem) => {
+    // Type filter
+    if (filterType !== 'all' && item.type !== filterType) return false;
+
+    // Search filter
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.tags.some(t => t.toLowerCase().includes(q))
+    );
+  });
 
   if (loading) {
     return (
@@ -48,65 +71,77 @@ export function ArchiveView() {
 
   if (error) {
     return (
-      <div className="p-8 text-center">
-        <div className="text-red-600 mb-2 text-xs">載入失敗</div>
-        <div className="text-xs text-gray-500">{error}</div>
-      </div>
-    );
-  }
-
-  if (prompts.length === 0) {
-    return (
-      <div className="p-8 text-center text-gray-400 text-xs">
-        目前沒有封存項目
+      <div className="p-8 text-center text-red-500 text-xs">
+        {error}
       </div>
     );
   }
 
   return (
-    <div className="pb-20 pt-2">
-      <div className="mb-4 p-3 bg-purple-50 border border-purple-300 rounded text-xs text-purple-900">
-        📦 <span className="font-medium">注意：</span>封存項目為唯讀狀態。若需要重新啟用，請使用「取消封存」功能。
-      </div>
-
-      <div className="flex text-xs font-medium text-gray-400 border-b border-gray-200 pb-2 mb-2 px-2 select-none sticky top-0 bg-white z-10">
-        <div className="flex-[2] py-2 px-3 border-r border-gray-100">名稱</div>
-        <div className="w-28 py-2 px-3 border-r border-gray-100">狀態</div>
-        <div className="flex-1 py-2 px-3 border-r border-gray-100">標籤</div>
-        <div className="w-28 py-2 px-3 text-right">更新</div>
-      </div>
-
-      {prompts.map(prompt => (
-        <div
-          key={prompt.id}
-          className="flex items-center hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors relative group"
+    <div className="h-full flex flex-col">
+      <div className="flex-none px-4 py-3 flex gap-2 items-center border-b border-gray-100 bg-white">
+        <Filter size={14} className="text-gray-400" />
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value as any)}
+          className="text-xs border-none bg-gray-50 rounded px-2 py-1 focus:ring-0 cursor-pointer text-gray-700"
         >
-          <div className="flex-[2] flex items-center py-1.5 px-3 border-r border-gray-100 overflow-hidden">
-            <FileText size={16} className="text-gray-400 flex-shrink-0 mr-2" />
-            <span className="text-gray-500 font-medium text-xs truncate">
-              {prompt.title}
-            </span>
-          </div>
+          <option value="all">所有類型</option>
+          <option value="project">專案</option>
+          <option value="prompt">提示詞</option>
+        </select>
+        <div className="flex-1"></div>
+        <div className="text-xs text-gray-400">
+          共 {filteredItems.length} 個封存項目
+        </div>
+      </div>
 
-          <div className="w-28 py-1.5 px-3 border-r border-gray-100 flex items-center">
-            <span className="text-xs px-2 py-0.5 rounded-[3px] text-purple-700 bg-purple-50">
-              已封存
-            </span>
+      <div className="flex-1 overflow-y-auto pb-20 custom-scrollbar">
+        {filteredItems.length === 0 ? (
+          <div className="p-8 text-center text-gray-400 text-xs">
+            沒有符合條件的封存項目
           </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            <div className="flex text-xs font-medium text-gray-400 bg-white sticky top-0 z-10 border-b border-gray-200">
+              <div className="w-8 py-2 px-3"></div>
+              <div className="flex-[2] py-2 px-3 border-r border-gray-100">名稱</div>
+              <div className="w-24 py-2 px-3 border-r border-gray-100">類型</div>
+              <div className="flex-1 py-2 px-3 border-r border-gray-100">標籤</div>
+              <div className="w-32 py-2 px-3 text-right">封存時間</div>
+            </div>
 
-          <div className="flex-1 py-1.5 px-3 border-r border-gray-100 flex gap-1 overflow-hidden items-center">
-            {(prompt.tags ?? []).slice(0, 2).map((t, i) => (
-              <span key={i} className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1 rounded">
-                {t}
-              </span>
+            {filteredItems.map(item => (
+              <div
+                key={`${item.type}-${item.id}`}
+                className="flex items-center hover:bg-gray-50 transition-colors group"
+              >
+                <div className="w-8 py-2 px-3 flex justify-center">
+                  {item.type === 'project' ? (
+                    <FolderOpen size={14} className="text-blue-400" />
+                  ) : (
+                    <FileText size={14} className="text-emerald-400" />
+                  )}
+                </div>
+                <div className="flex-[2] py-2 px-3 border-r border-gray-100 font-medium text-gray-700 text-xs truncate">
+                  {item.title}
+                </div>
+                <div className="w-24 py-2 px-3 border-r border-gray-100 text-xs text-gray-500 capitalize">
+                  {item.type}
+                </div>
+                <div className="flex-1 py-2 px-3 border-r border-gray-100 flex gap-1 overflow-hidden">
+                  {item.tags.map(t => (
+                    <span key={t} className="text-[10px] bg-gray-100 px-1 rounded text-gray-500 truncate">{t}</span>
+                  ))}
+                </div>
+                <div className="w-32 py-2 px-3 text-right text-xs text-gray-400 font-mono">
+                  {new Date(item.updatedAt).toLocaleDateString()}
+                </div>
+              </div>
             ))}
           </div>
-
-          <div className="w-28 py-1.5 px-3 text-right text-xs text-gray-400 font-mono flex items-center justify-end">
-            {new Date(prompt.updatedAt).toLocaleDateString('zh-TW')}
-          </div>
-        </div>
-      ))}
+        )}
+      </div>
     </div>
   );
 }

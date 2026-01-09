@@ -23,10 +23,10 @@ interface UiState {
   setPromptSubView: (subView: SubView) => void;
   setSelectedItem: (item: SelectedItem) => void;
   closePanel: () => void;
+  setSearchQuery: (query: string) => void;
   toggleSidebar: () => void;
   setExpandedProjects: (ids: string[]) => void;
   toggleProjectExpanded: (projectId: string) => void;
-  setSearchQuery: (value: string) => void;
 
   // Sync
   initFromBackend: () => Promise<void>;

@@ -35,7 +35,24 @@ export interface ScanError {
  * Scan the entire workspace and rebuild data structures
  * This implements INV-002: File scanning must be able to rebuild UI data
  */
+let workspaceCache: ScanResult | null = null;
+let lastScanTime: number = 0;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour safety TTL
+
+export function invalidateCache(): void {
+  workspaceCache = null;
+}
+
+/**
+ * Scan the entire workspace and rebuild data structures
+ * This implements INV-002: File scanning must be able to rebuild UI data
+ */
 export async function scanWorkspace(rootPath: string): Promise<ScanResult> {
+  // Return cached result if valid
+  if (workspaceCache && (Date.now() - lastScanTime < CACHE_TTL_MS)) {
+    return workspaceCache;
+  }
+
   const result: ScanResult = {
     projects: [],
     prompts: [],
@@ -46,15 +63,23 @@ export async function scanWorkspace(rootPath: string): Promise<ScanResult> {
   try {
     // Scan projects
     await scanProjects(rootPath, result);
-    
+
     // Scan inbox
     await scanInbox(rootPath, result);
+
+    // Update cache
+    workspaceCache = result;
+    lastScanTime = Date.now();
   } catch (error) {
     result.errors.push({
       path: rootPath,
       error: error instanceof Error ? error.message : String(error),
       timestamp: new Date().toISOString(),
     });
+  }
+
+  if (result.errors.length > 0) {
+    // console.error('DEBUG: Scan Errors:', JSON.stringify(result.errors, null, 2));
   }
 
   return result;
@@ -244,12 +269,12 @@ export async function writeProjectFile(
   project: ProjectEntity
 ): Promise<void> {
   const { body, attachments, ...frontmatter } = project;
-  
+
   const fileContent = matter.stringify(body, frontmatter);
-  
+
   // Ensure directory exists
   await fs.mkdir(path.dirname(filePath), { recursive: true });
-  
+
   await fs.writeFile(filePath, fileContent, 'utf-8');
 }
 
@@ -261,12 +286,12 @@ export async function writePromptFile(
   prompt: PromptEntity
 ): Promise<void> {
   const { body, attachments, ...frontmatter } = prompt;
-  
+
   const fileContent = matter.stringify(body, frontmatter);
-  
+
   // Ensure directory exists
   await fs.mkdir(path.dirname(filePath), { recursive: true });
-  
+
   await fs.writeFile(filePath, fileContent, 'utf-8');
 }
 
@@ -278,11 +303,11 @@ export async function writeInboxItemFile(
   inboxItem: InboxItemEntity
 ): Promise<void> {
   const { rawContent, cleanedContent, ...frontmatter } = inboxItem;
-  
+
   const fileContent = matter.stringify(rawContent, frontmatter);
-  
+
   // Ensure directory exists
   await fs.mkdir(path.dirname(filePath), { recursive: true });
-  
+
   await fs.writeFile(filePath, fileContent, 'utf-8');
 }

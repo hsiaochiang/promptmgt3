@@ -103,12 +103,13 @@ const ExpandableSearch = ({
 };
 
 export function MainContent({ activeSection }: MainContentProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { 
-    projectSubView, 
-    promptSubView, 
-    setProjectSubView, 
-    setPromptSubView 
+  const {
+    projectSubView,
+    promptSubView,
+    setProjectSubView,
+    setPromptSubView,
+    searchQuery,
+    setSearchQuery
   } = useUiStore();
 
   const title =
@@ -173,9 +174,8 @@ export function MainContent({ activeSection }: MainContentProps) {
 
       {/* Content */}
       <div
-        className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar ${
-          currentSubView === 'board' ? 'bg-[#F7F7F5] p-0' : 'bg-white px-8'
-        }`}
+        className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar ${currentSubView === 'board' ? 'bg-[#F7F7F5] p-0' : 'bg-white px-8'
+          }`}
       >
         {activeSection === 'projects' && <ProjectView />}
         {activeSection === 'prompts' && <PromptView />}

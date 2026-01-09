@@ -14,7 +14,7 @@ export function PromptView() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getPrompts({ q: searchQuery });
+      const data = await getPrompts();
       setPrompts(data);
     } catch (err: any) {
       console.error(err);
@@ -22,7 +22,16 @@ export function PromptView() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery]);
+  }, []); // Only fetch once (refresh on entity-change)
+
+  const filteredPrompts = prompts.filter(p => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      p.title.toLowerCase().includes(q) ||
+      p.tags.some(t => t.toLowerCase().includes(q))
+    );
+  });
 
   useEffect(() => {
     fetchPrompts();
@@ -50,9 +59,9 @@ export function PromptView() {
 
       <div className="flex-1 overflow-hidden">
         {promptSubView === 'board' ? (
-          <PromptBoard prompts={prompts} />
+          <PromptBoard prompts={filteredPrompts} />
         ) : (
-          <PromptList prompts={prompts} />
+          <PromptList prompts={filteredPrompts} />
         )}
       </div>
     </div>

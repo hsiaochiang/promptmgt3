@@ -1,0 +1,50 @@
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mD:/program/promptmgt3[39m
+
+[90mstdout[2m | tests/integration/api-archived-filter.spec.ts[2m > [22m[2mIntegration: API Archived Filter[2m > [22m[2mshould filter projects by archived status[22m[39m
+DEBUG: defaultList length: [33m0[39m
+DEBUG: defaultList items: []
+
+stderr | tests/integration/api-archived-filter.spec.ts > Integration: API Archived Filter > should filter projects by archived status
+DEBUG: Scan Errors: [
+  {
+    "path": "D:\\program\\promptmgt3\\temp-test-archive-filter\\projects\\active-p\\project.md",
+    "error": "Failed to parse project file: [\n  {\n    \"validation\": \"uuid\",\n    \"code\": \"invalid_string\",\n    \"message\": \"Invalid uuid\",\n    \"path\": [\n      \"id\"\n    ]\n  }\n]",
+    "timestamp": "2026-01-09T22:04:12.939Z"
+  },
+  {
+    "path": "D:\\program\\promptmgt3\\temp-test-archive-filter\\projects\\archived-p\\project.md",
+    "error": "Failed to parse project file: [\n  {\n    \"validation\": \"uuid\",\n    \"code\": \"invalid_string\",\n    \"message\": \"Invalid uuid\",\n    \"path\": [\n      \"id\"\n    ]\n  }\n]",
+    "timestamp": "2026-01-09T22:04:12.939Z"
+  }
+]
+
+ [33m??[39m tests/integration/api-archived-filter.spec.ts [2m ([22m[2m1 test[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 42[2mms[22m[39m
+[31m   [33m??[31m tests/integration/api-archived-filter.spec.ts[2m > [22mIntegration: API Archived Filter[2m > [22mshould filter projects by archived status[39m
+[31m     ??expected [] to have a length of 1 but got +0[39m
+
+?胼?胼?胼??[1m Failed Tests 1 ?胼?胼?胼??[39m
+
+ FAIL  tests/integration/api-archived-filter.spec.ts > Integration: API Archived Filter > should filter projects by archived status
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ??[22m tests/integration/api-archived-filter.spec.ts:70:29
+     68|         console.log('DEBUG: defaultList length:', defaultList.length);
+     69|         console.log('DEBUG: defaultList items:', JSON.stringify(defaul??     70|         expect(defaultList).toHaveLength(1);
+       |                             ^
+     71|         expect(defaultList[0].id).toBe('p1');
+     72| 
+
+?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼[1/1]??[22m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 06:04:12
+[2m   Duration [22m 749ms[2m (transform 149ms, setup 0ms, collect 404ms, tests 42ms, environment 0ms, prepare 128ms)[22m
+
