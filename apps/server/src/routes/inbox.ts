@@ -1,175 +1,169 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { v4 as uuidv4 } from 'uuid';
+import { scanWorkspace } from '../indexing/index.js';
+import { getInboxDir, getInboxItemFilePath } from '../fs-layout/index.js';
+import { InboxItemEntity } from '@pah/contracts';
 import fs from 'fs/promises';
-import {
-  type InboxItemEntity,
-  InboxItemFrontmatterSchema,
-} from '@pah/contracts';
-import {
-  getInboxItemFilePath,
-} from '../fs-layout/index.js';
-import {
-  writeInboxItemFile,
-  scanWorkspace,
-} from '../indexing/index.js';
+import path from 'path';
+import matter from 'gray-matter';
 
-/**
- * Register inbox routes
- * Note: Archival is handled by external tools, not provided by this API
- */
 export async function registerInboxRoutes(server: FastifyInstance, rootPath: string) {
-  // GET /api/inbox - List all inbox items
+
+  // GET /api/inbox
   server.get('/api/inbox', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const scanResult = await scanWorkspace(rootPath);
-      return scanResult.inbox;
-    } catch (error) {
-      reply.code(500).send({
-        error: 'Failed to list inbox items',
-        message: error instanceof Error ? error.message : String(error),
+      const scan = await scanWorkspace(rootPath);
+      const inboxItems: InboxItemEntity[] = scan.inbox;
+
+      inboxItems.sort((a, b) => {
+        return new Date(b.importedAt).getTime() - new Date(a.importedAt).getTime();
       });
+
+      return inboxItems;
+    } catch (error) {
+      reply.code(500).send({ error: 'Failed to list inbox items', message: String(error) });
     }
   });
 
-  // GET /api/inbox/:id - Get a specific inbox item
-  server.get<{
-    Params: { id: string };
-  }>('/api/inbox/:id', async (request, reply) => {
+  // GET /api/inbox/:id
+  server.get<{ Params: { id: string } }>('/api/inbox/:id', async (request, reply) => {
     try {
       const { id } = request.params;
-      const scanResult = await scanWorkspace(rootPath);
-      const item = scanResult.inbox.find((i) => i.id === id);
+      const scan = await scanWorkspace(rootPath);
+      const item = scan.inbox.find(i => i.id === id);
 
       if (!item) {
-        return reply.code(404).send({ error: 'Inbox item not found' });
+        reply.code(404).send({ error: 'Inbox item not found' });
+        return;
       }
-
       return item;
     } catch (error) {
-      reply.code(500).send({
-        error: 'Failed to get inbox item',
-        message: error instanceof Error ? error.message : String(error),
-      });
+      reply.code(500).send({ error: 'Failed to get inbox item', message: String(error) });
     }
   });
 
-  // POST /api/inbox - Create a new inbox item (import)
-  server.post<{
-    Body: Partial<InboxItemEntity>;
-  }>('/api/inbox', async (request, reply) => {
+  // DELETE /api/inbox/:id
+  server.delete<{ Params: { id: string } }>('/api/inbox/:id', async (request, reply) => {
     try {
-      const { title, sourcePlatform, sourceLink, rawContent, suggestedTags } = request.body;
+      const { id } = request.params;
 
-      if (!title) {
-        return reply.code(400).send({ error: 'Title is required' });
-      }
+      // We need to find the specific file to delete.
+      // Since filenames in inbox are usually just ID.md or whatever the user dropped,
+      // we can't assume ID.md.
+      // scanWorkspace already found the item, but ScanResult doesn't expose path directly in DTO?
+      // Actually indexing/index.ts ScanResult items are constructed from storage.
+      // Let's iterate directory to find the file with matching ID in frontmatter.
 
-      // Generate ID
-      const id = uuidv4();
-      const now = new Date().toISOString();
-
-      // Create inbox item entity
-      const inboxItem: InboxItemEntity = {
-        id,
-        title,
-        sourcePlatform,
-        sourceLink,
-        importedAt: now,
-        rawContent: rawContent || '',
-        cleanedState: 'unprocessed',
-        suggestedTags: suggestedTags || [],
-        notes: '',
-      };
-
-      // Validate against schema
-      InboxItemFrontmatterSchema.parse(inboxItem);
-
-      // Write to file
-      const filePath = getInboxItemFilePath(rootPath, id);
-
-      // Check if item already exists
+      const inboxDir = getInboxDir(rootPath);
+      // Ensure inbox dir exists
       try {
-        await fs.access(filePath);
-        return reply.code(409).send({ error: 'Inbox item with this ID already exists' });
+        await fs.access(inboxDir);
       } catch {
-        // File doesn't exist, we can create it
+        // Inbox empty or missing
+        reply.code(404).send({ error: 'Inbox item not found' });
+        return;
       }
 
-      await writeInboxItemFile(filePath, inboxItem);
+      const files = await fs.readdir(inboxDir);
+      let targetPath = '';
 
-      return reply.code(201).send(inboxItem);
+      // Optimization: Check if ID.md exists first (common case)
+      const likelyPath = getInboxItemFilePath(rootPath, id);
+      try {
+        const content = await fs.readFile(likelyPath, 'utf-8');
+        const { data } = matter(content);
+        if (data.id === id) {
+          targetPath = likelyPath;
+        }
+      } catch {
+        // Not ID.md, fall back to scan
+      }
+
+      if (!targetPath) {
+        // Linear scan
+        for (const file of files) {
+          if (!file.endsWith('.md')) continue;
+          const filePath = path.join(inboxDir, file);
+          const content = await fs.readFile(filePath, 'utf-8');
+          const { data } = matter(content);
+          if (data.id === id) {
+            targetPath = filePath;
+            break;
+          }
+        }
+      }
+
+      if (!targetPath) {
+        reply.code(404).send({ error: 'Inbox item not found' });
+        return;
+      }
+
+      await fs.rm(targetPath, { force: true });
+      reply.code(200).send({ message: 'Deleted' });
+
     } catch (error) {
-      reply.code(500).send({
-        error: 'Failed to create inbox item',
-        message: error instanceof Error ? error.message : String(error),
-      });
+      reply.code(500).send({ error: 'Failed to delete inbox item', message: String(error) });
     }
   });
 
-  // PUT /api/inbox/:id - Update an inbox item (minimal editing only)
-  // Note: Does NOT provide archival functionality - that's handled by external tools
-  server.put<{
-    Params: { id: string };
-    Body: Partial<InboxItemEntity>;
-  }>('/api/inbox/:id', async (request, reply) => {
+  // PATCH /api/inbox/:id
+  server.patch<{ Params: { id: string }, Body: Partial<InboxItemEntity> }>('/api/inbox/:id', async (request, reply) => {
     try {
       const { id } = request.params;
+      const updates = request.body;
 
-      // Find existing item
-      const scanResult = await scanWorkspace(rootPath);
-      const existing = scanResult.inbox.find((i) => i.id === id);
+      // Find file logic (same as delete)
+      const inboxDir = getInboxDir(rootPath);
+      const files = await fs.readdir(inboxDir);
+      let targetPath = '';
+      let fileContent = '';
 
-      if (!existing) {
-        return reply.code(404).send({ error: 'Inbox item not found' });
+      // Check ID.md
+      const likelyPath = getInboxItemFilePath(rootPath, id);
+      try {
+        const content = await fs.readFile(likelyPath, 'utf-8');
+        const { data } = matter(content);
+        if (data.id === id) {
+          targetPath = likelyPath;
+          fileContent = content;
+        }
+      } catch {
+        // Fallback
       }
 
-      // Update fields (only allow minimal editing)
-      const updated: InboxItemEntity = {
-        ...existing,
-        ...request.body,
-        id, // ID cannot be changed
-        importedAt: existing.importedAt, // Import time cannot be changed
-      };
-
-      // Validate against schema
-      InboxItemFrontmatterSchema.parse(updated);
-
-      const filePath = getInboxItemFilePath(rootPath, id);
-      await writeInboxItemFile(filePath, updated);
-
-      return updated;
-    } catch (error) {
-      reply.code(500).send({
-        error: 'Failed to update inbox item',
-        message: error instanceof Error ? error.message : String(error),
-      });
-    }
-  });
-
-  // DELETE /api/inbox/:id - Delete an inbox item
-  server.delete<{
-    Params: { id: string };
-  }>('/api/inbox/:id', async (request, reply) => {
-    try {
-      const { id } = request.params;
-
-      // Find existing item
-      const scanResult = await scanWorkspace(rootPath);
-      const existing = scanResult.inbox.find((i) => i.id === id);
-
-      if (!existing) {
-        return reply.code(404).send({ error: 'Inbox item not found' });
+      if (!targetPath) {
+        for (const file of files) {
+          if (!file.endsWith('.md')) continue;
+          const filePath = path.join(inboxDir, file);
+          const content = await fs.readFile(filePath, 'utf-8');
+          const { data } = matter(content);
+          if (data.id === id) {
+            targetPath = filePath;
+            fileContent = content;
+            break;
+          }
+        }
       }
 
-      const filePath = getInboxItemFilePath(rootPath, id);
-      await fs.unlink(filePath);
+      if (!targetPath) {
+        reply.code(404).send({ error: 'Inbox item not found' });
+        return;
+      }
 
-      return { message: 'Inbox item deleted successfully' };
+      const { data: frontmatter, content: body } = matter(fileContent);
+
+      if (updates.title !== undefined) frontmatter.title = updates.title;
+      if (updates.notes !== undefined) frontmatter.notes = updates.notes;
+      if (updates.suggestedTags !== undefined) frontmatter.suggestedTags = updates.suggestedTags;
+
+      const newBody = updates.rawContent !== undefined ? updates.rawContent : body;
+      const newFileContent = matter.stringify(newBody, frontmatter);
+
+      await fs.writeFile(targetPath, newFileContent, 'utf-8');
+
+      reply.code(200).send({ id, ...frontmatter, rawContent: newBody });
+
     } catch (error) {
-      reply.code(500).send({
-        error: 'Failed to delete inbox item',
-        message: error instanceof Error ? error.message : String(error),
-      });
+      reply.code(500).send({ error: 'Failed to update inbox item', message: String(error) });
     }
   });
 }

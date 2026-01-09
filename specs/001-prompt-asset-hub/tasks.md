@@ -176,28 +176,20 @@ description: "任務清單：001-prompt-asset-hub"
 
 ### Tests for User Story 4 (Test-First)
 
-- [ ] T068 [P] [US4] inbox contract tests（list/get/update/delete；delete=永久刪除，不進回收站）於 tests/contract/api-inbox.spec.ts
-- [ ] T069 [P] [US4] inbox 可用性/延遲整合測試於 tests/integration/inbox-usability.spec.ts
+- [x] T068 [P] [US4] inbox contract tests（list/get/update/delete；delete=永久刪除，不進回收站）於 tests/contract/api-inbox.spec.ts
+- [x] T069 [P] [US4] inbox 可用性/延遲整合測試於 tests/integration/inbox-usability.spec.ts
 
 ### Implementation for User Story 4
 
-- [ ] T070 [US4] 後端：Inbox routes（讀取 + 簡修更新 + delete=永久刪除）於 apps/server/src/routes/inbox.ts
-- [ ] T071 [P] [US4] 前端：InboxView（列表 + 最小編修 + 刪除 + 文案）於 apps/web/src/features/inbox/InboxView.tsx
-- [ ] T072 [US4] 串接 Sidebar → Tools/Inbox 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
+- [x] T070 [US4] 後端：Inbox routes（讀取 + 簡修更新 + delete=永久刪除）於 apps/server/src/routes/inbox.ts
+- [x] T071 [P] [US4] 前端：InboxView（列表 + 最小編修 + 刪除 + 文案）於 apps/web/src/features/inbox/InboxView.tsx
+- [x] T072 [US4] 串接 Sidebar → Tools/Inbox 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
 
 ---
 
-## Phase 7: Polish & Cross-Cutting Concerns
+## Phase 7: Polish & Cross-Cutting Concerns (Deprecated)
 
-**Purpose**: 補齊 Snippets/Clipboard、回歸驗收流程、效能基準與契約防漂移。
-
-- [ ] T073 [P] Snippets/Clipboard：對齊 `.pah/snippets/` 路徑（每個 snippet 一檔）於 apps/server/src/fs-layout/index.ts
-- [ ] T074 [P] Snippets/Clipboard：新增/對齊 contracts DTO（Snippet/SnippetList）於 packages/contracts/src/dto/snippet.ts、packages/contracts/src/dto/index.ts
-- [ ] T075 [P] Snippets/Clipboard：更新 OpenAPI（/api/snippets CRUD）於 specs/001-prompt-asset-hub/contracts/openapi.yaml
-- [ ] T076 [P] Snippets/Clipboard：新增 snippet contract tests 於 tests/contract/api-snippets.spec.ts
-- [ ] T077 Snippets/Clipboard：後端 snippets routes（list/get/create/update/delete）於 apps/server/src/routes/snippets.ts、apps/server/src/index.ts
-- [ ] T078 [P] Snippets/Clipboard：前端 ClipboardView（list + copy/insert）於 apps/web/src/features/clipboard/ClipboardView.tsx
-- [ ] T079 Snippets/Clipboard：串接 Sidebar → Tools/Clipboard 與 MainContent 顯示於 apps/web/src/layout/Sidebar.tsx、apps/web/src/layout/MainContent.tsx
+**Note**: 經顧問評估，Snippets/Clipboard 功能效益低，已於 Phase 6 後移除，將資源集中於系統優化。
 
 - [ ] T080 [P] 修正文檔內「附件命名規則」矛盾（UUID 命名 vs suffix 規則）於 specs/001-prompt-asset-hub/data-model.md
 - [ ] T081 [P] UI regression：建立/更新 checklist 與 evidence 流程於 specs/001-prompt-asset-hub/checklists/ui-regression.md

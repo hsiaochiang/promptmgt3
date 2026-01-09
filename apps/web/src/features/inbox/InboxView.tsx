@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { InboxItemEntity } from '@pah/contracts';
-import { MOCK_INBOX_ITEMS } from '../../data/mockData';
-
-const USE_MOCK_DATA = false; // Set to false to use real API
+import { fetchInboxItems, updateInboxItem, deleteInboxItem } from './api';
+import { Trash2, AlertTriangle, Save, RefreshCw } from 'lucide-react';
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);
@@ -12,33 +11,28 @@ export function InboxView() {
     notes: '',
     rawContent: '',
   });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Load items
+  const load = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchInboxItems();
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '載入暫存區失敗');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        
-        if (USE_MOCK_DATA) {
-          // Use mock data for visual comparison
-          await new Promise(resolve => setTimeout(resolve, 300)); // Simulate loading
-          setItems(MOCK_INBOX_ITEMS);
-        } else {
-          // Use real API
-          const res = await fetch('http://localhost:3001/api/inbox');
-          if (!res.ok) throw new Error('載入暫存項失敗');
-          const data = await res.json();
-          setItems(data);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '載入暫存區失敗');
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, []);
 
@@ -55,147 +49,177 @@ export function InboxView() {
 
   const handleSave = async () => {
     if (!selectedId) return;
-    const current = items.find(i => i.id === selectedId);
-    if (!current) return;
-
     try {
       setSaving(true);
       setError(null);
       setSuccess(false);
 
-      const updated: InboxItemEntity = {
-        ...current,
+      const updated = await updateInboxItem(selectedId, {
         title: form.title,
         notes: form.notes,
         rawContent: form.rawContent,
-      };
-
-      const res = await fetch(`http://localhost:3001/api/inbox/${selectedId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
       });
 
-      if (!res.ok) {
-        throw new Error('保存暫存項失敗');
-      }
-
-      const saved = (await res.json()) as InboxItemEntity;
-      setItems(prev => prev.map(i => (i.id === saved.id ? saved : i)));
+      setItems(prev => prev.map(i => (i.id === updated.id ? updated : i)));
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存暫存項失敗');
+      setError(err instanceof Error ? err.message : '保存失敗');
     } finally {
       setSaving(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!selectedId) return;
+    if (!confirm('警告：此操作將永久刪除此檔案，無法復原！\n\n確定要刪除嗎？')) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+      await deleteInboxItem(selectedId);
+
+      // Remove from list
+      setItems(prev => prev.filter(i => i.id !== selectedId));
+      setSelectedId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '刪除失敗');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
-    <div className="pb-20 pt-2">
-      <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900">
-        💡 <span className="font-medium">注意：</span>暫存區項目的歸檔功能由外部工具處理；此處僅提供標題、簡單備註與內容刪減等最小編修。
+    <div className="h-full flex flex-col">
+      {/* Alert Banner */}
+      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-start gap-2">
+        <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
+        <div>
+          <span className="font-bold">暫存區說明：</span>
+          此處顯示由外部工具（如瀏覽器擴充）擷取的原始內容。在此您可以整理標題與內容，但<strong className="text-amber-700">正式歸檔（轉為 Project/Prompt）請使用外部工具</strong>操作。
+        </div>
       </div>
 
-      <div className="flex gap-4 min-h-[340px]">
-        {/* List */}
-        <div className="w-1/3 border border-amber-300 rounded overflow-hidden flex flex-col bg-amber-50/30">
-          <div className="border-b border-amber-300 px-3 py-2 text-xs text-amber-900 flex justify-between">
-            <span>匯入項目</span>
-            <span>{items.length}</span>
+      <div className="flex gap-4 flex-1 min-h-0">
+        {/* List Column */}
+        <div className="w-1/3 flex flex-col border border-gray-200 rounded bg-gray-50/50">
+          <div className="p-2 border-b border-gray-200 flex justify-between items-center bg-gray-100/50">
+            <span className="text-xs font-bold text-gray-600">匯入清單 ({items.length})</span>
+            <button onClick={load} className="text-gray-500 hover:text-gray-800" title="重新整理">
+              <RefreshCw size={14} />
+            </button>
           </div>
-          <div className="flex-1 overflow-auto divide-y divide-amber-200">
-            {loading && (
-              <div className="p-4 text-[11px] text-amber-900/70 text-center">載入暫存區中...</div>
-            )}
+
+          <div className="flex-1 overflow-y-auto p-1 space-y-1">
+            {loading && <div className="text-center py-4 text-xs text-gray-500">載入中...</div>}
             {!loading && items.length === 0 && (
-              <div className="p-4 text-[11px] text-amber-900/70 text-center">目前沒有暫存項。</div>
+              <div className="text-center py-8 text-xs text-gray-400">暫存區是空的</div>
             )}
+
             {items.map(item => (
               <button
                 key={item.id}
-                type="button"
                 onClick={() => handleSelect(item)}
-                className={`w-full text-left px-3 py-2 text-[11px] hover:bg-amber-50/60 transition-colors ${
-                  selectedId === item.id ? 'bg-amber-50 border-l-2 border-amber-400' : ''
-                }`}
+                className={`w-full text-left p-3 rounded border text-xs transition-all ${selectedId === item.id
+                  ? 'bg-white border-amber-400 shadow-sm ring-1 ring-amber-400/30'
+                  : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
               >
-                <div className="font-medium truncate text-gray-900">{item.title}</div>
-                <div className="text-xs text-gray-500 truncate font-mono">
-                  {new Date(item.importedAt).toLocaleString('zh-TW')}
+                <div className="font-medium text-gray-900 mb-1 truncate">{item.title}</div>
+                <div className="flex justify-between items-center text-[10px] text-gray-500">
+                  <span>{new Date(item.importedAt).toLocaleDateString()}</span>
+                  <span className={`px-1.5 py-0.5 rounded-full ${item.cleanedState === 'cleaned' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                    {item.cleanedState || 'new'}
+                  </span>
                 </div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Detail */}
-        <div className="flex-1 border border-gray-200 rounded p-4 flex flex-col bg-white">
-            {error && (
-              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
-                {error}
+        {/* Editor Column */}
+        <div className="flex-1 flex flex-col border border-gray-200 rounded bg-white overflow-hidden shadow-sm">
+          {!selectedId ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-300">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+                <RefreshCw size={24} />
               </div>
-            )}
-            {success && (
-              <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
-                暫存項已保存
-              </div>
-            )}
-
-            {!selectedId ? (
-              <div className="flex-1 flex items-center justify-center text-gray-400 text-[11px]">
-                請從左側選擇一個暫存項目進行編輯。
-              </div>
-            ) : (
-              <>
-                <div className="space-y-4 flex-1 overflow-auto">
-                  <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600">標題</label>
-                    <input
-                      type="text"
-                      value={form.title}
-                      onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600">備註</label>
-                    <textarea
-                      rows={3}
-                      value={form.notes}
-                      onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600">原始內容（可刪減）</label>
-                    <textarea
-                      rows={8}
-                      value={form.rawContent}
-                      onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0 font-mono"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      僅建議做刪減與整理，不會執行歸檔；正式歸檔由外部工具處理。
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 border-t border-gray-100 pt-3 flex justify-end">
+              <p className="text-xs">請選擇項目以預覽或編輯</p>
+            </div>
+          ) : (
+            <>
+              {/* Toolbar */}
+              <div className="h-10 border-b border-gray-200 flex items-center justify-between px-3 bg-gray-50/50">
+                <span className="text-xs font-mono text-gray-400 truncate max-w-[200px]">{selectedId}</span>
+                <div className="flex gap-2">
                   <button
-                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    永久刪除
+                  </button>
+                  <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-4 py-2 bg-gray-900 text-white rounded text-[11px] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded shadow-sm transition-all"
                   >
-                    {saving ? '保存中...' : '保存暫存項'}
+                    <Save size={14} />
+                    {saving ? '保存中...' : '保存變更'}
                   </button>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+
+              {/* Edit Form */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-700 text-xs rounded border border-red-100">
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="p-3 bg-green-50 text-green-700 text-xs rounded border border-green-100">
+                    變更已保存
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-700">標題</label>
+                  <input
+                    type="text"
+                    value={form.title}
+                    onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-700">整理備註 (Notes)</label>
+                  <textarea
+                    rows={2}
+                    value={form.notes}
+                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    placeholder="例如：需提取哪部分作為 Prompt..."
+                  />
+                </div>
+
+                <div className="space-y-1 flex-1 flex flex-col min-h-[300px]">
+                  <label className="text-xs font-bold text-gray-700">原始內容</label>
+                  <div className="flex-1 relative">
+                    <textarea
+                      value={form.rawContent}
+                      onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
+                      className="absolute inset-0 w-full h-full p-4 font-mono text-xs leading-relaxed border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
