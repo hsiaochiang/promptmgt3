@@ -3,13 +3,6 @@ import { useUiStore } from '../../state/uiStore';
 import { VersionNode } from '@pah/contracts';
 import { Clock, RotateCcw, Plus } from 'lucide-react';
 
-interface HistoryViewProps {
-  entityType?: 'project' | 'prompt';
-  entityId?: string;
-  projectSlug?: string;
-  promptSlug?: string;
-}
-
 export function HistoryView() {
   const { selectedItem } = useUiStore();
 
@@ -19,8 +12,8 @@ export function HistoryView() {
 
   const entityType = selectedItem?.type as 'project' | 'prompt' | undefined;
   const entityId = selectedItem?.id;
-  const projectSlug = (selectedItem as any)?.slug || (selectedItem as any)?.project; // rough guessing
-  const promptSlug = (selectedItem as any)?.slug; // for prompt
+  // const projectSlug = (selectedItem as any)?.slug || (selectedItem as any)?.project; 
+  // const promptSlug = (selectedItem as any)?.slug; 
 
   const [versions, setVersions] = useState<VersionNode[]>([]);
   const [loading, setLoading] = useState(false);

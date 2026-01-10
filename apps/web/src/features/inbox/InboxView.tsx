@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
 import type { InboxItemEntity } from '@pah/contracts';
 import { fetchInboxItems, updateInboxItem, deleteInboxItem } from './api';
-import { Trash2, AlertTriangle, Save, RefreshCw } from 'lucide-react';
+import { Trash2, AlertTriangle, Save, RefreshCw, ExternalLink, Eye, Edit2, Tag } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [form, setForm] = useState<Pick<InboxItemEntity, 'title' | 'notes' | 'rawContent'>>({
+  const [form, setForm] = useState<Pick<InboxItemEntity, 'title' | 'notes' | 'rawContent' | 'sourceLink' | 'suggestedTags'>>({
     title: '',
     notes: '',
     rawContent: '',
+    sourceLink: '',
+    suggestedTags: [],
   });
+
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('preview');
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -42,7 +48,12 @@ export function InboxView() {
       title: item.title,
       notes: item.notes || '',
       rawContent: item.rawContent,
+      sourceLink: item.sourceLink,
+      suggestedTags: item.suggestedTags || [],
     });
+    setError(null);
+    setSuccess(false);
+    setViewMode('preview'); // Default to preview when selecting
     setError(null);
     setSuccess(false);
   };
@@ -207,13 +218,72 @@ export function InboxView() {
                 </div>
 
                 <div className="space-y-1 flex-1 flex flex-col min-h-[300px]">
-                  <label className="text-xs font-bold text-gray-700">原始內容</label>
-                  <div className="flex-1 relative">
-                    <textarea
-                      value={form.rawContent}
-                      onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
-                      className="absolute inset-0 w-full h-full p-4 font-mono text-xs leading-relaxed border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none"
-                    />
+                  <div className="flex justify-between items-end">
+                    <label className="text-xs font-bold text-gray-700">內容 (Content)</label>
+                    <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
+                      <button
+                        onClick={() => setViewMode('edit')}
+                        className={`px-2 py-1 text-[10px] font-medium rounded flex items-center gap-1 transition-all ${viewMode === 'edit'
+                          ? 'bg-white text-amber-600 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                      >
+                        <Edit2 size={12} /> 編輯
+                      </button>
+                      <button
+                        onClick={() => setViewMode('preview')}
+                        className={`px-2 py-1 text-[10px] font-medium rounded flex items-center gap-1 transition-all ${viewMode === 'preview'
+                          ? 'bg-white text-indigo-600 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                      >
+                        <Eye size={12} /> 預覽
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 relative border border-gray-300 rounded overflow-hidden">
+                    {viewMode === 'edit' ? (
+                      <textarea
+                        value={form.rawContent}
+                        onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
+                        className="absolute inset-0 w-full h-full p-4 font-mono text-xs leading-relaxed focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 w-full h-full p-6 overflow-y-auto prose prose-sm max-w-none prose-slate">
+                        {/* Metadata Section in Preview */}
+                        {(form.sourceLink || (form.suggestedTags && form.suggestedTags.length > 0)) && (
+                          <div className="mb-6 pb-4 border-b border-gray-100 space-y-3">
+                            {form.sourceLink && (
+                              <a
+                                href={form.sourceLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-800 hover:underline bg-indigo-50 p-2 rounded-md transition-colors w-fit max-w-full"
+                              >
+                                <ExternalLink size={14} className="flex-shrink-0" />
+                                <span className="truncate">{form.sourceLink}</span>
+                              </a>
+                            )}
+
+                            {form.suggestedTags && form.suggestedTags.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {form.suggestedTags.map((tag, idx) => (
+                                  <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-[10px] rounded-full font-medium">
+                                    <Tag size={10} />
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {form.rawContent || '*無內容*'}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
