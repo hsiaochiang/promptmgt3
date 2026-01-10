@@ -25,7 +25,7 @@ function App() {
       // 2. 設定標題與網址
       const pageTitle = tab.title || '';
       const pageUrl = tab.url || '';
-      
+
       setTitle(pageTitle);
       setCurrentUrl(pageUrl);
 
@@ -36,7 +36,7 @@ function App() {
       });
 
       const selection = result[0]?.result;
-      
+
       // 4. 組合內容：如果有選取文字就用選取的，否則只留網址
       if (selection && selection.trim()) {
         setBody(`${selection}\n\nSource: ${pageUrl}`);
@@ -71,11 +71,12 @@ function App() {
       await savePrompt({
         title,
         body,
-        tags: tagList
+        tags: tagList,
+        sourceUrl: currentUrl
       });
 
       setStatus('success');
-      
+
       // 成功後清空，但保留成功訊息一下下
       setTimeout(() => {
         setTitle('');
@@ -98,7 +99,7 @@ function App() {
         <h1 className="text-lg font-bold tracking-wide">WOS Capture</h1>
         <div className="flex gap-2">
           {/* 戰術按鈕：智慧擷取 */}
-          <button 
+          <button
             onClick={handleClip}
             className="px-3 py-1 bg-indigo-500 hover:bg-indigo-400 text-xs font-bold rounded transition-colors flex items-center gap-1"
             title="自動抓取網頁標題與選取文字"
@@ -110,14 +111,14 @@ function App() {
 
       {/* Main Content */}
       <div className="p-5 flex-1 flex flex-col gap-4">
-        
+
         {/* Status Messages */}
         {status === 'success' && (
           <div className="p-3 bg-green-100 border border-green-300 text-green-800 rounded text-sm font-medium animate-pulse">
             ✓ 資料已傳輸至中樞 (Saved to Inbox)
           </div>
         )}
-        
+
         {(status === 'error' || errorMessage) && (
           <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded text-sm">
             ⚠ {errorMessage}
@@ -165,8 +166,8 @@ function App() {
           onClick={handleSave}
           disabled={status === 'loading'}
           className={`w-full py-3 rounded-lg font-bold text-white shadow-lg transform active:scale-95 transition-all
-            ${status === 'loading' 
-              ? 'bg-slate-400 cursor-not-allowed' 
+            ${status === 'loading'
+              ? 'bg-slate-400 cursor-not-allowed'
               : 'bg-slate-900 hover:bg-slate-800 hover:shadow-xl'
             }`}
         >

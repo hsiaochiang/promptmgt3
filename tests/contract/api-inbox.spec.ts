@@ -70,4 +70,50 @@ describe('Contract: Inbox API', () => {
     // Verify file gone
     await expect(fs.access(path.join(INBOX_DIR, 'del.md'))).rejects.toThrow();
   });
+
+  it('POST /api/inbox should create item', async () => {
+    const payload = {
+      title: 'Captured from Chrome',
+      rawContent: 'This is the selection text.\n\nFrom a webpage.',
+      sourceLink: 'https://example.com',
+      suggestedTags: ['extension', 'capture']
+    };
+
+    const res = await server.inject({
+      method: 'POST',
+      url: '/api/inbox',
+      payload
+    });
+
+    expect(res.statusCode).toBe(201);
+    const created = res.json<InboxItemEntity>();
+
+    expect(created.id).toBeDefined();
+    expect(created.title).toBe(payload.title);
+    expect(created.sourceLink).toBe(payload.sourceLink);
+    expect(created.suggestedTags).toEqual(payload.suggestedTags);
+    expect(created.rawContent).toBe(payload.rawContent);
+
+    // Verify file created
+    // We don't know the exact filename as it uses UUID, but we can scan dir
+    const files = await fs.readdir(INBOX_DIR);
+    expect(files.length).toBeGreaterThan(0);
+
+    // Read one file and check
+    const content = await fs.readFile(path.join(INBOX_DIR, files[0]), 'utf-8');
+    const { data, content: body } = matter(content);
+    expect(data.title).toBe(payload.title);
+    expect(body.trim()).toBe(payload.rawContent.trim());
+  });
+
+  it('POST /api/inbox should fail without title', async () => {
+    const res = await server.inject({
+      method: 'POST',
+      url: '/api/inbox',
+      payload: {
+        rawContent: 'No title here'
+      }
+    });
+    expect(res.statusCode).toBe(400);
+  });
 });

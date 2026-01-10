@@ -25,7 +25,7 @@ export interface Prompt {
   // UI 表單欄位，送出前會被轉換
   models?: string[];
   sourceUrl?: string;
-  
+
   // 額外中繼資料容器
   metadata?: PromptMetadata;
 }
@@ -38,4 +38,11 @@ export interface PromptMetadata {
   models?: string[];
   source_url?: string;
   [key: string]: any;
+}
+
+export interface CreatePromptPayload {
+  title: string;
+  body: string;
+  tags?: string[];
+  sourceUrl?: string; // URL of the page being clipped
 }

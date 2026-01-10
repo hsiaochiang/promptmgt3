@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUiStore } from '../../state/uiStore';
 import { VersionNode } from '@pah/contracts';
-import { Clock, RotateCcw, Plus, Calendar, FileText, Check } from 'lucide-react';
+import { Clock, RotateCcw, Plus } from 'lucide-react';
 
 interface HistoryViewProps {
   entityType?: 'project' | 'prompt';
@@ -58,12 +58,8 @@ export function HistoryView() {
         body: JSON.stringify({
           entityType,
           entityId,
-          projectSlug: entityType === 'project' ? (selectedItem as any).slug : undefined,
-          promptSlug: entityType === 'prompt' ? (selectedItem as any).slug : undefined, // This might be wrong logic for slug resolving
-          // Actually, for prompts, we need projectSlug too.
-          // Getting slugs from selectedItem might be tricky if not normalized.
-          // But let's try.
           projectSlug: entityType === 'project' ? (selectedItem as any).slug : (selectedItem as any).project,
+          promptSlug: entityType === 'prompt' ? (selectedItem as any).slug : undefined,
           name: versionName,
           description: 'Manual version',
         }),

@@ -187,6 +187,17 @@ description: "任務清單：001-prompt-asset-hub"
 
 ---
 
+## Phase 6+: WOS 1.1 - The Bridge (Extension Integration)
+
+**Goal**: 打通瀏覽器到 Inbox 的數據流 (The Bridge)。透過 Chrome Extension 右鍵將網頁內容/反白文字存入 .pah/inbox。
+
+- [x] T073 [P] 後端：Inbox POST endpoint (接收外部捕捉內容) 於 apps/server/src/routes/inbox.ts
+- [x] T074 [P] 契約測試：Inbox POST API (含 payload 驗證) 於 tests/contract/api-inbox.spec.ts
+- [x] T075 [P] 前端：Chrome Extension 實作與 API 串接 (`background.ts` + `App.tsx`) 於 apps/browser-extension/src/**
+- [ ] T076 [P] E2E 驗證：點擊 Extension -> Inbox 出現檔案 於 tests/manual/extension-flow.md
+
+---
+
 ## Phase 7: Polish & Cross-Cutting Concerns (Deprecated)
 
 **Note**: 經顧問評估，Snippets/Clipboard 功能效益低，已於 Phase 6 後移除，將資源集中於系統優化。

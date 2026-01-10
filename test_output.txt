@@ -4,30 +4,41 @@
 
 
 > prompt-asset-hub@0.1.0 test
-> vitest run tests/integration/snapshot-layout.spec.ts tests/integration/retention-policy.spec.ts
+> vitest run tests/contract/api-inbox.spec.ts
 
 
 [7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mD:/program/promptmgt3[39m
 
- [33m??[39m tests/integration/retention-policy.spec.ts [2m ([22m[2m0 test[22m[2m)[22m
- [33m??[39m tests/integration/snapshot-layout.spec.ts [2m ([22m[2m0 test[22m[2m)[22m
+stderr | tests/contract/api-inbox.spec.ts > Contract: Inbox API > POST /api/inbox should create item
+POST failed: {"error":"Failed to create inbox item","message":"YAMLException: unacceptable kind of an object to dump [object Undefined]"}
 
-?胼?胼?胼 Failed Suites 2 ?胼?胼?胼??[39m
+ [33m??[39m tests/contract/api-inbox.spec.ts [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 55[2mms[22m[39m
+[31m   [33m??[31m tests/contract/api-inbox.spec.ts[2m > [22mContract: Inbox API[2m > [22mPOST /api/inbox should create item[39m
+[31m     ??expected 500 to be 201 // Object.is equality[39m
 
- FAIL  tests/integration/retention-policy.spec.ts [ tests/integration/retention-policy.spec.ts ]
-Error: Failed to load url ../apps/server/src/backup/retention (resolved id: ../apps/server/src/backup/retention) in D:/program/promptmgt3/tests/integration/retention-policy.spec.ts. Does the file exist?
- ??[22m loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+?胼?胼?胼??[1m Failed Tests 1 ?胼?胼?胼??[39m
 
-?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼[1/2]??[22m
+ FAIL  tests/contract/api-inbox.spec.ts > Contract: Inbox API > POST /api/inbox should create item
+AssertionError: expected 500 to be 201 // Object.is equality
 
- FAIL  tests/integration/snapshot-layout.spec.ts [ tests/integration/snapshot-layout.spec.ts ]
-Error: Failed to load url ../apps/server/src/backup/snapshot (resolved id: ../apps/server/src/backup/snapshot) in D:/program/promptmgt3/tests/integration/snapshot-layout.spec.ts. Does the file exist?
- ??[22m loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+- Expected
++ Received
 
-?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼[2/2]??[22m
+- 201
++ 500
 
-[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
-[2m      Tests [22m [2mno tests[22m
-[2m   Start at [22m 06:34:36
-[2m   Duration [22m 378ms[2m (transform 59ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 300ms)[22m
+ ??[22m tests/contract/api-inbox.spec.ts:91:28
+     89|       console.error('POST failed:', res.body);
+     90|     }
+     91|     expect(res.statusCode).toBe(201);
+       |                            ^
+     92|     const created = res.json<InboxItemEntity>();
+     93| 
+
+?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼?胼[1/1]??[22m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 09:27:15
+[2m   Duration [22m 705ms[2m (transform 97ms, setup 0ms, collect 312ms, tests 55ms, environment 0ms, prepare 162ms)[22m
 

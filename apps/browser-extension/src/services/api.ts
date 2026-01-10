@@ -9,7 +9,7 @@ export const savePrompt = async (payload: CreatePromptPayload): Promise<void> =>
       title: payload.title,
       rawContent: payload.body || '', // 把內容對應到 rawContent
       sourcePlatform: 'browser-extension', // 標記來源
-      sourceLink: window.location.href, // 紀錄當下網址 (如果是從網頁擷取)
+      sourceLink: payload.sourceUrl || window.location.href, // 優先使用 payload 傳來的網址
       suggestedTags: payload.tags || [], // 把標籤轉過去
     };
 
@@ -27,7 +27,7 @@ export const savePrompt = async (payload: CreatePromptPayload): Promise<void> =>
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `Server responded with ${response.status}`);
     }
-    
+
     console.log('Successfully saved to Inbox!');
   } catch (error) {
     console.error('Failed to save to inbox:', error);

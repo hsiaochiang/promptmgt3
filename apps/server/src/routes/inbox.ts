@@ -1,10 +1,19 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { scanWorkspace } from '../indexing/index.js';
 import { getInboxDir, getInboxItemFilePath } from '../fs-layout/index.js';
-import { InboxItemEntity } from '@pah/contracts';
+import { InboxItemEntity, InboxItemFrontmatter } from '@pah/contracts';
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
+import { v4 as uuidv4 } from 'uuid';
+
+interface CreateInboxItemBody {
+  title: string;
+  rawContent?: string;
+  sourceLink?: string;
+  suggestedTags?: string[];
+  sourcePlatform?: string;
+}
 
 export async function registerInboxRoutes(server: FastifyInstance, rootPath: string) {
 
@@ -21,6 +30,53 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
       return inboxItems;
     } catch (error) {
       reply.code(500).send({ error: 'Failed to list inbox items', message: String(error) });
+    }
+  });
+
+  // POST /api/inbox
+  server.post<{ Body: CreateInboxItemBody }>('/api/inbox', async (request, reply) => {
+    try {
+      const { title, rawContent = '', sourceLink, suggestedTags = [], sourcePlatform } = request.body || {};
+
+      if (!title || !title.trim()) {
+        reply.code(400).send({ error: 'Title is required' });
+        return;
+      }
+
+      const id = uuidv4();
+      const importedAt = new Date().toISOString();
+      const inboxDir = getInboxDir(rootPath);
+
+      // Ensure inbox dir exists
+      await fs.mkdir(inboxDir, { recursive: true });
+
+      const frontmatter: InboxItemFrontmatter = {
+        id,
+        title,
+        importedAt,
+        cleanedState: 'unprocessed',
+        suggestedTags,
+        sourceLink: sourceLink || undefined,
+        sourcePlatform: sourcePlatform || undefined,
+        notes: ''
+      };
+
+      // Remove undefined keys so gray-matter doesn't choke
+      const cleanFrontmatter = JSON.parse(JSON.stringify(frontmatter));
+
+      const fileContent = matter.stringify(rawContent, cleanFrontmatter);
+      const filePath = path.join(inboxDir, `${id}.md`);
+
+      await fs.writeFile(filePath, fileContent, 'utf-8');
+
+      const entity: InboxItemEntity = {
+        ...frontmatter,
+        rawContent
+      };
+
+      reply.code(201).send(entity);
+    } catch (error) {
+      reply.code(500).send({ error: 'Failed to create inbox item', message: String(error) });
     }
   });
 

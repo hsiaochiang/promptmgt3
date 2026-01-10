@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
-import { getVersionsDir, getVersionNodePath, isSystemPath, getProjectFilePath, getPromptFilePath } from '../../fs-layout/index.js';
+import { getVersionsDir, getVersionNodePath, isSystemPath } from '../../fs-layout/index.js';
 import { findEntityPathById } from '../../indexing/index.js';
 import type { VersionNode } from '@pah/contracts';
 
@@ -177,6 +177,119 @@ export async function listVersionNodes(
   // Newest first
   events.sort((a, b) => (new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
   return events;
+}
+
+/**
+ * List ALL version nodes across the entire system
+ */
+export async function listAllVersionNodes(rootPath: string): Promise<VersionNode[]> {
+  const allEvents: VersionNode[] = [];
+  const versionsDir = getVersionsDir(rootPath);
+
+  try {
+    // Traverse entity types (project/prompt)
+    const typeDirs = await fs.readdir(versionsDir, { withFileTypes: true });
+    for (const typeDir of typeDirs) {
+      if (!typeDir.isDirectory()) continue;
+      const typePath = path.join(versionsDir, typeDir.name); // e.g. versions/project
+
+      // Traverse entities
+      const entityDirs = await fs.readdir(typePath, { withFileTypes: true });
+      for (const entityDir of entityDirs) {
+        if (!entityDir.isDirectory()) continue;
+        const entityId = entityDir.name;
+
+        // Use existing helper to list for this entity
+        const events = await listVersionNodes(rootPath, typeDir.name as 'project' | 'prompt', entityId);
+        allEvents.push(...events);
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+
+  // Sort by time desc
+  allEvents.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return allEvents;
+}
+
+/**
+ * Restore a specific version node
+ */
+export async function restoreVersionNode(rootPath: string, versionId: string): Promise<void> {
+  // 1. Find the version directory
+  // Since ID contains entity type and id, we could parse it, but listAll is safer to find path if structure varies.
+  // Format: version-{type}-{id}-{timestamp}-{short}
+  // Let's parse ID to find path efficiently.
+  const parts = versionId.split('-');
+  if (parts.length < 5) throw new Error('Invalid version ID format');
+
+  /* const type = parts[1];
+  const entId = parts[2]; */
+  // UUIDs break split by dash. :D
+  // Actually versionId is generated as: `version-${entityType}-${entityId}-${safeTimestamp}-${shortId}`
+  // If entityId is UUID (dashes), this logic breaks.
+
+  // Alternative: Search for manifest with this ID.
+  // Since we don't have a DB, we have to scan.
+  // Using listAllVersionNodes might be slow but robust.
+
+  // Optimization: versionId is unique.
+  // Let's assume we can scan.
+  const all = await listAllVersionNodes(rootPath);
+  const target = all.find(v => v.id === versionId);
+
+  if (!target) {
+    throw new Error('Version not found');
+  }
+
+  const versionPath = target.snapshotPath;
+  const contentSource = path.join(versionPath, 'content');
+
+  // 2. Determine restore target path
+  // We need to find where this entity currently lives.
+  // Use index helper.
+  const entityPath = await findEntityPathById(rootPath, target.entityType as any, target.entityId);
+
+  if (!entityPath) {
+    // Entity might be deleted. Restore to some default location?
+    // For now throw error.
+    throw new Error('Original entity not found (might be deleted/renamed). Restore of deleted entities not fully supported yet.');
+  }
+
+  // 3. Restore Content
+  // If entity is file (Prompt), copy file.
+  // If entity is dir (Project), copy dir.
+
+  try {
+    const stat = await fs.stat(contentSource);
+    if (stat.isDirectory()) {
+      // It's a directory structure.
+      // It could be a single file inside (for Prompt) or full dir (for Project).
+
+      // Check target type
+      const targetStat = await fs.stat(entityPath);
+
+      if (targetStat.isDirectory()) {
+        // Target is Project Dir. Source should have content.
+        // Filter system paths during restore?
+        await copyDir(contentSource, entityPath);
+      } else {
+        // Target is Prompt File. Source should contain the file.
+        const files = await fs.readdir(contentSource);
+        // Find the .md file
+        const mdFile = files.find(f => f.endsWith('.md'));
+        if (mdFile) {
+          await fs.copyFile(path.join(contentSource, mdFile), entityPath);
+        }
+      }
+    }
+  } catch (error) {
+    throw new Error(`Restore failed: ${error}`);
+  }
+
+  // 4. Restore Attributes / Attachments if needed
+  // (Skipped for now, focusing on content)
 }
 
 /**
