@@ -198,7 +198,7 @@
 ## 驗證規則
 - Path 權限：rootPath/attachmentPath 必須可讀寫；否則阻擋保存/附件操作
 - Autosave debounce：1–2 秒內去重同檔寫入
-- 附件命名：避免覆蓋；若同名則自動加 suffix
+- 附件命名：上傳時產生 UUID 檔名並保留副檔名（避免覆蓋與跨平台檔名問題）
 - Snapshot：若附件缺失則標記錯誤並允許重試
 - Search Index：重建時需跳過無法解析的檔案並記錄錯誤
 
