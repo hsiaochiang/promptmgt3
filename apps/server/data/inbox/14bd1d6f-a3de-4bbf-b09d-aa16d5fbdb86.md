@@ -3,7 +3,7 @@ id: 14bd1d6f-a3de-4bbf-b09d-aa16d5fbdb86
 title: '[W]Notion 設計應用分析'
 importedAt: '2026-01-10T13:06:54.108Z'
 cleanedState: cleaned
-project: INTERNAL_PRODUCT
+project: beeecbb8-13c2-49e4-a98a-26250937264c
 status: ACTIVE
 category: '#Cat/RESEARCH'
 tags:
@@ -15,7 +15,7 @@ tags:
 suggestedTags: []
 sourceLink: 'wos://archive/6951c296-3b84-8320-a4ba-53e11f7089f3'
 sourcePlatform: chatgpt-export
-notes: 'Auto-classified by Antigravity'
+notes: Auto-classified by Antigravity
 ---
 # [W]Notion 設計應用分析
 

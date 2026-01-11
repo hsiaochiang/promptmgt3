@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import type { InboxItemEntity } from '@pah/contracts';
-import { fetchInboxItems, updateInboxItem, deleteInboxItem } from './api';
+import type { InboxItemEntity, ProjectEntity } from '@pah/contracts';
+import { fetchInboxItems, updateInboxItem, deleteInboxItem, fetchProjects } from './api';
 import { Trash2, AlertTriangle, Save, RefreshCw, ExternalLink, Eye, Edit2, Tag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { PROJECT_STATUSES, CATEGORIES, TAG_GROUPS } from './taxonomy';
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);
+  const [projects, setProjects] = useState<ProjectEntity[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<Pick<InboxItemEntity, 'title' | 'notes' | 'rawContent' | 'sourceLink' | 'suggestedTags' | 'project' | 'status' | 'category' | 'tags'>>({
     title: '',
@@ -33,10 +35,14 @@ export function InboxView() {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchInboxItems();
-      setItems(data);
+      const [inboxData, projectData] = await Promise.all([
+        fetchInboxItems(),
+        fetchProjects()
+      ]);
+      setItems(inboxData);
+      setProjects(projectData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '載入暫存區失敗');
+      setError(err instanceof Error ? err.message : '載入失敗');
     } finally {
       setLoading(false);
     }
@@ -221,43 +227,94 @@ export function InboxView() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-700">專案 (Project)</label>
-                    <input
-                      type="text"
+                    <select
                       value={form.project || ''}
                       onChange={e => setForm(f => ({ ...f, project: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                    />
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all bg-white"
+                    >
+                      <option value="">選擇專案...</option>
+                      {projects.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-700">狀態 (Status)</label>
-                    <input
-                      type="text"
+                    <select
                       value={form.status || ''}
                       onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                    />
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all bg-white"
+                    >
+                      <option value="">選擇狀態...</option>
+                      {PROJECT_STATUSES.map(s => (
+                        <option key={s.value} value={s.value}>
+                          {s.label} ({s.value})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-700">分類 (Category)</label>
-                    <input
-                      type="text"
-                      value={form.category || ''}
-                      onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-700">標籤 (Tags)</label>
-                    <input
-                      type="text"
-                      value={form.tags?.join(', ') || ''}
-                      onChange={e => setForm(f => ({ ...f, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                      placeholder="tag1, tag2"
-                    />
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-700">分類 (Category)</label>
+                  <select
+                    value={form.category || ''}
+                    onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all bg-white"
+                  >
+                    <option value="">選擇分類...</option>
+                    {CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>
+                        {c.label} ({c.value})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-700">標籤 (Tags)</label>
+                  <div className="border border-gray-300 rounded p-2 bg-white space-y-2">
+                    {/* Selected Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {form.tags && form.tags.map(tag => (
+                        <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200">
+                          {tag}
+                          <button
+                            onClick={() => setForm(f => ({ ...f, tags: f.tags?.filter(t => t !== tag) || [] }))}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Add Tag Select */}
+                    <select
+                      value=""
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        setForm(f => {
+                          if (f.tags?.includes(val)) return f;
+                          return { ...f, tags: [...(f.tags || []), val] };
+                        });
+                      }}
+                      className="w-full text-xs p-1 border-t border-gray-100 outline-none text-gray-600 focus:text-gray-900"
+                    >
+                      <option value="">+ 新增標籤...</option>
+                      {Object.entries(TAG_GROUPS).map(([group, options]) => (
+                        <optgroup key={group} label={group}>
+                          {options.filter(opt => !form.tags?.includes(opt.value)).map(opt => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label} ({opt.value})
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -309,7 +366,7 @@ export function InboxView() {
                         {/* Classification Metadata */}
                         {(form.project || form.status || form.category || (form.tags && form.tags.length > 0)) && (
                           <div className="mb-4 pb-4 border-b border-gray-100 flex flex-wrap gap-2 items-center">
-                            {form.project && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded border border-blue-100 font-medium">Project: {form.project}</span>}
+                            {form.project && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded border border-blue-100 font-medium">Project: {projects.find(p => p.id === form.project)?.title || form.project}</span>}
                             {form.status && <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] rounded border border-green-100 font-medium">Status: {form.status}</span>}
                             {form.category && <span className="px-2 py-0.5 bg-purple-50 text-purple-700 text-[10px] rounded border border-purple-100 font-medium">Category: {form.category}</span>}
                             {form.tags && form.tags.map(tag => (
