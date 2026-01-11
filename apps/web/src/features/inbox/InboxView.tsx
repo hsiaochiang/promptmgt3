@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { InboxItemEntity, ProjectEntity } from '@pah/contracts';
 import { fetchInboxItems, updateInboxItem, deleteInboxItem, fetchProjects } from './api';
-import { Trash2, AlertTriangle, Save, RefreshCw, ExternalLink, Eye, Edit2, Tag } from 'lucide-react';
+import { Trash2, AlertTriangle, Save, RefreshCw, ExternalLink } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { PROJECT_STATUSES, CATEGORIES, TAG_GROUPS } from './taxonomy';
@@ -194,7 +194,9 @@ export function InboxView() {
               {/* Toolbar */}
               <div className="h-10 border-b border-gray-200 flex items-center justify-between px-3 bg-gray-50/50">
                 <span className="text-xs font-mono text-gray-400 truncate max-w-[200px]">{selectedId}</span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {error && <span className="text-xs text-red-500">{error}</span>}
+                  {success && <span className="text-xs text-green-600 font-medium">已儲存</span>}
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
@@ -418,7 +420,7 @@ export function InboxView() {
                             return <h2 className="text-xl font-bold mt-6 mb-3" {...props} />;
                           },
                           p: ({ node, ...props }) => <p className="leading-7 mb-4 text-gray-800" {...props} />,
-                          code: ({ node, inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) => {
+                          code: ({ inline, className, children, ...props }: any) => {
                             return inline
                               ? <code className="bg-gray-100 text-red-500 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
                               : <code className="block bg-gray-50 p-4 rounded-lg text-sm font-mono my-4 border border-gray-100 overflow-x-auto" {...props}>{children}</code>;

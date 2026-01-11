@@ -1,12 +1,15 @@
 ---
 id: c8adb580-530a-4028-9c50-2b63e0aa03ea
-type: DELIVERY
-status: in_progress
-description: Auto-created by Antigravity
-createdAt: '2026-01-11T09:06:42.808Z'
-updatedAt: '2026-01-11T09:06:42.808Z'
 slug: fin-inquiry-bot
-title: 企業資金詢價機器人
+title: 玉山-企業資金詢價
+createdAt: '2026-01-11T09:06:42.808Z'
+updatedAt: '2026-01-11T13:28:53.804Z'
+summary: ''
+status: in_progress
+type: DELIVERY
+tags: []
+archived: false
+description: Auto-created by Antigravity
 ---
 # 企業資金詢價機器人
 
