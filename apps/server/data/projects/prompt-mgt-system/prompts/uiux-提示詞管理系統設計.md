@@ -1,20 +1,16 @@
 ---
-id: ed760cd6-e25a-4f0b-a6f2-8091273b45b4
+id: 215b8328-1fda-4755-83e2-a930b430d137
+slug: uiux-提示詞管理系統設計
+projectId: f68f4160-bd20-4bc1-9fdf-a0d85b1c855b
 title: UIUX · 提示詞管理系統設計
-importedAt: '2026-01-10T13:07:45.444Z'
-cleanedState: unprocessed
-suggestedTags:
-  - coding
-  - learning
-  - debug
-sourceLink: 'wos://archive/6943fc24-eb44-832a-a3e5-f024f488b1ba'
-sourcePlatform: chatgpt-export
-notes: ''
-project: f68f4160-bd20-4bc1-9fdf-a0d85b1c855b
 status: ACTIVE
-category: '#Cat/PROMPT_DRAFT'
+priority: medium
 tags:
   - '#Stage/IDEA'
+notes: ''
+archived: false
+createdAt: '2026-01-10T13:07:45.444Z'
+updatedAt: '2026-01-11T12:16:43.977Z'
 ---
 # UIUX · 提示詞管理系統設計
 
@@ -4598,4 +4594,3 @@ A) **完全隱藏**（目前做法：只留一個很小把手可點可滑出）
 B) **縮成窄欄**（保留摘要/快速切換，但不佔空間）
 
 你回覆 A 或 B，我再把原型的收合行為調到最貼近你的工作節奏。
-

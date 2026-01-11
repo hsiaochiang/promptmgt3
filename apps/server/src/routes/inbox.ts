@@ -1,11 +1,14 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { scanWorkspace } from '../indexing/index.js';
+import { invalidateCache } from '../indexing/index.js';
 import { getInboxDir, getInboxItemFilePath } from '../fs-layout/index.js';
 import { InboxItemEntity, InboxItemFrontmatter } from '@pah/contracts';
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
 import { v4 as uuidv4 } from 'uuid';
+import { getPromptFilePath } from '../fs-layout/index.js';
+import { PromptEntity } from '@pah/contracts';
 
 interface CreateInboxItemBody {
   title: string;
@@ -220,10 +223,117 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
 
       await fs.writeFile(targetPath, newFileContent, 'utf-8');
 
+      // --- Promotion Logic ---
+      if (frontmatter.project) {
+        try {
+          const promoted = await promoteToPrompt(
+            { ...frontmatter, rawContent: newBody, id: id } as InboxItemEntity,
+            frontmatter.project,
+            rootPath
+          );
+
+          console.log(`[Inbox] Promotion successful. PromptID: ${promoted.id}, Path should be in project folder`);
+
+          // ATOMIC: Only delete from inbox AFTER verification succeeded
+          await fs.rm(targetPath, { force: true });
+
+          reply.code(200).send({
+            id,
+            ...frontmatter,
+            rawContent: newBody,
+            promotedTo: promoted.id
+          });
+          return;
+        } catch (err) {
+          // DO NOT SWALLOW ERRORS - Log and return error to client
+          const errorMsg = `[Inbox] Promotion FAILED for ${id}: ${err instanceof Error ? err.message : String(err)}`;
+          console.error(errorMsg);
+          reply.code(500).send({
+            error: 'Promotion failed',
+            message: errorMsg,
+            details: err instanceof Error ? err.stack : String(err)
+          });
+          return;
+        }
+      }
+
       reply.code(200).send({ id, ...frontmatter, rawContent: newBody });
 
     } catch (error) {
       reply.code(500).send({ error: 'Failed to update inbox item', message: String(error) });
     }
   });
+
+  // Helper to promote inbox item to prompt
+  async function promoteToPrompt(
+    item: InboxItemEntity,
+    projectId: string,
+    rootPath: string
+  ): Promise<PromptEntity> {
+    // CRITICAL: Invalidate cache to ensure fresh project data
+    invalidateCache();
+
+    const scan = await scanWorkspace(rootPath);
+    const project = scan.projects.find(p => p.id === projectId);
+
+    if (!project) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
+    const promptId = uuidv4();
+
+    // Fix: Use proper regex (single backslash, not double-escaped)
+    const slug = item.title.trim().toLowerCase()
+      .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+      .replace(/^-+|-+$/g, '') || item.id;
+
+    // Fix: Map inbox status to valid prompt status values
+    // Schema allows: 'draft', 'needs_review', 'ready', 'deprecated'
+    const statusMap: Record<string, string> = {
+      'ACTIVE': 'draft',
+      'PENDING': 'needs_review',
+      'COMPLETED': 'ready',
+      'ARCHIVED': 'deprecated',
+    };
+    const promptStatus = statusMap[item.status as string] || 'draft';
+
+    const newPrompt: PromptEntity = {
+      id: promptId,
+      slug,
+      projectId: project.id,
+      title: item.title,
+      status: promptStatus as any,
+      priority: 'medium',
+      tags: item.tags || [],
+      notes: item.notes || '',
+      archived: false,
+      createdAt: item.importedAt,
+      updatedAt: new Date().toISOString(),
+      body: item.rawContent || '',
+    };
+
+    // Write prompt file
+    const promptPath = getPromptFilePath(rootPath, project.slug, slug);
+
+    console.log(`[Promotion] Creating prompt at: ${promptPath}`);
+
+    // Ensure prompts dir exists
+    await fs.mkdir(path.dirname(promptPath), { recursive: true });
+
+    const { body, ...promptFrontmatter } = newPrompt;
+    const content = matter.stringify(body, promptFrontmatter);
+
+    await fs.writeFile(promptPath, content, 'utf-8');
+
+    // VERIFICATION: Confirm file was actually written
+    try {
+      await fs.access(promptPath);
+      const stat = await fs.stat(promptPath);
+      console.log(`[Promotion] Verified file created: ${promptPath} (${stat.size} bytes)`);
+    } catch (error) {
+      throw new Error(`Promotion failed: File not created at ${promptPath}. Error: ${String(error)}`);
+    }
+
+    return newPrompt;
+  }
 }

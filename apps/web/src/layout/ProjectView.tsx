@@ -17,6 +17,8 @@ export function ProjectView() {
     try {
       const data = await getProjects(); // Backend doesn't support q yet, so we fetch all
       setProjects(data);
+      // Default expand all projects
+      useUiStore.getState().setExpandedProjects(data.map(p => p.id));
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Failed to fetch projects');
@@ -116,24 +118,111 @@ const TagPill = ({ text }: { text: string }) => (
   </span>
 );
 
+// --- Nested Prompts Component ---
+import { getPrompts } from '../features/library/api';
+import { PromptEntity } from '@pah/contracts';
+import { FileText } from 'lucide-react';
+
+function ProjectPrompts({ projectId }: { projectId: string }) {
+  const [prompts, setPrompts] = useState<PromptEntity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { setSelectedItem } = useUiStore();
+
+  useEffect(() => {
+    const fetchData = () => {
+      setLoading(true);
+      getPrompts({ project: projectId })
+        .then(setPrompts)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    };
+
+    fetchData();
+
+    // Listen for entity changes to refresh prompts list
+    const handleEntityChange = () => fetchData();
+    window.addEventListener('entity-change', handleEntityChange);
+    return () => window.removeEventListener('entity-change', handleEntityChange);
+  }, [projectId]);
+
+  if (loading) return <div className="py-2 pl-12 text-xs text-gray-400">Loading prompts...</div>;
+
+  if (prompts.length === 0) {
+    return (
+      <div className="py-2 pl-12 text-xs text-gray-400 italic">
+        No prompts in this project.
+      </div>
+    );
+  }
+
+  return (
+    <div className="">
+      {prompts.map(prompt => (
+        <div
+          key={prompt.id}
+          className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 items-center hover:bg-gray-50 cursor-pointer border-b border-gray-50 h-10 group/prompt"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedItem({ type: 'prompt', id: prompt.id });
+          }}
+        >
+          {/* Indented Name Column */}
+          <div className="flex items-center py-2 px-3 overflow-hidden relative pl-12">
+            <div className="mr-3 text-gray-400 flex-shrink-0">
+              <span className="inline-block w-4 border-l border-b border-gray-300 h-2.5 mr-2 -translate-y-1"></span>
+              <FileText size={14} className="inline-block -translate-y-0.5" />
+            </div>
+            <span className="text-gray-600 text-sm truncate group-hover/prompt:text-blue-600 transition-colors">
+              {prompt.title}
+            </span>
+          </div>
+
+          <div className="py-2 px-3 flex items-center">
+            <span className={`text-[10px] px-1.5 py-0.5 rounded border ${prompt.status === 'ready' ? 'bg-green-50 text-green-700 border-green-100' :
+              prompt.status === 'draft' ? 'bg-gray-50 text-gray-500 border-gray-200' :
+                'bg-yellow-50 text-yellow-700 border-yellow-100'
+              }`}>
+              {prompt.status}
+            </span>
+          </div>
+
+          <div className="py-2 px-3 flex gap-1 overflow-hidden items-center">
+            {prompt.tags.slice(0, 2).map(t => (
+              <span key={t} className="text-[10px] text-gray-400 bg-white border border-gray-100 px-1 rounded truncate max-w-[80px]">
+                {t}
+              </span>
+            ))}
+            {prompt.tags.length > 2 && <span className="text-[10px] text-gray-300">+{prompt.tags.length - 2}</span>}
+          </div>
+
+          <div className="py-2 px-3 text-right text-xs text-gray-300 font-mono">
+            {formatDate(prompt.updatedAt).split(' ')[0]}
+          </div>
+
+          <div className=""></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ProjectList({ projects }: { projects: ProjectEntity[] }) {
   const { expandedProjects, toggleProjectExpanded, setSelectedItem } = useUiStore();
 
   return (
-    <div className="h-full overflow-y-auto pb-20 pt-2 custom-scrollbar px-6"> {/* Increased padding (Breath) */}
+    <div className="h-full overflow-y-auto pb-20 pt-2 custom-scrollbar px-6">
       <div className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
-        <div className="py-2 px-3">名稱</div> {/* Removed vertical borders */}
+        <div className="py-2 px-3">名稱</div>
         <div className="py-2 px-3">狀態</div>
-        {/* Removed Priority Column (Silence) */}
         <div className="py-2 px-3">標籤</div>
         <div className="py-2 px-3 text-right">更新</div>
-        <div className=""></div> {/* Action Column Spacer */}
+        <div className=""></div>
       </div>
 
       {projects.map((project) => (
-        <div key={project.id} className="group relative">
+        <div key={project.id} className="group relative border-b border-gray-100 last:border-0">
           <div
-            className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 items-center hover:bg-gray-50 cursor-pointer select-none transition-colors border-b border-gray-100 h-12" // Fixed height for consistency
+            className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 items-center hover:bg-gray-50 cursor-pointer select-none transition-colors h-12 bg-white z-10 relative"
             onClick={() => setSelectedItem({ type: 'project', id: project.id })}
           >
             <div className="flex items-center py-2 px-3 overflow-hidden relative">
@@ -150,7 +239,6 @@ function ProjectList({ projects }: { projects: ProjectEntity[] }) {
                   <ChevronRight size={14} />
                 )}
               </button>
-              {/* Icon (Object Dignity) */}
               <div className="mr-3 p-1 bg-gray-50 rounded border border-gray-100 text-gray-500 flex-shrink-0">
                 <FolderOpen size={16} />
               </div>
@@ -169,7 +257,6 @@ function ProjectList({ projects }: { projects: ProjectEntity[] }) {
               {formatDate(project.updatedAt)}
             </div>
 
-            {/* Open Button (Action on Hover) */}
             <div className="flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <button className="text-[10px] border border-gray-200 bg-white px-2 py-0.5 rounded shadow-sm hover:bg-gray-50 text-gray-600">
                 OPEN
@@ -178,9 +265,8 @@ function ProjectList({ projects }: { projects: ProjectEntity[] }) {
           </div>
 
           {expandedProjects.includes(project.id) && (
-            <div className="bg-gray-50/30 py-4 pl-12 text-xs text-gray-400 italic border-b border-gray-100 ml-4 rounded-b-lg">
-              {/* Later we can load prompts for this project here */}
-              (Prompts list coming soon...)
+            <div className="bg-gray-50/30 border-t border-gray-100">
+              <ProjectPrompts projectId={project.id} />
             </div>
           )}
         </div>

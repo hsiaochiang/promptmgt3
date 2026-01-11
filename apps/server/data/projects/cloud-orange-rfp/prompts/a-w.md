@@ -1,17 +1,16 @@
 ---
-id: 4bd42ddc-9904-4226-ab10-34842e33bb8e
+id: 7a6c856b-bad5-4a47-a781-6089a141b6d9
+slug: a-w
+projectId: f4833e48-44ed-40fc-8484-b3da4f19ad3e
 title: Shadow IT 風險解析
-importedAt: '2026-01-10T13:08:05.960Z'
-cleanedState: unprocessed
-suggestedTags: []
-sourceLink: 'wos://archive/694216f4-6958-8322-b177-9d2c42935d49'
-sourcePlatform: chatgpt-export
-notes: ''
-project: 4fe6bce0-4b07-43b6-a108-3febb7183d6a
-status: ACTIVE
-category: '#Cat/PROMPT_DRAFT'
+status: draft
+priority: medium
 tags:
   - '#Stage/IDEA'
+notes: ''
+archived: false
+createdAt: '2026-01-10T13:08:05.960Z'
+updatedAt: '2026-01-11T12:34:14.525Z'
 ---
 # Shadow IT 風險解析
 
@@ -180,4 +179,3 @@ Gartner 與 Microsoft 的共同觀點指出：
 1. 幫你把這一頁濃縮成 **P3 投影片版（6–8 行）**
 2. 接續寫 **P4：資訊處不是做不了，而是不能亂做**
 3. 將 Shadow IT → Power Platform 治理轉折，寫成「主管會點頭」的過場頁
-

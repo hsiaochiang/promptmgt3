@@ -240,6 +240,18 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
         prompts = prompts.filter(p => !p.archived);
       }
 
+      const { project, status, priority } = request.query;
+
+      if (project) {
+        prompts = prompts.filter(p => p.projectId === project);
+      }
+      if (status) {
+        prompts = prompts.filter(p => p.status === status);
+      }
+      if (priority) {
+        prompts = prompts.filter(p => p.priority === priority);
+      }
+
       return prompts;
     } catch (error) {
       reply.code(500).send({

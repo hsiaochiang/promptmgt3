@@ -34,8 +34,8 @@ const server = Fastify({
 // Register plugins
 // 原本只有 { origin: true }，請換成這個完整的：
 await server.register(cors, {
-  origin: true, // 允許 Extension 存取
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true
 });

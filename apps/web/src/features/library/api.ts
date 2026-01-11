@@ -76,6 +76,7 @@ export interface GetPromptsOptions {
     q?: string;
     status?: string;
     priority?: string;
+    project?: string;
     archived?: boolean;
 }
 
@@ -84,6 +85,7 @@ export async function getPrompts(options: GetPromptsOptions = {}): Promise<Promp
     if (options.q) params.set('q', options.q);
     if (options.status) params.set('status', options.status);
     if (options.priority) params.set('priority', options.priority);
+    if (options.project) params.set('project', options.project);
     if (options.archived !== undefined) params.set('archived', String(options.archived));
 
     const response = await fetch(`${API_BASE}/prompts?${params}`);

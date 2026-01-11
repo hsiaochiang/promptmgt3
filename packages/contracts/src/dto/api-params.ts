@@ -10,8 +10,9 @@ export type GetProjectsQuery = z.infer<typeof GetProjectsQuerySchema>;
 
 export const GetPromptsQuerySchema = z.object({
     archived: z.enum(['true', 'false']).optional(),
-    // status: z.string().optional(), 
-    // priority: z.string().optional(),
+    status: z.string().optional(),
+    priority: z.string().optional(),
+    project: z.string().optional(), // Filter by projectId
 });
 
 export type GetPromptsQuery = z.infer<typeof GetPromptsQuerySchema>;

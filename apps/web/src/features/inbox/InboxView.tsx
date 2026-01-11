@@ -90,9 +90,21 @@ export function InboxView() {
         tags: form.tags,
       });
 
-      setItems(prev => prev.map(i => (i.id === updated.id ? updated : i)));
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      if ((updated as any).promotedTo) {
+        setItems(prev => prev.filter(i => i.id !== selectedId));
+        setSelectedId(null);
+        setSuccess(true);
+
+        // Trigger entity-change event to refresh ProjectView prompts
+        window.dispatchEvent(new CustomEvent('entity-change'));
+
+        // Show a clearer message
+        alert('已成功歸檔為專案提示詞！');
+      } else {
+        setItems(prev => prev.map(i => (i.id === updated.id ? updated : i)));
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存失敗');
     } finally {
