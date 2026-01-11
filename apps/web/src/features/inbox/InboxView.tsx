@@ -201,214 +201,223 @@ export function InboxView() {
                 </div>
               </div>
 
-              {/* Edit Form */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {error && (
-                  <div className="p-3 bg-red-50 text-red-700 text-xs rounded border border-red-100">
-                    {error}
+              {/* Content Area - Notion Style */}
+              <div className="flex-1 overflow-y-auto bg-white">
+                {/* Header / Title Area */}
+                <div className="px-16 pt-12 pb-6 max-w-4xl mx-auto">
+                  {/* Icon placeholder (Notion style) */}
+                  <div className="mb-4 text-4xl select-none opacity-50 hover:opacity-100 transition-opacity cursor-pointer w-fit">
+                    📄
                   </div>
-                )}
-                {success && (
-                  <div className="p-3 bg-green-50 text-green-700 text-xs rounded border border-green-100">
-                    變更已保存
-                  </div>
-                )}
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-700">標題</label>
                   <input
                     type="text"
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    className="w-full text-4xl font-bold border-none outline-none placeholder-gray-300 py-2 bg-transparent text-gray-900"
+                    placeholder="無標題"
                   />
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-700">專案 (Project)</label>
-                    <select
-                      value={form.project || ''}
-                      onChange={e => setForm(f => ({ ...f, project: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all bg-white"
-                    >
-                      <option value="">選擇專案...</option>
-                      {projects.map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-700">狀態 (Status)</label>
-                    <select
-                      value={form.status || ''}
-                      onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all bg-white"
-                    >
-                      <option value="">選擇狀態...</option>
-                      {PROJECT_STATUSES.map(s => (
-                        <option key={s.value} value={s.value}>
-                          {s.label} ({s.value})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-700">分類 (Category)</label>
-                  <select
-                    value={form.category || ''}
-                    onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all bg-white"
-                  >
-                    <option value="">選擇分類...</option>
-                    {CATEGORIES.map(c => (
-                      <option key={c.value} value={c.value}>
-                        {c.label} ({c.value})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-700">標籤 (Tags)</label>
-                  <div className="border border-gray-300 rounded p-2 bg-white space-y-2">
-                    {/* Selected Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {form.tags && form.tags.map(tag => (
-                        <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200">
-                          {tag}
-                          <button
-                            onClick={() => setForm(f => ({ ...f, tags: f.tags?.filter(t => t !== tag) || [] }))}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Add Tag Select */}
-                    <select
-                      value=""
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (!val) return;
-                        setForm(f => {
-                          if (f.tags?.includes(val)) return f;
-                          return { ...f, tags: [...(f.tags || []), val] };
-                        });
-                      }}
-                      className="w-full text-xs p-1 border-t border-gray-100 outline-none text-gray-600 focus:text-gray-900"
-                    >
-                      <option value="">+ 新增標籤...</option>
-                      {Object.entries(TAG_GROUPS).map(([group, options]) => (
-                        <optgroup key={group} label={group}>
-                          {options.filter(opt => !form.tags?.includes(opt.value)).map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label} ({opt.value})
+                  {/* Properties Table */}
+                  <div className="mt-6 space-y-1 text-sm text-gray-600">
+                    {/* Project Field */}
+                    <div className="flex items-center h-8 group">
+                      <div className="w-32 flex items-center text-gray-500 gap-2">
+                        <span className="opacity-70">📂</span>
+                        <span>專案</span>
+                      </div>
+                      <div className="flex-1">
+                        <select
+                          value={form.project || ''}
+                          onChange={e => setForm(f => ({ ...f, project: e.target.value }))}
+                          className="bg-transparent hover:bg-gray-100 px-2 py-1 rounded w-full max-w-xs outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all text-gray-900"
+                        >
+                          <option value="" className="text-gray-400">選擇專案...</option>
+                          {projects.map(p => (
+                            <option key={p.id} value={p.id}>
+                              {p.title}
                             </option>
                           ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                        </select>
+                      </div>
+                    </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-700">整理備註 (Notes)</label>
-                  <textarea
-                    rows={2}
-                    value={form.notes}
-                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                    placeholder="例如：需提取哪部分作為 Prompt..."
-                  />
-                </div>
+                    {/* Status Field */}
+                    <div className="flex items-center h-8 group">
+                      <div className="w-32 flex items-center text-gray-500 gap-2">
+                        <span className="opacity-70">📊</span>
+                        <span>狀態</span>
+                      </div>
+                      <div className="flex-1">
+                        <select
+                          value={form.status || ''}
+                          onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                          className={`bg-transparent hover:bg-gray-100 px-2 py-1 rounded w-full max-w-xs outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all ${form.status ? 'text-gray-900' : 'text-gray-400'
+                            }`}
+                        >
+                          <option value="">Empty</option>
+                          {PROJECT_STATUSES.map(s => (
+                            <option key={s.value} value={s.value}>
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
 
-                <div className="space-y-1 flex-1 flex flex-col min-h-[300px]">
-                  <div className="flex justify-between items-end">
-                    <label className="text-xs font-bold text-gray-700">內容 (Content)</label>
-                    <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
-                      <button
-                        onClick={() => setViewMode('edit')}
-                        className={`px-2 py-1 text-[10px] font-medium rounded flex items-center gap-1 transition-all ${viewMode === 'edit'
-                          ? 'bg-white text-amber-600 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700'
-                          }`}
-                      >
-                        <Edit2 size={12} /> 編輯
-                      </button>
-                      <button
-                        onClick={() => setViewMode('preview')}
-                        className={`px-2 py-1 text-[10px] font-medium rounded flex items-center gap-1 transition-all ${viewMode === 'preview'
-                          ? 'bg-white text-indigo-600 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700'
-                          }`}
-                      >
-                        <Eye size={12} /> 預覽
-                      </button>
+                    {/* Category Field */}
+                    <div className="flex items-center h-8 group">
+                      <div className="w-32 flex items-center text-gray-500 gap-2">
+                        <span className="opacity-70">🏷️</span>
+                        <span>分類</span>
+                      </div>
+                      <div className="flex-1">
+                        <select
+                          value={form.category || ''}
+                          onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                          className={`bg-transparent hover:bg-gray-100 px-2 py-1 rounded w-full max-w-xs outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all ${form.category ? 'text-gray-900' : 'text-gray-400'
+                            }`}
+                        >
+                          <option value="">Empty</option>
+                          {CATEGORIES.map(c => (
+                            <option key={c.value} value={c.value}>
+                              {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Tags Field */}
+                    <div className="flex items-start py-1 group min-h-[32px]">
+                      <div className="w-32 flex items-center text-gray-500 gap-2 mt-1">
+                        <span className="opacity-70">#</span>
+                        <span>標籤</span>
+                      </div>
+                      <div className="flex-1 flex flex-wrap gap-2 items-center">
+                        {form.tags && form.tags.map(tag => (
+                          <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded hover:bg-gray-200 transition-colors cursor-default">
+                            {tag}
+                            <button
+                              onClick={() => setForm(f => ({ ...f, tags: f.tags?.filter(t => t !== tag) || [] }))}
+                              className="text-gray-400 hover:text-red-500 ml-1"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                        <select
+                          value=""
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (!val) return;
+                            setForm(f => {
+                              if (f.tags?.includes(val)) return f;
+                              return { ...f, tags: [...(f.tags || []), val] };
+                            });
+                          }}
+                          className="text-xs text-gray-400 hover:text-gray-600 bg-transparent outline-none cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded"
+                        >
+                          <option value="">+ Add tag</option>
+                          {Object.entries(TAG_GROUPS).map(([group, options]) => (
+                            <optgroup key={group} label={group}>
+                              {options.filter(opt => !form.tags?.includes(opt.value)).map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Source Link */}
+                    <div className="flex items-center h-8 group">
+                      <div className="w-32 flex items-center text-gray-500 gap-2">
+                        <span className="opacity-70">🔗</span>
+                        <span>連結</span>
+                      </div>
+                      <div className="flex-1 truncate">
+                        {form.sourceLink ? (
+                          <a
+                            href={form.sourceLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 hover:underline flex items-center gap-1 text-xs truncate max-w-md bg-indigo-50 px-2 py-0.5 rounded w-fit"
+                          >
+                            <ExternalLink size={12} />
+                            {form.sourceLink}
+                          </a>
+                        ) : (
+                          <span className="text-gray-300 italic text-xs">Empty</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Notes */}
+                    <div className="flex items-start py-1 group">
+                      <div className="w-32 flex items-center text-gray-500 gap-2 mt-1">
+                        <span className="opacity-70">📝</span>
+                        <span>備註</span>
+                      </div>
+                      <div className="flex-1">
+                        <textarea
+                          rows={1}
+                          value={form.notes}
+                          onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                          className="w-full bg-transparent hover:bg-gray-100 px-2 py-1 rounded text-sm text-gray-900 border-none outline-none resize-none overflow-hidden placeholder-gray-300 focus:bg-white focus:ring-1 focus:ring-amber-200 transition-all"
+                          placeholder="Empty"
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = target.scrollHeight + 'px';
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex-1 relative border border-gray-300 rounded overflow-hidden">
-                    {viewMode === 'edit' ? (
-                      <textarea
-                        value={form.rawContent}
-                        onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
-                        className="absolute inset-0 w-full h-full p-4 font-mono text-xs leading-relaxed focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 w-full h-full p-6 overflow-y-auto prose prose-sm max-w-none prose-slate">
-                        {/* Classification Metadata */}
-                        {(form.project || form.status || form.category || (form.tags && form.tags.length > 0)) && (
-                          <div className="mb-4 pb-4 border-b border-gray-100 flex flex-wrap gap-2 items-center">
-                            {form.project && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded border border-blue-100 font-medium">Project: {projects.find(p => p.id === form.project)?.title || form.project}</span>}
-                            {form.status && <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] rounded border border-green-100 font-medium">Status: {form.status}</span>}
-                            {form.category && <span className="px-2 py-0.5 bg-purple-50 text-purple-700 text-[10px] rounded border border-purple-100 font-medium">Category: {form.category}</span>}
-                            {form.tags && form.tags.map(tag => (
-                              <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded-full border border-gray-200 font-medium">#{tag}</span>
-                            ))}
-                          </div>
-                        )}
+                  {/* Divider */}
+                  <div className="h-px bg-gray-200 my-8"></div>
 
-                        {/* Metadata Section in Preview */}
-                        {(form.sourceLink || (form.suggestedTags && form.suggestedTags.length > 0)) && (
-                          <div className="mb-6 pb-4 border-b border-gray-100 space-y-3">
-                            {form.sourceLink && (
-                              <a
-                                href={form.sourceLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-800 hover:underline bg-indigo-50 p-2 rounded-md transition-colors w-fit max-w-full"
-                              >
-                                <ExternalLink size={14} className="flex-shrink-0" />
-                                <span className="truncate">{form.sourceLink}</span>
-                              </a>
-                            )}
-
-                            {form.suggestedTags && form.suggestedTags.length > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {form.suggestedTags.map((tag, idx) => (
-                                  <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-[10px] rounded-full font-medium">
-                                    <Tag size={10} />
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {form.rawContent || '*無內容*'}
-                        </ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
+                  {/* Content Section */}
+                  {viewMode === 'edit' ? (
+                    <textarea
+                      value={form.rawContent}
+                      onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
+                      className="w-full min-h-[500px] font-mono text-sm leading-relaxed outline-none resize-none text-gray-800"
+                      placeholder="輸入內容..."
+                    />
+                  ) : (
+                    <div className="prose prose-sm max-w-none prose-slate">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-8 mb-4 border-b pb-2" {...props} />,
+                          h2: ({ node, ...props }) => {
+                            // Custom styling for User/AI headers
+                            const text = String(props.children);
+                            if (text.includes('User')) {
+                              return <div className="flex items-center gap-2 mt-8 mb-4 text-blue-800 bg-blue-50 p-2 rounded-lg w-fit"><span className="text-xl">🧑‍💻</span><h2 className="text-lg font-bold m-0" {...props} /></div>;
+                            }
+                            if (text.includes('AI') || text.includes('ChatGPT') || text.includes('Claude')) {
+                              return <div className="flex items-center gap-2 mt-8 mb-4 text-purple-800 bg-purple-50 p-2 rounded-lg w-fit"><span className="text-xl">🤖</span><h2 className="text-lg font-bold m-0" {...props} /></div>;
+                            }
+                            return <h2 className="text-xl font-bold mt-6 mb-3" {...props} />;
+                          },
+                          p: ({ node, ...props }) => <p className="leading-7 mb-4 text-gray-800" {...props} />,
+                          code: ({ node, inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) => {
+                            return inline
+                              ? <code className="bg-gray-100 text-red-500 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
+                              : <code className="block bg-gray-50 p-4 rounded-lg text-sm font-mono my-4 border border-gray-100 overflow-x-auto" {...props}>{children}</code>;
+                          }
+                        }}
+                      >
+                        {form.rawContent || '*無內容*'}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
