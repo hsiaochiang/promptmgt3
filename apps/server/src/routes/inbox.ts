@@ -210,6 +210,10 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
       if (updates.title !== undefined) frontmatter.title = updates.title;
       if (updates.notes !== undefined) frontmatter.notes = updates.notes;
       if (updates.suggestedTags !== undefined) frontmatter.suggestedTags = updates.suggestedTags;
+      if (updates.project !== undefined) frontmatter.project = updates.project;
+      if (updates.status !== undefined) frontmatter.status = updates.status;
+      if (updates.category !== undefined) frontmatter.category = updates.category;
+      if (updates.tags !== undefined) frontmatter.tags = updates.tags;
 
       const newBody = updates.rawContent !== undefined ? updates.rawContent : body;
       const newFileContent = matter.stringify(newBody, frontmatter);

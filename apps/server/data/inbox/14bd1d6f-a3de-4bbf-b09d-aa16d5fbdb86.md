@@ -2,11 +2,20 @@
 id: 14bd1d6f-a3de-4bbf-b09d-aa16d5fbdb86
 title: '[W]Notion 設計應用分析'
 importedAt: '2026-01-10T13:06:54.108Z'
-cleanedState: unprocessed
+cleanedState: cleaned
+project: INTERNAL_PRODUCT
+status: ACTIVE
+category: '#Cat/RESEARCH'
+tags:
+  - '#Stage/EVAL'
+  - '#Plat/CHATGPT'
+  - '#Out/MD'
+  - '#Aud/INTERNAL'
+  - '#reusable'
 suggestedTags: []
 sourceLink: 'wos://archive/6951c296-3b84-8320-a4ba-53e11f7089f3'
 sourcePlatform: chatgpt-export
-notes: ''
+notes: 'Auto-classified by Antigravity'
 ---
 # [W]Notion 設計應用分析
 
@@ -864,3 +873,4 @@ str(out_path)
 已完成一版「可貼到需求書的 UI/UX 規格」並輸出為 Markdown 檔案，您可直接下載：
 
 [下載：uiux_spec_project_prompt_manager.md](sandbox:/mnt/data/uiux_spec_project_prompt_manager.md)
+

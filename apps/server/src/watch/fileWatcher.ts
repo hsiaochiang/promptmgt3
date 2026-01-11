@@ -1,6 +1,7 @@
 import chokidar from 'chokidar';
 import path from 'path';
 import { getProjectsDir, getInboxDir, isSystemPath, isCachePath } from '../fs-layout/index.js';
+import { invalidateCache } from '../indexing/index.js';
 import type { FileChangedPayload } from '@pah/contracts';
 
 export type FileChangedHandler = (payload: FileChangedPayload) => void;
@@ -59,6 +60,9 @@ export function startFileWatcher(rootPath: string, onFileChanged: FileChangedHan
     };
 
     onFileChanged(payload);
+
+    // Invalidate cache on any relevant file change
+    invalidateCache();
   };
 
   watcher

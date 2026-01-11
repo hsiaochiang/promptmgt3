@@ -21,16 +21,22 @@ export const InboxItemFrontmatterSchema = z.object({
   id: z.string().uuid().describe('Unique identifier'),
   title: z.string().min(1),
   importedAt: z.string().datetime(),
-  
+
   // Optional fields with defaults
   cleanedState: z.enum(['unprocessed', 'cleaned', 'archived']).default('unprocessed'),
   suggestedTags: z.array(z.string()).default([]),
   notes: z.string().default(''),
-  
+
   // Optional fields
   sourcePlatform: z.string().optional(),
   sourceLink: z.string().optional(),
   suggestedTarget: SuggestedTargetSchema,
+
+  // Classification fields
+  project: z.string().optional(),
+  status: z.string().optional(),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 export type InboxItemFrontmatter = z.infer<typeof InboxItemFrontmatterSchema>;

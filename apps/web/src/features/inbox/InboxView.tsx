@@ -8,12 +8,16 @@ import remarkGfm from 'remark-gfm';
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [form, setForm] = useState<Pick<InboxItemEntity, 'title' | 'notes' | 'rawContent' | 'sourceLink' | 'suggestedTags'>>({
+  const [form, setForm] = useState<Pick<InboxItemEntity, 'title' | 'notes' | 'rawContent' | 'sourceLink' | 'suggestedTags' | 'project' | 'status' | 'category' | 'tags'>>({
     title: '',
     notes: '',
     rawContent: '',
     sourceLink: '',
     suggestedTags: [],
+    project: '',
+    status: '',
+    category: '',
+    tags: [],
   });
 
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('preview');
@@ -50,6 +54,10 @@ export function InboxView() {
       rawContent: item.rawContent,
       sourceLink: item.sourceLink,
       suggestedTags: item.suggestedTags || [],
+      project: item.project || '',
+      status: item.status || '',
+      category: item.category || '',
+      tags: item.tags || [],
     });
     setError(null);
     setSuccess(false);
@@ -69,6 +77,10 @@ export function InboxView() {
         title: form.title,
         notes: form.notes,
         rawContent: form.rawContent,
+        project: form.project,
+        status: form.status,
+        category: form.category,
+        tags: form.tags,
       });
 
       setItems(prev => prev.map(i => (i.id === updated.id ? updated : i)));
@@ -206,6 +218,49 @@ export function InboxView() {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-700">專案 (Project)</label>
+                    <input
+                      type="text"
+                      value={form.project || ''}
+                      onChange={e => setForm(f => ({ ...f, project: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-700">狀態 (Status)</label>
+                    <input
+                      type="text"
+                      value={form.status || ''}
+                      onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-700">分類 (Category)</label>
+                    <input
+                      type="text"
+                      value={form.category || ''}
+                      onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-700">標籤 (Tags)</label>
+                    <input
+                      type="text"
+                      value={form.tags?.join(', ') || ''}
+                      onChange={e => setForm(f => ({ ...f, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                      placeholder="tag1, tag2"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-700">整理備註 (Notes)</label>
                   <textarea
@@ -251,6 +306,18 @@ export function InboxView() {
                       />
                     ) : (
                       <div className="absolute inset-0 w-full h-full p-6 overflow-y-auto prose prose-sm max-w-none prose-slate">
+                        {/* Classification Metadata */}
+                        {(form.project || form.status || form.category || (form.tags && form.tags.length > 0)) && (
+                          <div className="mb-4 pb-4 border-b border-gray-100 flex flex-wrap gap-2 items-center">
+                            {form.project && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded border border-blue-100 font-medium">Project: {form.project}</span>}
+                            {form.status && <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] rounded border border-green-100 font-medium">Status: {form.status}</span>}
+                            {form.category && <span className="px-2 py-0.5 bg-purple-50 text-purple-700 text-[10px] rounded border border-purple-100 font-medium">Category: {form.category}</span>}
+                            {form.tags && form.tags.map(tag => (
+                              <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded-full border border-gray-200 font-medium">#{tag}</span>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Metadata Section in Preview */}
                         {(form.sourceLink || (form.suggestedTags && form.suggestedTags.length > 0)) && (
                           <div className="mb-6 pb-4 border-b border-gray-100 space-y-3">
