@@ -130,10 +130,10 @@ export function HistoryView() {
           <div className="text-center text-xs text-gray-400">尚無歷史版本</div>
         ) : (
           versions.map((ver) => (
-            <div key={ver.id} className="relative pl-4 border-l-2 border-gray-100 hover:border-blue-200 transition-colors">
-              <div className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-gray-200 ring-2 ring-white"></div>
+            <div key={ver.id} className="relative pl-4 border-l-2 border-gray-100 hover:border-blue-200 transition-colors group">
+              <div className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-gray-200 ring-2 ring-white group-hover:bg-blue-200 transition-colors"></div>
 
-              <div className="bg-gray-50 rounded p-3 text-xs">
+              <div className="rounded p-2 text-xs hover:bg-gray-50 transition-colors">
                 <div className="flex justify-between items-start mb-1">
                   <span className="font-medium text-gray-700">{ver.name || '未命名版本'}</span>
                   <span className="text-gray-400 text-[10px] mono">
@@ -141,15 +141,15 @@ export function HistoryView() {
                   </span>
                 </div>
 
-                <div className="text-gray-500 mb-2 truncate">
+                <div className="text-gray-500 mb-2 truncate leading-relaxed">
                   {ver.description}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleRestore(ver.id)}
                     disabled={restoringId === ver.id}
-                    className="flex-1 py-1 bg-white border border-gray-200 rounded text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 py-1 bg-white border border-gray-200 rounded text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors flex items-center justify-center gap-1 shadow-sm"
                   >
                     {restoringId === ver.id ? (
                       '還原中...'

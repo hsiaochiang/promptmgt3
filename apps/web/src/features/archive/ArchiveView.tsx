@@ -103,39 +103,41 @@ export function ArchiveView() {
             沒有符合條件的封存項目
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
-            <div className="flex text-xs font-medium text-gray-400 bg-white sticky top-0 z-10 border-b border-gray-200">
-              <div className="w-8 py-2 px-3"></div>
-              <div className="flex-[2] py-2 px-3 border-r border-gray-100">名稱</div>
-              <div className="w-24 py-2 px-3 border-r border-gray-100">類型</div>
-              <div className="flex-1 py-2 px-3 border-r border-gray-100">標籤</div>
-              <div className="w-32 py-2 px-3 text-right">封存時間</div>
+          <div className="h-full px-6 pt-2">
+            <div className="grid grid-cols-[32px_minmax(400px,4fr)_120px_minmax(200px,2fr)_160px] gap-4 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
+              <div className="py-2 px-3"></div>
+              <div className="py-2 px-3">名稱</div>
+              <div className="py-2 px-3">類型</div>
+              <div className="py-2 px-3">標籤</div>
+              <div className="py-2 px-3 text-right">封存時間</div>
             </div>
 
             {filteredItems.map(item => (
               <div
                 key={`${item.type}-${item.id}`}
-                className="flex items-center hover:bg-gray-50 transition-colors group"
+                className="grid grid-cols-[32px_minmax(400px,4fr)_120px_minmax(200px,2fr)_160px] gap-4 items-center hover:bg-gray-50 transition-colors group border-b border-gray-100 h-10"
               >
-                <div className="w-8 py-2 px-3 flex justify-center">
+                <div className="py-2 px-3 flex justify-center items-center">
                   {item.type === 'project' ? (
                     <FolderOpen size={14} className="text-blue-400" />
                   ) : (
                     <FileText size={14} className="text-emerald-400" />
                   )}
                 </div>
-                <div className="flex-[2] py-2 px-3 border-r border-gray-100 font-medium text-gray-700 text-xs truncate">
+                <div className="py-2 px-3 font-medium text-gray-700 text-xs truncate">
                   {item.title}
                 </div>
-                <div className="w-24 py-2 px-3 border-r border-gray-100 text-xs text-gray-500 capitalize">
+                <div className="py-2 px-3 text-xs text-gray-500 capitalize">
                   {item.type}
                 </div>
-                <div className="flex-1 py-2 px-3 border-r border-gray-100 flex gap-1 overflow-hidden">
+                <div className="py-2 px-3 flex gap-1 overflow-hidden items-center">
                   {item.tags.map(t => (
-                    <span key={t} className="text-[10px] bg-gray-100 px-1 rounded text-gray-500 truncate">{t}</span>
+                    <span key={t} className="text-[10px] px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded-md border border-gray-200 truncate">
+                      {t}
+                    </span>
                   ))}
                 </div>
-                <div className="w-32 py-2 px-3 text-right text-xs text-gray-400 font-mono">
+                <div className="py-2 px-3 text-right text-xs text-gray-400 font-mono">
                   {formatDate(item.updatedAt)}
                 </div>
               </div>

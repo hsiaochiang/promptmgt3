@@ -69,52 +69,89 @@ export function PromptView() {
   );
 }
 
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles: Record<string, string> = {
+    draft: 'text-gray-600 bg-gray-100 border border-gray-200',
+    needs_review: 'text-yellow-700 bg-yellow-50 border border-yellow-100',
+    ready: 'text-green-700 bg-green-50 border border-green-100',
+    deprecated: 'text-red-700 bg-red-50 border border-red-100',
+    tuning: 'text-blue-700 bg-blue-50 border border-blue-100',
+    disabled: 'text-gray-400 bg-gray-50 border border-gray-200 dashed',
+  };
+
+  const labels: Record<string, string> = {
+    draft: '草稿',
+    needs_review: '待審閱',
+    ready: '就緒',
+    deprecated: '已棄用',
+    tuning: '調整中',
+    disabled: '停用',
+  };
+
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] || styles.draft}`}>
+      {labels[status] || status}
+    </span>
+  );
+};
+
+const TagPill = ({ text }: { text: string }) => (
+  <span className="text-[10px] px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded-md border border-gray-200 truncate">
+    {text}
+  </span>
+);
+
 function PromptList({ prompts }: { prompts: PromptEntity[] }) {
   const { setSelectedItem } = useUiStore();
 
   return (
-    <div className="h-full overflow-y-auto pb-20 pt-2 custom-scrollbar">
-      <div className="flex text-xs font-medium text-gray-400 border-b border-gray-200 pb-2 mb-2 px-2 select-none sticky top-0 bg-white z-10">
-        <div className="flex-[2] py-2 px-3 border-r border-gray-100">名稱</div>
-        <div className="w-28 py-2 px-3 border-r border-gray-100">狀態</div>
-        <div className="w-24 py-2 px-3 border-r border-gray-100">優先級</div>
-        <div className="flex-1 py-2 px-3 border-r border-gray-100">標籤</div>
-        <div className="w-28 py-2 px-3 text-right">更新</div>
+    <div className="h-full overflow-y-auto pb-20 pt-2 custom-scrollbar px-6">
+      <div className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
+        <div className="py-2 px-3">名稱</div>
+        <div className="py-2 px-3">狀態</div>
+        <div className="py-2 px-3">標籤</div>
+        <div className="py-2 px-3 text-right">更新</div>
+        <div className=""></div>
       </div>
 
       {prompts.map((prompt) => (
-        <div
-          key={prompt.id}
-          onClick={() => setSelectedItem({ type: 'prompt', id: prompt.id })}
-          className="flex items-center hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors relative group"
-        >
-          <div className="flex-[2] flex items-center py-1.5 px-3 border-r border-gray-100 overflow-hidden">
-            <FileText size={16} className="text-emerald-500/70 flex-shrink-0 mr-2" />
-            <span className="text-gray-700 font-medium text-sm truncate">
-              {prompt.title}
-            </span>
-          </div>
-          <div className="w-28 py-1.5 px-3 border-r border-gray-100 flex items-center text-xs">
-            {prompt.status}
-          </div>
-          <div className="w-24 py-1.5 px-3 border-r border-gray-100 text-sm text-gray-500 flex items-center">
-            {prompt.priority}
-          </div>
-          <div className="flex-1 py-1.5 px-3 border-r border-gray-100 flex gap-1 overflow-hidden items-center">
-            {prompt.tags.map((t: string) => (
-              <span key={t} className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1 rounded truncate max-w-[80px]">
-                {t}
+        <div key={prompt.id} className="group relative">
+          <div
+            className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 items-center hover:bg-gray-50 cursor-pointer select-none transition-colors border-b border-gray-100 h-12"
+            onClick={() => setSelectedItem({ type: 'prompt', id: prompt.id })}
+          >
+            <div className="flex items-center py-2 px-3 overflow-hidden relative">
+              <div className="mr-3 p-1 bg-gray-50 rounded border border-gray-100 text-gray-500 flex-shrink-0">
+                <FileText size={16} />
+              </div>
+              <span className="font-medium text-gray-900 text-sm truncate" title={prompt.title}>
+                {prompt.title}
               </span>
-            ))}
-          </div>
-          <div className="w-28 py-1.5 px-3 text-right text-xs text-gray-400 font-mono flex items-center justify-end">
-            {formatDate(prompt.updatedAt)}
+            </div>
+
+            <div className="py-2 px-3 flex items-center">
+              <StatusBadge status={prompt.status} />
+            </div>
+
+            <div className="py-2 px-3 flex gap-1 overflow-hidden items-center">
+              {prompt.tags.map((t: string) => <TagPill key={t} text={t} />)}
+            </div>
+
+            <div className="py-2 px-3 text-right text-xs text-gray-400 font-mono">
+              {formatDate(prompt.updatedAt)}
+            </div>
+
+            <div className="flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button className="text-[10px] border border-gray-200 bg-white px-2 py-0.5 rounded shadow-sm hover:bg-gray-50 text-gray-600">
+                OPEN
+              </button>
+            </div>
           </div>
         </div>
       ))}
 
       {prompts.length === 0 && (
-        <div className="p-8 text-center text-gray-400 text-sm">
+        <div className="p-16 text-center text-gray-400 text-sm italic">
           No prompts found.
         </div>
       )}

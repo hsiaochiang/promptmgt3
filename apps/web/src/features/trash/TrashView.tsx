@@ -86,47 +86,56 @@ export function TrashView() {
 
       {!loading && items.length === 0 && <EmptyState />}
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
-        <div className="divide-y divide-gray-100">
-          {items.map((item) => (
-            <div key={item.trashId} className="group flex items-center p-4 hover:bg-gray-50 transition-colors">
-              <div className="mr-4 text-gray-400">
-                {item.entityType === 'project' ? <Folder size={20} /> : <File size={20} />}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pt-2">
+        <div className="grid grid-cols-[32px_minmax(300px,3fr)_1px_minmax(150px,2fr)_160px_80px] gap-4 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
+          <div className="py-2 px-3"></div>
+          <div className="py-2 px-3">名稱</div>
+          <div className="h-4 border-r border-gray-100"></div>
+          <div className="py-2 px-3">原始位置</div>
+          <div className="py-2 px-3">刪除時間</div>
+          <div className="py-2 px-3 text-right">動作</div>
+        </div>
+
+        {items.map((item) => (
+          <div key={item.trashId} className="group relative">
+            <div className="grid grid-cols-[32px_minmax(300px,3fr)_1px_minmax(150px,2fr)_160px_80px] gap-4 items-center hover:bg-gray-50 transition-colors border-b border-gray-100 h-12">
+              <div className="py-2 px-3 flex justify-center items-center text-gray-400">
+                {item.entityType === 'project' ? <Folder size={14} /> : <File size={14} />}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-gray-900 truncate">{item.titleSnapshot}</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 capitalize">
+              <div className="py-2 px-3 font-medium text-gray-900 truncate">
+                <div className="flex items-center gap-2">
+                  <span className="truncate" title={item.titleSnapshot}>{item.titleSnapshot}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 capitalize flex-shrink-0">
                     {item.entityType}
                   </span>
                 </div>
-                <div className="text-xs text-gray-400 truncate font-mono">
-                  {item.originalRelativePath}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  Deleted: {formatDate(item.deletedAt)}
-                </div>
               </div>
-
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="h-4 border-r border-gray-100"></div>
+              <div className="py-2 px-3 text-xs text-gray-400 truncate font-mono" title={item.originalRelativePath}>
+                {item.originalRelativePath}
+              </div>
+              <div className="py-2 px-3 text-xs text-gray-400 font-mono">
+                {formatDate(item.deletedAt)}
+              </div>
+              <div className="py-2 px-3 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => handleRestore(item.trashId)}
                   className="p-1.5 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded transition-colors"
                   title="Restore"
                 >
-                  <RotateCcw size={16} />
+                  <RotateCcw size={14} />
                 </button>
                 <button
                   onClick={() => handlePurge(item.trashId)}
                   className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded transition-colors"
                   title="Delete Permanently"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Conflict Dialog Overlay */}
