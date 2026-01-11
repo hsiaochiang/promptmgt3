@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useAutosave } from '../hooks/useAutosave';
 import type { PromptEntity } from '@pah/contracts';
+import { formatDate } from '../utils/date';
 import { useSyncStatus } from '../features/sync/SyncProvider';
 import { ConflictBanner } from '../features/conflict/ConflictBanner';
 import { Calendar, CheckCircle, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
@@ -137,7 +138,7 @@ export function DetailPanel({ prompt, onClose, onUpdate, onNotify }: DetailPanel
 
     try {
       setCreatingVersion(true);
-      
+
       const response = await fetch('http://localhost:3001/api/snapshots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -255,7 +256,7 @@ export function DetailPanel({ prompt, onClose, onUpdate, onNotify }: DetailPanel
       <div className="px-4 py-2 border-b border-gray-100 bg-[#F7F7F5] text-xs">
         {isSaving && <span className="text-blue-600">⏳ 保存中...</span>}
         {!isSaving && lastSaved && (
-          <span className="text-green-600">✓ 已保存 · {lastSaved.toLocaleTimeString('zh-TW')}</span>
+          <span className="text-green-600">✓ 已保存 · {formatDate(lastSaved)}</span>
         )}
         {saveError && (
           <div className="flex items-center gap-2 text-red-600">
@@ -329,7 +330,7 @@ export function DetailPanel({ prompt, onClose, onUpdate, onNotify }: DetailPanel
 
             <PropertyRow label="更新時間" icon={<Calendar size={14} className="text-gray-400" />}>
               <span className="text-xs text-gray-500 px-1.5">
-                {new Date(formData.updatedAt).toLocaleString('zh-TW')}
+                {formatDate(formData.updatedAt)}
               </span>
             </PropertyRow>
           </div>

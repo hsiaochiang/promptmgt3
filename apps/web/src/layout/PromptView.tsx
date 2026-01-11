@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react';
 import { useUiStore } from '../state/uiStore';
 import { getPrompts } from '../features/library/api';
 import { PromptEntity } from '@pah/contracts';
+import { formatDate } from '../utils/date';
 
 export function PromptView() {
   const { promptSubView, searchQuery } = useUiStore();
@@ -107,7 +108,7 @@ function PromptList({ prompts }: { prompts: PromptEntity[] }) {
             ))}
           </div>
           <div className="w-28 py-1.5 px-3 text-right text-xs text-gray-400 font-mono flex items-center justify-end">
-            {new Date(prompt.updatedAt).toLocaleDateString()}
+            {formatDate(prompt.updatedAt)}
           </div>
         </div>
       ))}

@@ -3,6 +3,7 @@ import { getProjects, getPrompts } from '../library/api';
 import { useUiStore } from '../../state/uiStore';
 import { ProjectEntity, PromptEntity } from '@pah/contracts';
 import { FileText, FolderOpen, Filter } from 'lucide-react';
+import { formatDate } from '../../utils/date';
 
 type ArchivedItem =
   | (ProjectEntity & { type: 'project' })
@@ -135,7 +136,7 @@ export function ArchiveView() {
                   ))}
                 </div>
                 <div className="w-32 py-2 px-3 text-right text-xs text-gray-400 font-mono">
-                  {new Date(item.updatedAt).toLocaleDateString()}
+                  {formatDate(item.updatedAt)}
                 </div>
               </div>
             ))}

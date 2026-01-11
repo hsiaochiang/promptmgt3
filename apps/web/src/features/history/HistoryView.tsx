@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useUiStore } from '../../state/uiStore';
 import { VersionNode } from '@pah/contracts';
 import { Clock, RotateCcw, Plus } from 'lucide-react';
+import { formatDate } from '../../utils/date';
 
 export function HistoryView() {
   const { selectedItem } = useUiStore();
@@ -136,7 +137,7 @@ export function HistoryView() {
                 <div className="flex justify-between items-start mb-1">
                   <span className="font-medium text-gray-700">{ver.name || '未命名版本'}</span>
                   <span className="text-gray-400 text-[10px] mono">
-                    {new Date(ver.timestamp).toLocaleDateString()} {new Date(ver.timestamp).toLocaleTimeString()}
+                    {formatDate(ver.timestamp)}
                   </span>
                 </div>
 

@@ -19,7 +19,7 @@ notes: Auto-classified by Antigravity
 ---
 # [W]Notion 設計應用分析
 
-**Created**: 2025-12-29T07:53:12.686018
+**Created**: 12/29/2025 07:53:12
 
 ## User
 

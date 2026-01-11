@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Trash2, RotateCcw, X, AlertTriangle, File, Folder } from 'lucide-react';
 import { fetchTrashList, purgeTrashItem, restoreTrashItem } from './api';
 import type { TrashItem, RestoreConflict } from '@pah/contracts';
+import { formatDate } from '../../utils/date';
 
 export function TrashView() {
   const [items, setItems] = useState<TrashItem[]>([]);
@@ -103,7 +104,7 @@ export function TrashView() {
                   {item.originalRelativePath}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">
-                  Deleted: {new Date(item.deletedAt).toLocaleString()}
+                  Deleted: {formatDate(item.deletedAt)}
                 </div>
               </div>
 

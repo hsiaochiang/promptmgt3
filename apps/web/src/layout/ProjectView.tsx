@@ -3,6 +3,7 @@ import { FolderOpen, ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useUiStore } from '../state/uiStore';
 import { getProjects, createProject } from '../features/library/api';
 import { ProjectEntity } from '@pah/contracts';
+import { formatDate } from '../utils/date';
 
 export function ProjectView() {
   const { projectSubView, searchQuery } = useUiStore();
@@ -83,32 +84,65 @@ export function ProjectView() {
   );
 }
 
+
+// --- Constitutional Components ---
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles: Record<string, string> = {
+    in_progress: 'text-blue-700 bg-blue-50 border border-blue-100', // Blue: Rational/Active
+    planned: 'text-gray-600 bg-gray-100 border border-gray-200',    // Gray: Planned
+    paused: 'text-yellow-700 bg-yellow-50 border border-yellow-100', // Yellow: Warning/Paused
+    done: 'text-green-700 bg-green-50 border border-green-100',    // Green: Life/Done
+  };
+
+  const labels: Record<string, string> = {
+    in_progress: '進行中',
+    planned: '規劃中',
+    paused: '暫停',
+    done: '完成',
+  };
+
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] || styles.planned}`}>
+      {labels[status] || status}
+    </span>
+  );
+};
+
+const TagPill = ({ text }: { text: string }) => (
+  // Colored pills for tags
+  <span className="text-[10px] px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded-md border border-gray-200 truncate">
+    {text}
+  </span>
+);
+
 function ProjectList({ projects }: { projects: ProjectEntity[] }) {
   const { expandedProjects, toggleProjectExpanded, setSelectedItem } = useUiStore();
 
   return (
-    <div className="h-full overflow-y-auto pb-20 pt-2 custom-scrollbar">
-      <div className="flex text-xs font-medium text-gray-400 border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="flex-[2] py-2 px-3 border-r border-gray-100">名稱</div>
-        <div className="w-28 py-2 px-3 border-r border-gray-100">狀態</div>
-        <div className="w-24 py-2 px-3 border-r border-gray-100">優先級</div>
-        <div className="flex-1 py-2 px-3 border-r border-gray-100">標籤</div>
-        <div className="w-28 py-2 px-3 text-right">更新</div>
+    <div className="h-full overflow-y-auto pb-20 pt-2 custom-scrollbar px-6"> {/* Increased padding (Breath) */}
+      <div className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
+        <div className="py-2 px-3">名稱</div> {/* Removed vertical borders */}
+        <div className="py-2 px-3">狀態</div>
+        {/* Removed Priority Column (Silence) */}
+        <div className="py-2 px-3">標籤</div>
+        <div className="py-2 px-3 text-right">更新</div>
+        <div className=""></div> {/* Action Column Spacer */}
       </div>
 
       {projects.map((project) => (
-        <div key={project.id} className="group mb-1">
+        <div key={project.id} className="group relative">
           <div
-            className="flex items-center hover:bg-gray-50 cursor-pointer select-none transition-colors border-b border-gray-100"
+            className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 items-center hover:bg-gray-50 cursor-pointer select-none transition-colors border-b border-gray-100 h-12" // Fixed height for consistency
             onClick={() => setSelectedItem({ type: 'project', id: project.id })}
           >
-            <div className="flex-[2] flex items-center py-2 px-3 overflow-hidden relative">
+            <div className="flex items-center py-2 px-3 overflow-hidden relative">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleProjectExpanded(project.id);
                 }}
-                className="p-0.5 hover:bg-gray-200 rounded text-gray-400 transition-colors mr-2 flex-shrink-0"
+                className="p-1 hover:bg-gray-200 rounded text-gray-400 transition-colors mr-2 flex-shrink-0"
               >
                 {expandedProjects.includes(project.id) ? (
                   <ChevronDown size={14} />
@@ -116,21 +150,35 @@ function ProjectList({ projects }: { projects: ProjectEntity[] }) {
                   <ChevronRight size={14} />
                 )}
               </button>
-              <FolderOpen size={16} className="text-blue-500/70 flex-shrink-0 mr-2" />
-              <span className="font-medium text-gray-900 text-sm truncate">{project.title}</span>
+              {/* Icon (Object Dignity) */}
+              <div className="mr-3 p-1 bg-gray-50 rounded border border-gray-100 text-gray-500 flex-shrink-0">
+                <FolderOpen size={16} />
+              </div>
+              <span className="font-medium text-gray-900 text-sm truncate" title={project.title}>{project.title}</span>
             </div>
-            <div className="w-28 py-2 px-3 flex items-center text-xs text-gray-500">{project.status}</div>
-            <div className="w-24 py-2 px-3"></div>
-            <div className="flex-1 py-2 px-3 flex gap-1 overflow-hidden">
-              {project.tags.map((t: string) => <span key={t} className="text-[10px] bg-gray-100 px-1 rounded truncate">{t}</span>)}
+
+            <div className="py-2 px-3 flex items-center">
+              <StatusBadge status={project.status} />
             </div>
-            <div className="w-28 py-2 px-3 text-right text-xs text-gray-400 font-mono">
-              {new Date(project.updatedAt).toLocaleDateString()}
+
+            <div className="py-2 px-3 flex gap-1 overflow-hidden items-center">
+              {project.tags.map((t: string) => <TagPill key={t} text={t} />)}
+            </div>
+
+            <div className="py-2 px-3 text-right text-xs text-gray-400 font-mono">
+              {formatDate(project.updatedAt)}
+            </div>
+
+            {/* Open Button (Action on Hover) */}
+            <div className="flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button className="text-[10px] border border-gray-200 bg-white px-2 py-0.5 rounded shadow-sm hover:bg-gray-50 text-gray-600">
+                OPEN
+              </button>
             </div>
           </div>
 
           {expandedProjects.includes(project.id) && (
-            <div className="bg-gray-50/50 py-2 pl-10 text-xs text-gray-400 italic border-b border-gray-100">
+            <div className="bg-gray-50/30 py-4 pl-12 text-xs text-gray-400 italic border-b border-gray-100 ml-4 rounded-b-lg">
               {/* Later we can load prompts for this project here */}
               (Prompts list coming soon...)
             </div>
@@ -139,7 +187,7 @@ function ProjectList({ projects }: { projects: ProjectEntity[] }) {
       ))}
 
       {projects.length === 0 && (
-        <div className="p-8 text-center text-gray-400 text-sm">
+        <div className="p-16 text-center text-gray-400 text-sm italic">
           No projects found. Create one to get started.
         </div>
       )}
@@ -175,11 +223,14 @@ function ProjectBoard({ projects }: { projects: ProjectEntity[] }) {
                 <div
                   key={project.id}
                   onClick={() => setSelectedItem({ type: 'project', id: project.id })}
-                  className="bg-white p-3 rounded-[3px] shadow-sm hover:shadow-md cursor-pointer transition-all border border-gray-200/50 hover:border-gray-300 group"
+                  className="bg-white p-3 rounded-[3px] shadow-sm hover:shadow-md cursor-pointer transition-all border border-gray-200/50 hover:border-gray-300 group relative"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <span className="font-medium text-gray-800 leading-tight flex items-center gap-1.5 break-all">
-                      <FolderOpen size={14} className="text-blue-500/70 flex-shrink-0" />
+                    <span className="font-medium text-gray-800 leading-tight flex items-center gap-2 break-all">
+                      {/* Icon (Object Dignity) */}
+                      <span className="p-0.5 bg-gray-50 rounded border border-gray-100 text-gray-400">
+                        <FolderOpen size={12} />
+                      </span>
                       {project.title}
                     </span>
                   </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { SnapshotCreatedPayload, SnapshotFailedPayload } from '@pah/contracts';
+import { formatDate } from '../../utils/date';
 
 interface BackupStatus {
   isBackingUp: boolean;
@@ -25,7 +26,7 @@ export function BackupStatusBanner() {
     ws.onmessage = (event) => {
       try {
         const parsed = JSON.parse(event.data);
-        
+
         if (parsed.event === 'snapshot.created') {
           parsed as SnapshotCreatedPayload;
           setStatus({
@@ -84,13 +85,7 @@ export function BackupStatusBanner() {
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('zh-TW', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  /* Removed formatTime helper in favor of global formatDate */
 
   // Don't show banner if no activity
   if (!status.isBackingUp && !status.lastSuccess && !status.lastError) {
@@ -116,7 +111,7 @@ export function BackupStatusBanner() {
             <span>✓</span>
             <span>備份成功</span>
             <span className="text-xs text-green-600">
-              {formatTime(status.lastSuccess)}
+              {formatDate(status.lastSuccess)}
             </span>
           </div>
         </div>
@@ -131,7 +126,7 @@ export function BackupStatusBanner() {
               <span>備份失敗：{status.errorMessage}</span>
               {status.lastError && (
                 <span className="text-xs text-red-600">
-                  {formatTime(status.lastError)}
+                  {formatDate(status.lastError)}
                 </span>
               )}
             </div>

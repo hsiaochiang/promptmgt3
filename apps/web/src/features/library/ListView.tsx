@@ -3,6 +3,7 @@ import type { PromptEntity } from '@pah/contracts';
 import { FileText, Maximize2 } from 'lucide-react';
 import { MOCK_PROMPTS } from '../../data/mockData';
 import { Badge, StatusBadge } from '../../ui/PrototypeBadges';
+import { formatDate } from '../../utils/date';
 
 type ViewMode = 'list' | 'board';
 
@@ -30,7 +31,7 @@ export function ListView({
     const fetchPrompts = async () => {
       try {
         setLoading(true);
-        
+
         if (USE_MOCK_DATA) {
           // Use mock data for visual comparison
           await new Promise(resolve => setTimeout(resolve, 300)); // Simulate loading
@@ -108,9 +109,8 @@ export function ListView({
         <div
           key={prompt.id}
           onClick={() => onSelectPrompt(prompt)}
-          className={`flex items-center hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors relative group ${
-            selectedPromptId === prompt.id ? 'bg-blue-50' : ''
-          }`}
+          className={`flex items-center hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors relative group ${selectedPromptId === prompt.id ? 'bg-blue-50' : ''
+            }`}
         >
           <div className="flex-[2] flex items-center py-1.5 px-3 border-r border-gray-100 overflow-hidden">
             <FileText size={16} className="text-gray-400 flex-shrink-0 mr-2" />
@@ -144,7 +144,7 @@ export function ListView({
           </div>
 
           <div className="w-28 py-1.5 px-3 text-right text-xs text-gray-400 font-mono flex items-center justify-end">
-            {new Date(prompt.updatedAt).toLocaleDateString('zh-TW')}
+            {formatDate(prompt.updatedAt)}
           </div>
 
           <div className="absolute right-2 opacity-0 group-hover:opacity-100 flex gap-1">
@@ -191,9 +191,8 @@ function BoardView({
                 <div
                   key={prompt.id}
                   onClick={() => onSelectPrompt(prompt)}
-                  className={`bg-white p-3 rounded-[3px] shadow-sm hover:shadow-md cursor-pointer transition-all border border-gray-200/50 hover:border-gray-300 group ${
-                    selectedPromptId === prompt.id ? 'ring-2 ring-blue-500' : ''
-                  }`}
+                  className={`bg-white p-3 rounded-[3px] shadow-sm hover:shadow-md cursor-pointer transition-all border border-gray-200/50 hover:border-gray-300 group ${selectedPromptId === prompt.id ? 'ring-2 ring-blue-500' : ''
+                    }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className="font-medium text-gray-800 leading-tight text-xs">{prompt.title}</span>

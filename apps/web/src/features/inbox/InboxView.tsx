@@ -5,6 +5,7 @@ import { Trash2, AlertTriangle, Save, RefreshCw, ExternalLink, Eye, Edit2, Tag }
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { PROJECT_STATUSES, CATEGORIES, TAG_GROUPS } from './taxonomy';
+import { formatDate } from '../../utils/date';
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItemEntity[]>([]);
@@ -156,7 +157,7 @@ export function InboxView() {
               >
                 <div className="font-medium text-gray-900 mb-1 truncate">{item.title}</div>
                 <div className="flex justify-between items-center text-[10px] text-gray-500">
-                  <span>{new Date(item.importedAt).toLocaleDateString()}</span>
+                  <span>{formatDate(item.importedAt)}</span>
                   <span className={`px-1.5 py-0.5 rounded-full ${item.cleanedState === 'cleaned' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                     }`}>
                     {item.cleanedState || 'new'}
@@ -205,10 +206,8 @@ export function InboxView() {
               <div className="flex-1 overflow-y-auto bg-white">
                 {/* Header / Title Area */}
                 <div className="px-16 pt-12 pb-6 max-w-4xl mx-auto">
-                  {/* Icon placeholder (Notion style) */}
-                  <div className="mb-4 text-4xl select-none opacity-50 hover:opacity-100 transition-opacity cursor-pointer w-fit">
-                    📄
-                  </div>
+                  {/* Icon placeholder removed per Constitution */}
+                  <div className="mb-4"></div>
 
                   <input
                     type="text"

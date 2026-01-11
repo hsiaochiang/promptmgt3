@@ -59,8 +59,8 @@
 ### 3. 詳細頁面 (Detail Page)
 *   **參考**：`03 專案 編輯頁面.png`, `04 提示詞 編輯頁面.png`
 *   **結構**：
-    *   **Icon Area**：頂部大圖標 (72px+)，支援 Emoji/SVG。
     *   **Title Area**：巨大標題 (text-4xl)，無框輸入。
+        *   *修正 (2026/01/11)*：移除標題上方的大圖標 (Page Icon)。
     *   **Properties Table**：
         *   位於標題下方。
         *   格式：`[Icon] [Label] ........ [Value]` (左右對齊)。
