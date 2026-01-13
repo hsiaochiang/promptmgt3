@@ -9,9 +9,10 @@ interface MarkdownEditorProps {
   onChange: (value: string) => void;
   entityType: 'project' | 'prompt' | 'inbox';
   entityId: string;
+  height?: string;
 }
 
-export function MarkdownEditor({ value, onChange, entityType, entityId }: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, entityType, entityId, height = '300px' }: MarkdownEditorProps) {
   const handleFiles = useCallback(
     async (files: FileList | File[] | null) => {
       if (!files || files.length === 0) return;
@@ -97,7 +98,7 @@ export function MarkdownEditor({ value, onChange, entityType, entityId }: Markdo
     >
       <CodeMirror
         value={value}
-        height="300px"
+        height={height}
         extensions={[markdown()]}
         onChange={onChange}
         theme="light"

@@ -166,11 +166,10 @@ function ProjectPrompts({ projectId }: { projectId: string }) {
             setSelectedItem({ type: 'prompt', id: prompt.id });
           }}
         >
-          {/* Indented Name Column */}
+          {/* Indented Name Column - L-connector removed */}
           <div className="flex items-center py-2 px-3 overflow-hidden relative pl-12">
             <div className="mr-3 text-gray-400 flex-shrink-0">
-              <span className="inline-block w-4 border-l border-b border-gray-300 h-2.5 mr-2 -translate-y-1"></span>
-              <FileText size={14} className="inline-block -translate-y-0.5" />
+              <FileText size={14} />
             </div>
             <span className="text-gray-600 text-sm truncate group-hover/prompt:text-blue-600 transition-colors">
               {prompt.title}
@@ -202,6 +201,24 @@ function ProjectPrompts({ projectId }: { projectId: string }) {
           <div className=""></div>
         </div>
       ))}
+
+      {/* New Prompt Row */}
+      <div
+        className="grid grid-cols-[minmax(400px,4fr)_120px_minmax(200px,2fr)_120px_60px] gap-4 items-center hover:bg-gray-50 cursor-pointer border-b border-gray-50 h-10 text-gray-500 hover:text-blue-600 transition-colors"
+        onClick={() => {
+          console.log('Create new prompt for project:', projectId);
+          // TODO: Implement create prompt for this project
+        }}
+      >
+        <div className="flex items-center py-2 px-3 overflow-hidden relative pl-12">
+          <Plus size={14} className="mr-2" />
+          <span className="text-xs">新增提示詞...</span>
+        </div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
     </div>
   );
 }

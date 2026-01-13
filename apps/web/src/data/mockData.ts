@@ -3,13 +3,68 @@
  * 用於視覺原型比對的範例資料
  */
 
-import type { PromptEntity, InboxItemEntity, TrashItem, WorkspaceSettings } from '@pah/contracts';
+import type { PromptEntity, InboxItemEntity, TrashItem, WorkspaceSettings, ProjectEntity } from '@pah/contracts';
+
+export const MOCK_PROJECTS: ProjectEntity[] = [
+  {
+    id: 'a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d',
+    slug: 'ai-customer-service',
+    title: 'AI 客服自動化',
+    body: '',
+    summary: 'AI驅動的客戶服務自動化系統',
+    status: 'in_progress',
+    type: '',
+    tags: [],
+    archived: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-02T15:30:00Z',
+  },
+  {
+    id: 'b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e',
+    slug: '2024-q1-marketing',
+    title: '2024 Q1 行銷活動',
+    body: '',
+    summary: '第一季度行銷專案',
+    status: 'planned',
+    type: '',
+    tags: [],
+    archived: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-03T11:15:00Z',
+  },
+  {
+    id: 'c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f',
+    slug: 'internal-dev-tools',
+    title: '內部開發工具',
+    body: '',
+    summary: '團隊內部開發輔助工具',
+    status: 'in_progress',
+    type: '',
+    tags: [],
+    archived: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-05T10:30:00Z',
+  },
+  {
+    id: 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a',
+    slug: 'legacy-archive',
+    title: '封存專案',
+    body: '',
+    summary: '已完成的歷史專案',
+    status: 'done',
+    type: '',
+    tags: [],
+    archived: false,
+    createdAt: '2023-01-01T00:00:00Z',
+    updatedAt: '2023-01-01T00:00:00Z',
+  },
+];
 
 export const MOCK_PROMPTS: PromptEntity[] = [
   {
     id: 'pr1',
     slug: 'customer-sentiment-analysis',
-    projectId: 'proj-ai-cs',
+    projectId: 'a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d',
     title: '客服情緒分析',
     body: `# 角色設定
 你是一位資深的客戶服務專家，擅長情緒分析。
@@ -33,7 +88,7 @@ export const MOCK_PROMPTS: PromptEntity[] = [
   {
     id: 'pr2',
     slug: 'auto-reply-refund',
-    projectId: 'proj-ai-cs',
+    projectId: 'a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d',
     title: '自動回覆生成 - 退貨',
     body: `# 任務
 根據公司的退貨政策，生成一封委婉但堅定的拒絕退貨信件。
@@ -58,7 +113,7 @@ export const MOCK_PROMPTS: PromptEntity[] = [
   {
     id: 'pr3',
     slug: 'instagram-post-gen',
-    projectId: 'proj-marketing-q1',
+    projectId: 'b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e',
     title: 'Instagram 貼文生成',
     body: `# 平台
 Instagram
@@ -82,7 +137,7 @@ Instagram
   {
     id: 'pr4',
     slug: 'email-campaign-template',
-    projectId: 'proj-marketing-q1',
+    projectId: 'b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e',
     title: 'EDM 行銷模板',
     body: `# 目標受眾
 25-40 歲專業人士
@@ -108,7 +163,7 @@ Instagram
   {
     id: 'pr5',
     slug: 'legacy-summary-prompt',
-    projectId: 'proj-legacy',
+    projectId: 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a',
     title: '舊版摘要提示詞',
     body: '這是舊的摘要提示詞，僅供參考。',
     status: 'deprecated',
@@ -124,7 +179,7 @@ Instagram
   {
     id: 'pr6',
     slug: 'code-review-assistant',
-    projectId: 'proj-internal',
+    projectId: 'c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f',
     title: 'Code Review 助手',
     body: `# 角色
 你是一位資深的程式碼審查專家。
@@ -147,7 +202,7 @@ Instagram
   {
     id: 'pr7',
     slug: 'meeting-notes-formatter',
-    projectId: 'proj-internal',
+    projectId: 'c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f',
     title: '會議記錄格式化',
     body: `# 輸入
 會議語音轉文字稿
@@ -170,7 +225,7 @@ Instagram
   {
     id: 'pr8',
     slug: 'product-description-gen',
-    projectId: 'proj-marketing-q1',
+    projectId: 'b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e',
     title: '商品描述生成器',
     body: `# 輸入參數
 - 商品名稱
@@ -413,7 +468,7 @@ export const MOCK_ARCHIVED_PROMPTS: PromptEntity[] = [
   {
     id: 'pr99',
     slug: '2023-year-end-summary',
-    projectId: 'proj-legacy',
+    projectId: 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a',
     title: '2023 年度總結提示詞',
     body: '舊版資料,僅供參考。',
     status: 'deprecated',
