@@ -1,0 +1,31 @@
+---
+id: 9429d425-c3f6-42ff-9c2d-2115a9d88950
+title: 轉換為md檔案
+importedAt: '2026-01-10T13:07:53.657Z'
+suggestedTags: []
+sourceLink: 'wos://archive/69462679-d320-8323-bfcf-8b342dc972d6'
+sourcePlatform: chatgpt-export
+notes: ''
+status: draft
+category: '#Cat/PROMPT_DRAFT'
+tags:
+  - '#Stage/IDEA'
+slug: 轉換為md檔案
+projectId: b71213f0-a23e-4dbe-a553-65bb5d5bd0c1
+updatedAt: '2026-01-11T13:29:25.651Z'
+createdAt: '2026-01-10T13:07:53.657Z'
+---
+# 轉換為md檔案
+
+**Created**: 12/20/2025 12:30:51
+
+## AI
+
+已完成轉換，請下載 Markdown 檔案：  
+[Download the Markdown](sandbox:/mnt/data/component_architecture_and_steps.md)
+
+## AI
+
+已完成轉換，請下載 Markdown 檔案：  
+[Download the Markdown](sandbox:/mnt/data/database_schema_lowdb.md)
+

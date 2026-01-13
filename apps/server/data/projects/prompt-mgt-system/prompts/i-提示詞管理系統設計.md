@@ -1,0 +1,1793 @@
+---
+id: 4a6fc0bc-3f0c-479e-b25c-794bd637c576
+title: '[I]提示詞管理系統設計'
+importedAt: '2026-01-10T13:07:02.302Z'
+suggestedTags:
+  - coding
+sourceLink: 'wos://archive/69376164-a08c-8323-a7ca-98f23353401d'
+sourcePlatform: chatgpt-export
+notes: ''
+status: draft
+category: '#Cat/PROMPT_DRAFT'
+tags:
+  - '#Stage/IDEA'
+slug: i-提示詞管理系統設計
+projectId: f68f4160-bd20-4bc1-9fdf-a0d85b1c855b
+updatedAt: '2026-01-11T13:29:25.624Z'
+createdAt: '2026-01-10T13:07:02.302Z'
+---
+# [I]提示詞管理系統設計
+
+**Created**: 12/09/2025 07:38:13
+
+## User
+
+要跟你腦力激盪 討論一下
+我想要做一個提示詞管理系統 你會建議有哪些功能的話 會更方便
+我是要自己使用 沒有打算商品化
+我會給妳很多初部的想法 請你幫忙整理 並協助發想
+
+- 因為現在很多工作都是靠提示詞完成 所以想要有專案管理的概念 在還沒結案前 可能會需要常常找出來修改
+- 提示詞很多 要能夠直覺的分類 且方便查找
+- 主要在電腦版上面使用
+- 不打算呼叫API 就是在這個系統複製後貼到Gemini 或 ChatGPT
+- 提示詞很長 常常寫到一半 現在 我常常用記事本寫 要有一個方便且隨便就能寫的使用方式
+- 檔案以markdown格式儲存
+- 要有一區 是方便我作為剪貼簿的地方 會有幾句常常使用的句子 會用在提示詞中
+- 使用github作為版本控管
+- 方便管理 查找 是重點
+
+很重要 先不要實作 就是討論功能
+下個階段 你可以描述介面的設計 讓我可以想像完成的樣子
+
+## AI
+
+先直接幫你把這個「提示詞管理系統」當成一個正式專案來拆功能，我會先整理成幾個模組＋關鍵功能點，暫時完全不談實作與技術選型，只談「你用起來會不會順」。
+
+---
+
+## 一、整體概念與設計原則
+
+你現在的需求可以濃縮成幾個關鍵字：
+
+- 「專案導向」：提示詞是附屬在專案上的，不是散落的單一檔案。
+- 「草稿很多、會一直改」：需要很好用的草稿區 / Working Area。
+- 「查找便利」：分類、標籤、搜尋、版本記錄都要清楚。
+- 「Markdown＋GitHub」：檔案結構、命名規則要配合版控思維。
+- 「不呼叫 API」：重點在「寫得舒服、複製得順、找得到」。
+
+所以我會建議系統的功能用下面幾個模組來想：  
+【專案與結構】→【提示詞編輯】→【分類與搜尋】→【剪貼簿片語】→【版本＆Git】→【管理儀表板】。
+
+---
+
+## 二、專案與結構設計（Project / Prompt / Snippet 基本模型）
+
+### 1. 專案（Project）層級
+
+用途：對應你現在的「專案管理」概念，例如：
+- 客戶 A 的 RAG 專案
+- 某一門課程的行銷文案提示詞
+- 內部 Playwright 自動化測試 Agent 提示詞
+- 個人知識管理（Obsidian／筆記整理用 Prompt）
+
+建議在系統裡，每個專案至少有這些屬性：
+
+- 專案名稱
+- 專案簡述（這個專案在做什麼）
+- 專案狀態（進行中 / 已結案 / 暫停）
+- 使用的主要模型與平台（ChatGPT / Gemini / 其他）
+- 專案資料夾對應（對應 Git repo 或 repo 裡的子資料夾路徑）
+
+### 2. 提示詞（Prompt）層級
+
+每一個「提示詞」在系統裡是獨立的檔案（最終對應一個 markdown 檔），建議具備：
+
+- 名稱（例如：「RAG 專案說明簡報提示詞 v3」）
+- 所屬專案
+- 類型（系統提示、分析型、產碼型、改寫型、摘要型、問答型…）
+- 目前狀態（草稿 / 使用中 / 拋棄 / 歸檔）
+- 標籤（技術、領域、客戶名稱等）
+- 使用平台（ChatGPT / Gemini…）
+- 主體內容（markdown 文本）
+- 備註欄（記錄這個提示詞適用情境、注意事項）
+
+### 3. 片語／模組（Snippet / Block）層級
+
+對應你說的「剪貼簿」需求：常用的段落、句子、結構。
+
+- 片語名稱（例如：「角色設定：資深系統分析師」、「回覆格式：Markdown＋表格」）
+- 類別（角色設定 / 回覆格式 / 限制條件 / 語氣風格 / 安全要求…）
+- 內容（markdown 文本，可以是一段或一整個區塊）
+- 插入使用紀錄（最近使用時間 / 使用次數）
+
+---
+
+## 三、提示詞編輯與草稿流程（你取代記事本的核心）
+
+你現在「常用記事本隨便寫」這件事的本質是：「低摩擦成本的草稿區」。所以系統最好內建一個「工作區（Workspace）」概念。
+
+### 1. 工作區 / 草稿區
+
+建議有一個固定的「工作區」畫面：
+
+- 左側：專案 & 提示詞列表（讓你隨時切換目前在改哪一個）
+- 中間：主編輯器（編輯目前選取的提示詞）
+- 右側：剪貼簿片語列表（點一下就插入到游標位置）
+
+加上一個「快速草稿」功能：
+
+- 不一定要先選專案，你可以直接在「快速草稿」裡打字。
+- 決定這段有價值後，再「存成提示詞」並指派到某一個專案。
+- 類似「Inbox / 收件匣」概念，先寫再整理。
+
+### 2. 編輯體驗建議
+
+因為你會寫很長的提示詞，建議支援：
+
+- Markdown 語法高亮
+- 區塊折疊（例如可折疊「背景說明」「使用說明」段落）
+- 雙欄模式（左：提示詞，右：說明/備註/測試結果簡記）
+- 自動儲存草稿、防止關掉視窗內容遺失
+- 「一鍵複製」按鈕：  
+  - 複製「整份提示詞」
+  - 複製「去掉註解的最終版提示詞」（例如 YAML frontmatter 或說明段不複製）
+
+### 3. 提示詞結構建議（非功能，但跟 UI 有關）
+
+習慣上可以讓每個提示詞都大致有固定段落，例如：
+
+```text
+# 角色設定
+# 任務目標
+# 輸入格式說明
+# 回應格式要求
+# 特殊限制條件
+# 範例（可選）
+```
+
+系統端可以：
+
+- 預先提供「提示詞模板」：產碼用模板、RAG 用模板、簡報用模板、企劃書用模板等。
+- 新增提示詞時可以選一個模板，減少你每次重頭打段落標題的時間。
+
+---
+
+## 四、分類與查找（方便管理是重點）
+
+你的關鍵需求是「方便管理、查找」，我會把它拆成幾個層次：
+
+### 1. 結構化分類
+
+- 專案 → 提示詞 → 版本
+- 專案類型（例如：對外簡報、內部工具、客戶專案、教學課程）
+- 提示詞類型（產碼、需求釐清、網站雛形、RAG 調教、課程講義等）
+
+### 2. 標籤（Tags）
+
+標籤可以補強專案結構，例如：
+
+- 技術類標籤：RAG、Playwright、n8n、MCP、GitHub、Obsidian…
+- 領域標籤：電商、保險、物流、金融、內訓課程…
+- 使用平台：ChatGPT、Gemini、Claude 等。
+
+系統可提供：
+
+- 標籤快速篩選（多選 tags）
+- 常用標籤建議（根據你使用頻率）
+
+### 3. 搜尋功能
+
+對你來說，搜尋最好做到：
+
+- 全文搜尋（在內容中找關鍵字）
+- 欄位搜尋（依專案、標籤、類型、平台、狀態搜尋）
+- 支援 AND / OR 與簡單條件，例如：  
+  - [專案=AI 工作流課程] ＋ [標籤=簡報]  
+  - [平台=ChatGPT] ＋ [類型=產碼] ＋ [狀態=使用中]
+
+### 4. 快速查找清單
+
+幾個對你應該很有用的「預設視圖」：
+
+- 最近使用的提示詞（最近 7 / 30 天）
+- 我的書籤 / 常用提示詞（你手動標記為「常用」）
+- 進行中的專案下所有提示詞
+- 待整理草稿（工作區裡尚未歸檔的項目）
+
+---
+
+## 五、剪貼簿與常用片語區（Snippet Library）
+
+你明確提到需要一區「剪貼簿」，這我會單獨當成一個模組看待。
+
+### 1. 常用片語類別
+
+建議先定幾個大類：
+
+- 角色設定（例如：「你是一位資深系統分析顧問…」）
+- 任務說明開頭（例如：「當我提供會議紀錄或簡報時，請你…」）
+- 回應格式要求（例如：「請以 Markdown 提供，並包含表格欄位…」）
+- 限制條件（例如：「如果不確定，請明確說不知道…」）
+- 樣板段落（例如：RAG 使用規範、不要胡亂猜測、需要附上來源等）
+
+### 2. 使用模式
+
+- 右側固定顯示「常用片語清單」
+- 片語可快速搜尋（例如輸入「RAG」就只顯示相關片語）
+- 點擊片語 → 插入到目前游標位置
+- 可設定「片語熱鍵」或「短碼」（如輸入 `#role-rag` 自動展開成整段文字）
+
+### 3. 與提示詞的關係
+
+- 你可以只維護片語，提示詞裡引用片語內容（例如將片語當作「include 區塊」概念）
+- 或者保持簡單：片語只是在 UI 上快速貼上，檔案裡最後都是純文字。
+
+---
+
+## 六、版本管理與 GitHub 整合（以「人類好用」為主，不談技術）
+
+你已經決定用 GitHub 當版控，系統端要做的是「讓版控自然融入你的日常操作」。
+
+### 1. 檔案與目錄結構建議（概念層級）
+
+例如：
+
+```text
+/prompts/
+  /project-funding-inquiry/
+    01-overview/
+    02-spec-kit/
+    03-rag-setup/
+  /project-ai-workflow-course/
+  /snippets/
+```
+
+系統功能的觀點：
+
+- 每個專案對應一個資料夾
+- 每個提示詞對應一個 `.md` 檔
+- 常用片語對應獨立的 `snippets` 資料夾
+
+### 2. 版本觀念（系統內 vs Git）
+
+系統可以幫你：
+
+- 記錄「內部版本」：例如 v1、v2、v3（只是檔名或 frontmatter 註記）
+- 顯示 Git 狀態：
+  - 哪些檔案有修改尚未 commit
+  - 最近一次 commit 訊息與時間
+
+你仍然可以在 VS Code / Git 工具中操作 commit、branch、push。  
+但系統可以提供：
+
+- 顯示該提示詞最近幾次 commit 摘要（方便你回顧變更歷程）
+- 顯示目前所在分支名稱（例如 main / feature-RAG-improve）
+
+---
+
+## 七、管理儀表板與視圖（讓你一打開就有全局感）
+
+最後，是一個「總覽」的畫面，讓你像看專案管理工具一樣看提示詞世界狀況。
+
+### 1. 儀表板內容建議
+
+- 專案列表（進行中在最上面）
+- 每個專案底下：
+  - 提示詞數量
+  - 最近修改日期
+  - 標記為「關鍵提示詞」的清單
+- 全域視圖：
+  - 最近 7 天編輯過的提示詞
+  - 新增的片語
+  - 待整理草稿數量
+
+### 2. 專案內頁視圖
+
+進入某個專案後：
+
+- 上方：專案說明、目標、備註
+- 中間：提示詞列表（可依類型、狀態、最近使用排序）
+- 右側：與此專案相關的常用片語（可由你標註）
+
+---
+
+## 八、下一步建議（仍然不實作，只規劃）
+
+如果你覺得上述功能的大方向 OK，下一階段我可以幫你做的會是：
+
+- 用「畫面構成」的方式描述主介面（例如：儀表板畫面、單一專案畫面、提示詞編輯畫面、剪貼簿畫面）。
+- 把一兩個典型使用情境（例如「我要快速寫一個新的 RAG 提示詞」或「我要找回之前那個 TAIA 官網改版提示詞」）畫成流程＋介面操作步驟，讓你可以真的「看到自己怎麼用」。
+
+你可以先告訴我：  
+有沒有哪一塊是你覺得「完全命中痛點」或「還缺少一個很重要的東西」？  
+我就用那一塊的使用情境，當作下一步介面設計的主軸來規劃。
+
+## User
+
+八、下一步建議  這個我很需要 但先等一下
+
+你的建議與規劃 實在非常的好
+介面及功能的部分 我暫時沒有問題了
+
+現在需要的是"更方便"
+
+我想要用VS Code Insider 的Codex 來做一些更方便的事情
+例如 幫我把還沒歸檔的 上標籤 或是存到該去的資料夾等等 協助我判斷
+或是幫我做版本控管
+
+使用的情境是 我建置一個以網頁為介面的系統作為平常的使用
+在這網頁上所有輸入的資料都被存成markdown檔案
+我就可以在VS Code Indsider開啟這個專案 利用Codex對這個專案裡面所有的檔案進行編輯 例如 針對未歸檔的 提供標籤及歸檔到資料夾的建議 然後就可以在網頁上面 我點擊確認後 進行歸檔
+
+其他功能 再請你協助發想
+
+## AI
+
+了解，你現在要的是「在既有架構上再加一層 AI 協作」，讓 Codex 幫你做整理、標籤、歸檔、版本說明等「家務事」，而不是只當單純寫程式的工具。
+
+我先把你描述的整體使用情境整理一下，然後針對「可以交給 Codex 協助的功能」分幾大類幫你發想。
+
+---
+
+## 一、整體協作流程的基本概念
+
+先把你現在腦中的流程講清楚，後面功能比較好對齊：
+
+1. **平常使用：在網頁介面寫提示詞**
+   - 所有輸入都會被存成 markdown 檔案
+   - 這些檔案落在某個專案資料夾（Git repo）裡
+
+2. **整理／維護：在 VS Code Insiders + Codex 操作**
+   - 用 VS Code 開這個 repo
+   - 讓 Codex「看整個專案」，幫你做：
+     - 未歸檔的分類建議
+     - 標籤建議
+     - 應該搬到哪個資料夾
+     - 版本變更摘要、commit 訊息建議
+   - Codex 的輸出結果，再由你在網頁上「確認／套用」
+
+3. **精神重點**
+   - 「Web UI」是你每天用來寫、用來找的地方
+   - 「VS Code + Codex」是你定期開出來做：
+     - 清理
+     - 歸檔
+     - 重構
+     - 版本記錄
+   - 這兩邊透過 **markdown 檔案＋Git** 當介面
+
+下面的構想都基於這個精神來設計。
+
+---
+
+## 二、用 Codex 幫你做的「提示詞管理家務」
+
+### 1. 未歸檔提示詞：自動分類＋標籤＋資料夾建議
+
+你可以設計一個「未歸檔」區（例如 `/inbox/` 資料夾），Web UI 只是把新草稿丟進這裡。  
+接著在 VS Code 中，請 Codex 幫你做這幾件事：
+
+- 讀取 `/inbox/` 底下所有 `.md`
+- 對每一個檔案：
+  - 判斷「這是什麼類型的提示詞」（產碼 / 架構討論 / RAG / 簡報草稿…）
+  - 推論「應該屬於哪一個專案」（依內容出現的專案關鍵字、客戶名稱等）
+  - 建議 3~5 個標籤（技術、領域、用途）
+  - 建議「應該搬到哪個資料夾路徑」
+
+技術上可以採這種設計：
+
+- 每個檔案加上 YAML frontmatter（給 Web UI 看）  
+  例如：
+
+```yaml
+---
+status: inbox
+projectSuggestion: "project-ai-workflow-course"
+typeSuggestion: "RAG-調教提示詞"
+tagsSuggestion: ["RAG", "課程簡報", "n8n"]
+folderSuggestion: "projects/ai-workflow-course/prompts/rag/"
+---
+```
+
+- Codex 的任務就是：掃描 `/inbox/` → 寫進這些 `*Suggestion` 欄位  
+- Web UI 再提供「列表畫面」，讓你逐筆或批次：
+  - 勾選「採用建議」→ 把 status 改成 `active`、搬檔案到建議資料夾、把 `*Suggestion` 轉成正式欄位（`project` / `type` / `tags`）
+
+這樣 Codex 不直接搬檔案，只負責「分析與建議」，實際動作仍由 Web UI 完成。
+
+---
+
+### 2. 標籤與結構重整：讓 Codex 當「資訊架構顧問」
+
+隨著時間，標籤一定會亂：
+
+- 同樣意思的標籤：`RAG`、`rag`、`Rag`、`RAG-教學`
+- 類似但其實應該合併：`課程`、`內訓`、`講座`、`教學`
+
+你可以定期在 VS Code 啟動這類任務，讓 Codex 幫你：
+
+1. 掃描所有 frontmatter 裡的 `tags`
+2. 輸出一份「標籤整理報告」，例如：
+   - 建議：`課程`、`內訓`、`講座` → 統一為 `課程與內訓`
+   - 建議：新增一個「技術類」與「領域類」標籤分類（例如格式 `tech:Playwright`、`domain:保險`）
+
+3. 產出一個「標準化 mapping 表」，例如：
+
+```yaml
+tagNormalize:
+  - from: ["內訓", "講座", "教學"]
+    to: "課程與內訓"
+  - from: ["rag", "Rag"]
+    to: "RAG"
+```
+
+4. 再請 Codex 依 mapping 自動批次修改檔案中的 tags
+
+你後端 Web UI 就可以只讀「整理後的 tags」，不用管歷史混亂。
+
+---
+
+### 3. 「相似提示詞 / 重複提示詞」偵測
+
+長期下來，會出現幾種狀況：
+
+- 同一專案的提示詞，拚命複製貼上，變成 `v3-final`、`v3-final-new`、`v3-final-new2`
+- 不同專案有高度相似的基礎架構（例如「網站雛形.prompt.md」類的）
+
+Codex 可以做：
+
+1. 掃描全部 prompt 檔案內容，找出「高度相似」的檔案
+2. 產生一個「相似度報告」，例如：
+
+```text
+A: projects/ai-workflow-course/prompts/website-scaffold-v2.md
+B: projects/trade-knowledge-db/prompts/website-scaffold-v1.md
+建議：
+- 可以抽出為共用模板：`templates/website-scaffold-base.md`
+- 專案內只保留差異段落
+```
+
+3. 同時在 frontmatter 幫你標記：
+
+```yaml
+duplicateOf: "templates/website-scaffold-base.md"
+similarityScore: 0.87
+```
+
+Web UI 再提供一個「相似提示詞管理」畫面，讓你決定：
+
+- 合併成模板
+- 保留兩份，但標記清楚用途不同
+- 刪除其中一份
+
+---
+
+### 4. 將常用段落抽成 Snippet 候選（剪貼簿來源）
+
+你說的剪貼簿區，可以反向設計：  
+不是你手動剪，而是讓 Codex幫你找「值得變成剪貼簿」的段落。
+
+Codex 在 repo 裡可以做：
+
+1. 搜尋所有提示詞中，出現次數很多的固定句型或段落，例如：
+   - 「你是一位資深系統分析與網站規劃顧問…」
+   - 「請以 Markdown 格式輸出，並使用繁體中文…」
+
+2. 把這些常見段落整理成一份建議清單，輸出到一個檔案，例如：
+
+```markdown
+# Snippet 候選清單（由 Codex 分析產生）
+
+## 候選 1
+出現次數：18 次
+建議名稱：角色設定－資深系統分析顧問
+建議類別：角色設定
+
+內容：
+（段落內容）
+
+建議動作：
+- [ ] 建立為 snippet，ID：role-system-analyst
+- [ ] 忽略
+```
+
+3. Web UI 再把這份檔案呈現成操作畫面，你勾選「建立為 snippet」後：
+   - 在 `/snippets/` 資料夾自動建立 snippet 檔案
+   - 之後剪貼簿就有這個片語可用
+
+---
+
+## 三、版本控管相關：讓 Codex 當「Git 助理」
+
+你提到「幫我做版本控管」，我會切兩個層次來看：
+
+### 1. 對「單一提示詞」的版本說明
+
+每次你修改提示詞，其實有「意圖」，但 commit message 很少會寫這麼細。
+
+Codex 可以做：
+
+1. 比對同一檔案的前後版本（Git diff）
+2. 自動產生「人類可讀的變更說明」，例如：
+
+```markdown
+# 變更摘要（由 Codex 產生）
+
+- 調整角色設定描述，增加「熟悉跨部門專案協作」說明
+- 補充輸出格式要求，新增「需附上引用來源說明」條款
+- 刪除過時的 Gemini 限制說明，改為更一般性的 LLM 限制條款
+```
+
+3. 這段文字可以：
+   - 存進提示詞檔案的 frontmatter（例如 `changeLog`）
+   - 或直接給你當 commit message 的基礎（你只要微調）
+
+### 2. 對「一天或一個週期」的總結
+
+你可以設計一個慣例，例如：一天結束前，跑一個 Codex 任務：
+
+- 看今天有哪些檔案被修改
+- 產生一份「今日提示詞變更報告」，包含：
+  - 哪些專案被動到
+  - 每個專案底下，哪些提示詞有變、變了什麼
+  - 是否有新增 snippet、合併或刪除
+
+這份報告可以存在 `/reports/2025-12-09.md`，你要跟主管或自己回顧時，馬上有材料。
+
+---
+
+## 四、對 Web 介面的「互動橋接」構想
+
+你已經說明：  
+Codex 的建議會在 VS Code 產生；  
+實際「採用／套用」則在 Web 介面完成。
+
+可以刻幾種「標準橋接點」：
+
+1. **Suggestion 欄位**  
+   - Codex 只寫 frontmatter `*Suggestion` 欄位
+   - Web UI 讀這些欄位，呈現為「建議卡片」
+   - 你按「採用」→ Web UI 寫回正式欄位、搬檔案、清空 `Suggestion`
+
+2. **任務清單檔案（ai-todo.md）**
+   - Codex 把所有分析結果寫成「待處理項目」
+   - Web UI 把這檔案視覺化成任務看板
+   - 你在 Web 操作「完成／忽略」，Web 再反寫回 markdown
+
+3. **狀態欄位驅動 UI**
+   - 例如 `status: inbox | active | archived | deprecated`
+   - Codex 可以依內容更新 status（例如很久沒動而且內容過期，就建議改成 `deprecated`）
+   - Web UI 用 status 做顏色與區分，讓你視覺上更清楚哪些還「活著」
+
+---
+
+## 五、其他可以交給 Codex 幫忙的功能發想
+
+再補幾個你未提但非常適合 AI 協作的點：
+
+1. **提示詞一致性檢查（Prompt Linter）**
+   - 檢查：是否都說明「語言用繁體中文」、「需要來源引用」、「不確定要說不知道」等
+   - 找出不符合你標準流程的提示詞，列出清單讓你逐一修正或自動修正
+
+2. **多模型版本建議**
+   - Codex 可分析：這個提示詞是否對 ChatGPT／Gemini／Claude 有特別差異需求
+   - 建議拆成多檔或在 frontmatter 加註「最佳使用模型」
+   - Web UI 可以用圖示顯示「此提示詞推薦在 ChatGPT 使用」
+
+3. **自動生成「索引頁」與「導覽頁」**
+   - Codex 每隔一段時間產出：
+     - 專案索引：所有專案＋內含提示詞列表
+     - 標籤索引：每個標籤底下有哪些提示詞
+   - 這些索引頁可以在 Web UI 直接用作導覽主畫面
+
+4. **提示詞健康度評估**
+   - 例如依以下指標給每個提示詞打分：
+     - 是否有完整的段落結構（角色、任務、輸出格式…）
+     - 最近使用時間（可以透過 Web UI 回寫一個 `lastUsedAt`）
+     - 是否有版本說明
+   - Codex 可以產出一個「需要優化的提示詞清單」
+
+5. **從實際對話／輸出回饋提示詞**
+   - 如果你未來有把 ChatGPT 回應另存（例如存到某個 `logs/` 資料夾）
+   - Codex 可以幫你對照：
+     - 這個提示詞產出的結果是否符合預期
+     - 提出「改善建議」（例如：補充限制條件、加強錯誤處理說明）
+   - 再由你決定是否更新原提示詞
+
+---
+
+如果以上整體方向你覺得合理，  
+下一步我可以幫你做的是：
+
+- 選一兩個具體情境（例如「未歸檔整理」+「標籤統一」），
+- 把「VS Code + Codex 端要做什麼」＋「Web 介面要顯示什麼」畫成具體操作情境與畫面描述，  
+讓你能直接拿去當接下來實作與規格書的基礎。
+
+## User
+
+討論 兩件事情
+1. 主要是在電腦上執行的話 要用網頁版 還是應用程式
+2. 版控跟「VS Code + Codex 端要做什麼」 這兩個進階功能，有辦法直接在網頁版執行嗎
+
+## User
+
+提供
+把「VS Code + Codex 端要做什麼」＋「Web 介面要顯示什麼」畫成具體操作情境與畫面描述，
+
+## AI
+
+以下內容以「你在 Web 寫入 → 內容落成 Markdown 檔 → VS Code Insiders + Codex（OpenAI Codex IDE extension）做分析與產出建議 → 回到 Web 勾選採用並套用」為主軸，提供**具體操作情境**與**畫面描述**。其中「Codex IDE extension 可用於 VS Code Insiders」為官方文件所述。 citeturn0search12
+
+---
+
+## 共通前提（讓 VS Code 與 Web 能順利交接）
+
+### 檔案結構（概念）
+- `/inbox/`：未歸檔草稿（Web 新增預設都先進來）
+- `/projects/<project>/prompts/`：正式提示詞
+- `/snippets/`：常用片語（剪貼簿）
+- `/ops/`：Codex 產出的「建議／待套用操作」清單（供 Web 顯示與確認）
+- 所有內容以 `.md` 儲存，並用 YAML frontmatter 放「狀態／標籤／建議」
+
+### Frontmatter 欄位（概念）
+- `status: inbox | active | archived`
+- `project`, `type`, `tags[]`
+- `suggestions: { project, type, tags[], moveTo, confidence, rationale }`（Codex 寫入）
+- `audit: { lastReviewedAt, lastReviewedBy }`（Web 套用後回寫）
+
+---
+
+## 情境 A：未歸檔 Inbox 的「標籤＋歸檔資料夾」建議 → Web 一鍵採用
+
+### A1. VS Code + Codex 端要做什麼（操作情境）
+1. 你在 VS Code Insiders 開啟整個 repo（提示詞管理專案）。
+2. 透過 Codex（IDE extension）下指令：「掃描 `/inbox/` 底下所有 `.md`，為每篇產出 `suggestions`：建議專案、類型、tags、搬移路徑、信心分數與理由；並輸出 `/ops/triage_<date>.json`」。  
+   - Codex extension 的定位是協助在 IDE 內以自然語言處理專案內容與檔案。 citeturn0search12
+3. （可選）你也可以把這個動作包成 VS Code Task，讓你用 Command Palette 直接執行「Triage Inbox」。VS Code 內建 Tasks 與 Command Palette 的工作方式在官方文件有明確說明。 citeturn0search0turn0search9
+
+> Codex 產出的結果重點：**不要直接搬檔／改正式欄位**，只寫 `suggestions` 與輸出 `/ops/...json`，讓 Web 介面做「人類確認」。
+
+---
+
+### A2. Web 介面要顯示什麼（畫面描述）
+**畫面：Inbox Triage（未歸檔整理）**
+
+版面建議：三欄（左清單 / 中預覽 / 右建議與操作）
+
+1) **左欄：未歸檔清單（表格/列表）**
+- 欄位：勾選框、標題、最後修改時間、建議專案、信心分數、狀態旗標（例：⚠ 低信心、🟧 缺少標題、🟥 可能重複）
+- 篩選：信心分數區間、建議專案、建議類型、是否疑似重複
+
+2) **中欄：內容預覽（Read-only）**
+- 顯示該 `.md` 的主要內容（含段落結構）
+- 一個「差異預覽（Diff）」切換：  
+  - Before：原內容  
+  - After：若採用建議，frontmatter 會新增/更新哪些欄位（用高亮顯示）
+
+3) **右欄：Codex 建議卡（可編輯）**
+- 建議專案（下拉可改）
+- 建議類型（下拉可改）
+- 建議 tags（可增刪）
+- 建議歸檔路徑 moveTo（可改）
+- 理由（rationale）與關鍵字抽取（讓你判斷合理性）
+- 操作按鈕：
+  - **採用並歸檔**：套用 project/type/tags + 變更 `status` + 實際搬檔到 moveTo
+  - **僅採用標籤**：不搬檔，只補 tags/type
+  - **忽略建議**：保留在 inbox、清空 suggestions（或標記已審核）
+  - **標記需人工處理**：加上 `status: inbox` 但 `reviewFlag: manual`
+
+4) **批次操作（頁面上方工具列）**
+- 勾選多筆 → 套用建議（若信心 > 門檻，例如 0.8）
+- 勾選多筆 → 指派同一專案 / 加同一個 tag
+- 匯出「本次整理報告」（給你留存，或作為週報素材）
+
+---
+
+## 情境 B：版本控管輔助（變更摘要、Commit 訊息建議）→ Web 先審核文字，再回 VS Code 提交
+
+> 版本控管的 Git 操作本身建議仍在 VS Code 的 Source Control 進行（你已習慣），但「變更摘要/commit message」可由 Codex 產出，Web 負責讓你快速審核與定稿。VS Code 的整合 Git 介面、staging/commit 與可用 AI 產生 commit message 的流程在官方文件有描述。 citeturn0search1turn0search4
+
+### B1. VS Code + Codex 端要做什麼
+1. 你在 VS Code Source Control 檢視變更、挑選要 stage 的檔案。 citeturn0search1  
+2. 呼叫 Codex：  
+   - 讀取「已 stage 的變更 diff」  
+   - 產出：
+     - `commitMessageSuggestion`
+     - `changeSummary`（給人看的條列）
+     - `riskNotes`（例如：大範圍重構、標籤規則變更）
+   - 寫入 `/ops/commit_<date>.md`（或 `.json`）
+
+### B2. Web 介面要顯示什麼
+**畫面：Changes Review（變更審核）**
+- 區塊 1：本次變更檔案清單（依專案分組）
+- 區塊 2：建議 commit message（可編輯）
+- 區塊 3：變更摘要（可編輯，支援一鍵複製到週報/交付文件）
+- 區塊 4：風險與回退建議（例如「此批次大量搬檔，建議一個 commit 完成」）
+- 按鈕：
+  - **複製 commit message**
+  - **產生 Release Note/日報**（把摘要輸出到 `/reports/`）
+  - **標記可提交**（寫入 `ops/commit_...` 的狀態，供你回 VS Code 直接 commit）
+
+---
+
+## 情境 C：從既有提示詞中挖掘「常用片語 Snippet 候選」→ Web 一鍵升級成剪貼簿
+
+### C1. VS Code + Codex 端要做什麼
+1. Codex 掃描全 repo 的 prompts（或指定專案）。
+2. 找出高頻重複段落（例如角色設定、輸出格式、限制條款）。
+3. 輸出 `/ops/snippet_candidates.json`，每筆包含：
+   - `candidateName`
+   - `category`（角色/格式/限制/範本段落）
+   - `content`
+   - `frequency`
+   - `sourceRefs`（出現在哪些檔案）
+
+（此類「以自然語言在 IDE 內協助整理與重構」符合 Copilot/Codex 這類工具在 VS Code 的使用情境。 citeturn0search2turn0search8turn0search12）
+
+### C2. Web 介面要顯示什麼
+**畫面：Snippet Candidates（片語候選）**
+- 列表欄位：名稱、類別、出現次數、代表性來源、預覽
+- 點進去（右側抽屜/詳情）：
+  - 完整片語內容
+  - 出現位置清單（可點開原提示詞）
+  - 「建立為 Snippet」按鈕：
+    - 生成 `/snippets/<id>.md`
+    - 可選：自動加上 tags（例如 `snippet`, `role`, `format`）
+- 進階（可選）：
+  - 「建議替換策略」：只提示你哪些提示詞可以改成引用該 snippet（是否真的要“引用”取決於你要不要做 include 機制；此處只做建議）
+
+---
+
+## 情境 D：標籤規範化（tag 清理、合併、改名）→ Web 預覽影響範圍後套用
+
+### D1. VS Code + Codex 端要做什麼
+- Codex 盤點 repo 內所有 tags，提出合併/改名 mapping（例：`內訓/講座/教學 → 課程與內訓`），輸出 `/ops/tag_normalize.json`。
+
+### D2. Web 介面要顯示什麼
+**畫面：Tag Maintenance（標籤維護）**
+- 左：建議 mapping 清單（可編輯）
+- 中：影響範圍（哪些檔案會被改到、每個 tag 會變少/變多）
+- 右：套用策略
+  - 僅套用到 `status=active`
+  - 套用到全 repo
+  - 先產出 PR/變更報告（若你要走更嚴謹流程）
+
+---
+
+## 一張「端到端」流程圖（文字化）
+
+1. Web 新增草稿 → 寫入 `/inbox/*.md`  
+2. VS Code + Codex → 產出 `/ops/*.json` + 寫入檔案 `suggestions`  
+3. Web 顯示建議 → 你點「採用/忽略」  
+4. Web 套用變更（搬檔、寫 tags、改 status）→ Git 變更累積  
+5. VS Code Source Control → Codex 產出 commit message/摘要 → Web 審核 → 回 VS Code commit citeturn0search1turn0search12
+
+---
+
+如果你要我把上述「四個情境」再收斂成**你最先做就能立刻提升效率的 MVP**，我會建議優先順序是：
+1) 情境 A（Inbox Triage）  
+2) 情境 B（Commit/摘要）  
+3) 情境 C（Snippet 候選）  
+4) 情境 D（Tag 規範化）
+
+你接下來若要進入「下一步介面設計可視化」（你前面說很需要，但先等一下），我可以直接用這四個情境把 Web 的 4 個主要頁面畫成更具體的 wireframe 文字稿（含元件、欄位、按鈕命名、互動細節）。
+
+## User
+
+你提供的情境非常的好
+需要跟你討論
+1. VS Code + Codex 如果只是建議的話 確認是在Web介面 那應該要在Web 有一個管理的介面 做這些事情
+2. 版本控管 可以做在Web嗎 應該用git做版控對嗎 那如果想要方便比對的話 可以如何處理
+3. 提示詞系統裡面有分專案 有些會對應到我實體資料夾的專案 共用的檔案 你建議如何處理
+
+## User
+
+請把「VS Code + Codex 端要做什麼」
+另外獨立產生一份給AI Coding用的說明文件，請提供md檔案讓我下載
+
+## AI
+
+以下就你提的兩個議題，分別從「可行性、限制、維運成本」三個面向做結論式建議，並附上可查核的公開來源。
+
+---
+
+## 1) 主要在電腦上執行：建議用網頁版還是應用程式
+
+### A. 網頁版（含 PWA）適合的情境
+若你希望「日常寫提示詞」盡量低成本、好迭代、好部署（例如本機啟動或內部網站），網頁版／PWA 的優點是：
+
+- **安裝成本低、更新容易**：PWA 在桌面端可由 Chrome/Edge 安裝成「像 App 的獨立視窗」體驗，並可結合離線能力（Service Worker）。citeturn0search27turn0search15  
+- **可做到本機檔案讀寫（有條件）**：透過 File System Access API，可讓 Web App 在使用者授權後，讀寫本機檔案／資料夾並列舉目錄。citeturn0search7turn1search8  
+- **但權限/互動限制較多**：寫入權限通常需要「使用者手勢」觸發（例如點擊儲存）。對「大量批次歸檔／移動檔案」這類自動化會比較卡。citeturn1search2  
+- **瀏覽器支援差異**：桌面 PWA 安裝在 Chrome/Edge 支援完整，但 Safari/Firefox 桌面端的「安裝體驗」限制較多（常回到瀏覽器框架）。citeturn0search19turn0search27  
+
+**簡化判斷**：  
+- 你要的是「每天打開就能寫、複製貼到 ChatGPT/Gemini、資料在 Markdown」→ 網頁版/PWA 很合適。  
+- 你要的是「像檔案總管一樣隨時批次搬檔、重命名、整理」→ 網頁版能做，但權限互動與支援限制會增加設計複雜度。citeturn1search2turn1search8  
+
+### B. 桌面應用程式（Electron/Tauri 類）適合的情境
+若你希望「整理歸檔、版本控管、批次處理」也能在同一個介面一鍵完成，桌面 App 的優點是：
+
+- **對檔案系統/批次處理更直接**：不受瀏覽器沙箱與權限互動限制影響（例如批次移動、重命名、掃描整個 repo）。  
+- **但安全與治理要更嚴謹**：Electron 官方明確指出，若載入不受信任內容會有顯著風險；Desktop App 的安全設定（Node integration、sandbox、protocol 等）必須做對。citeturn0search2  
+
+**簡化判斷**：  
+- 你想把「Web UI + 整理/版控/自動化」全部整合到單一產品 → Desktop App 會更順，但維運/安全要求更高。citeturn0search2  
+
+### 我對你情境的建議（偏務實）
+你已經明確要用「VS Code Insiders + Codex」做進階整理，且日常主要是電腦端使用、資料是 Markdown、並不打算在系統內呼叫 LLM API。綜合之後：
+
+- **日常編寫介面：用網頁版（可選擇做成 PWA）**：最省成本、改版最快；本機或內網都可。citeturn0search27turn0search15  
+- **進階整理/歸檔/版控：放在 VS Code 端做（你已選定的方向）**：因為這些動作在桌面環境對檔案與 Git 操作最穩、限制最少。  
+- **若你未來強烈想“一個介面全包”**：再考慮把網頁包成 Desktop App（等需求成熟再做，避免過早承擔安全與維運成本）。citeturn0search2  
+
+---
+
+## 2) 版控與「VS Code + Codex 端要做什麼」能否直接在網頁版執行？
+
+結論是：**可以做一部分，但要看你所謂的「直接」是指「在瀏覽器內完成」還是「從網頁觸發，交給桌面/雲端環境執行」。**
+
+### 2.1 版本控管（Git / Commit）在網頁版：三種可行路徑
+
+#### 路徑 1：把 repo 放在 GitHub，網頁直接用 GitHub API 做「提交」
+如果你的 Markdown 最終都在 GitHub repo（或至少有同步上去），網頁可以透過 GitHub REST API 做「Create/Update file」並提交變更，形成 commit。citeturn1search0turn1search20  
+這類做法本質是「用 API 操作 repo」，不是在本機跑 git。
+
+**優點**：瀏覽器可行、對使用者端不需 git 環境。  
+**限制**：你需要設計授權（token/權限），且屬於「直接對遠端版控」。citeturn1search0  
+
+#### 路徑 2：瀏覽器內跑 Git（isomorphic-git 等）＋搭配瀏覽器檔案系統能力
+技術上可以在瀏覽器使用 JavaScript Git 實作（例如 isomorphic-git）。citeturn0search3turn0search9  
+但它在瀏覽器會碰到兩個硬限制：
+
+- **瀏覽器沒有傳統檔案系統存取**，所以需要「自帶檔案系統抽象」（BYOFS）並配合 File System Access API 或 IndexedDB 等。citeturn0search9turn1search8  
+- **遠端 clone/push 的網路限制（CORS / same-origin）**：isomorphic-git 官方文件提到，因同源政策，瀏覽器端 clone/push 常需要 proxy，且 GitHub 的 git clone endpoint 在瀏覽器端會受限。citeturn0search0turn0search25  
+
+**結論**：可行但工程複雜，且對你「以方便為目標」通常不是最划算路徑。
+
+#### 路徑 3：用「雲端 VS Code」在網頁完成 Git（例如 Codespaces）
+若你願意用雲端開發環境，Codespaces 在瀏覽器可提供較完整的開發/執行/Git 指令體驗。citeturn1search26turn1search14  
+但這代表你的工作區在雲端，不一定符合你想「本機 Markdown + 本機流程」的偏好。
+
+---
+
+### 2.2 「VS Code + Codex 端要做什麼」能否直接搬到網頁版？
+
+這裡要分兩層：
+
+#### (1) “VS Code 的能力”搬到 Web：有天然限制
+VS Code for the Web / web extensions 在瀏覽器沙箱中運行，**不能使用 Node.js API**，因此在「本機檔案操作、執行本機腳本、呼叫本機 Git」等面向會受限。citeturn1search1  
+（這也是為什麼 vscode.dev 類的體驗會強調是輕量編輯，完整能力通常要靠 Codespaces 或桌面端。）citeturn1search21turn1search18  
+
+#### (2) “Codex 的能力”搬到 Web：取決於它是否能在瀏覽器端被呼叫
+你目前的構想是「Codex 在 VS Code Insiders 協助分析專案內檔案、給標籤/歸檔建議」。這類工作通常需要：
+
+- 讀整個 workspace（多檔案掃描）
+- 批次改 frontmatter / 生成建議報告
+- 可能還要搬檔案、改路徑、更新索引
+
+在瀏覽器端要做到同等體驗，通常會落入兩個選項之一：
+
+1) **網頁端自己做分析（規則/索引/全文檢索）**：可行，但不再是「用 Codex 幫你做」，而是你在 Web 實作一套分類/建議邏輯。  
+2) **網頁端呼叫某個後端/本機代理去跑分析**：這就會變成「有 API / 有服務」，與你原本「不打算呼叫 API」的原則衝突（除非你接受只在本機跑的 local service）。
+
+**因此，就你當前原則與目標而言，最穩的方案是：**  
+- **網頁負責呈現與確認（Approve）**  
+- **VS Code + Codex 負責產生建議與修改草稿（Propose/Prepare）**  
+- 兩邊以 Markdown frontmatter 與「建議檔（report）」做交握（例如 `*_suggestion` 欄位、或產出 `inbox-review.md`）。  
+這樣既不需要在 Web 端取得高權限，也不需要在 Web 端硬做 Git/批次檔案處理。
+
+---
+
+## 建議你採用的最終定位（對齊“更方便”）
+- **網頁版：專注「寫得舒服、找得到、點一下就複製」**（必要時做成 PWA）citeturn0search27turn0search15  
+- **VS Code + Codex：專注「批次整理、標籤建議、歸檔建議、版本摘要/commit 建議」**  
+- **版控：仍以本機 git 為主；若你未來要“純網頁版控”，優先考慮 GitHub API 提交，而不是在瀏覽器重建完整 git 能力**citeturn1search0turn0search25  
+
+若你同意這個定位，我下一步可以直接把「網頁與 VS Code 交握的資料格式（frontmatter 欄位設計、建議檔格式、狀態流轉）」寫成一份規格，讓你後續不論是用 Codex、Copilot、或純腳本，都能穩定自動化。
+
+## AI
+
+```python
+from pathlib import Path
+
+md = """# VS Code Insiders + Codex 端自動化工作說明（給 AI Coding 使用）
+
+> 目的：在 **VS Code Insiders** 內，使用 **Codex**（或等效的 AI Coding Agent）對整個提示詞專案 Repo 進行「分析、產出建議、產出操作清單」；**不直接**替你做不可逆操作（搬檔、刪檔、覆寫正式欄位），由 Web 介面進行人工確認後再套用。
+
+---
+
+## 1. 總體原則（務必遵守）
+
+1. **只做「建議」與「可逆」變更**  
+   - Codex 端可寫入：`suggestions`、報表檔（`/ops/*.json|md`）、索引檔（`/indexes/*.md`）  
+   - Codex 端避免直接做：搬移檔案、刪除檔案、批次改寫正式 tags/project/type（除非是明確的「Normalize 任務」且先產出影響清單）
+
+2. **每次任務都要輸出可審核的結果檔**  
+   - 輸出到 `/ops/`：JSON（供 Web UI 讀取）＋可讀的 Markdown 報表（供人工快速檢閱）
+
+3. **所有建議要附：信心分數（0~1）＋理由（rationale）＋依據關鍵字（evidence）**  
+   - 讓 Web UI 可以依門檻批次採用（例如 `confidence >= 0.80`）
+
+4. **任何批次改寫（例如 tag normalize）都必須：先產出 mapping 與影響範圍 → 再套用**  
+   - 兩階段：`plan`（只產出計畫）→ `apply`（套用）
+
+---
+
+## 2. Repo 基本約定（路徑與資料流）
+
+### 2.1 目錄結構（建議）
+- `/inbox/`：未歸檔草稿（Web 新增預設寫入）
+- `/projects/<project>/prompts/`：正式提示詞
+- `/snippets/`：常用片語（剪貼簿）
+- `/ops/`：Codex 任務輸出（Web UI 讀取）
+- `/reports/`：日報/週報/變更摘要（可選）
+- `/indexes/`：索引頁（可選，如 tags index、project index）
+
+### 2.2 Markdown Frontmatter（建議格式）
+每個 prompt 檔案最上方可含 YAML frontmatter：
+
+```yaml
+---
+id: "p_20251224_001"          # 可由 Web 產生
+status: "inbox"               # inbox | active | archived | deprecated
+project: null                 # Web 套用後寫入正式 project
+type: null                    # Web 套用後寫入正式 type
+tags: []                      # Web 套用後寫入正式 tags
+suggestions:
+  project: "ai-workflow-course"
+  type: "RAG-調教"
+  tags: ["RAG","課程簡報","n8n"]
+  moveTo: "projects/ai-workflow-course/prompts/rag/"
+  confidence: 0.86
+  rationale: "內容包含...關鍵字...且與專案描述一致"
+  evidence: ["AI Workflow","n8n","RAG","課程"]
+audit:
+  lastReviewedAt: null
+  lastReviewedBy: null
+---
+```
+
+> Codex 端主要寫入 `suggestions`（或更新其中部分欄位），正式欄位由 Web UI 套用。
+
+---
+
+## 3. 任務清單（VS Code + Codex 端要做什麼）
+
+本節每一項任務都定義：**輸入範圍**、**輸出檔案**、**資料格式**、**成功判準**。
+
+---
+
+### 任務 A：Inbox Triage（未歸檔草稿分析與歸檔建議）
+
+**目的**：掃描 `/inbox/*.md`，為每個檔案產出「專案/類型/tags/歸檔路徑」建議，並寫入 frontmatter 的 `suggestions` 與輸出 `/ops/triage_YYYYMMDD.json`。
+
+#### A1. 輸入
+- 目錄：`/inbox/`
+- 參照資料（用來判斷專案與資料夾）：
+  - `/projects/**/README.md`（如有）
+  - `/projects/**/project.meta.json`（如有）
+  - `/indexes/project_index.md`（如有）
+
+#### A2. 輸出
+- `/ops/triage_YYYYMMDD.json`
+- `/ops/triage_YYYYMMDD.md`（人類可讀報表）
+- 可選：更新每篇 inbox 檔案 frontmatter 的 `suggestions`
+
+#### A3. JSON Schema（建議）
+```json
+{
+  "runId": "triage_20251224_001",
+  "createdAt": "2025-12-24T13:00:00+08:00",
+  "scope": { "path": "inbox/", "count": 12 },
+  "items": [
+    {
+      "path": "inbox/xxx.md",
+      "id": "p_20251224_001",
+      "title": "…",
+      "suggestions": {
+        "project": "ai-workflow-course",
+        "type": "RAG-調教",
+        "tags": ["RAG","課程簡報","n8n"],
+        "moveTo": "projects/ai-workflow-course/prompts/rag/",
+        "confidence": 0.86,
+        "rationale": "…",
+        "evidence": ["…","…"]
+      },
+      "flags": ["low_confidence", "missing_title"]
+    }
+  ]
+}
+```
+
+#### A4. 成功判準
+- 每個 inbox 檔案都有一筆 `items[]`
+- 每筆皆含 `confidence`、`rationale`、`moveTo`
+- Markdown 報表中，至少列出：檔名、建議專案、建議路徑、信心、理由摘要
+
+#### A5. Codex 指令模板（給 AI Agent 的 Prompt）
+- 「掃描 `inbox/` 下所有 markdown，根據內容推論 project/type/tags，並依 `projects/` 既有結構建議 moveTo。輸出 JSON 與 Markdown 報表到 `ops/`，並在各檔 frontmatter 填入 suggestions（不改正式欄位）。」
+
+---
+
+### 任務 B：Changes Summary & Commit Assistant（變更摘要與 Commit 訊息建議）
+
+**目的**：對本次變更（建議以 **staged changes** 為準）產出：
+- 建議 commit message
+- 變更摘要（release note 風格）
+- 風險註記（例如大量搬檔、標籤規則改動）
+
+#### B1. 輸入
+- Git staged diff（或 working tree diff）
+- 目錄結構與命名規範（可從 `/README.md` 或 `/indexes/` 取得）
+
+#### B2. 輸出
+- `/ops/commit_YYYYMMDD_HHMM.md`
+- `/ops/commit_YYYYMMDD_HHMM.json`（可選）
+
+#### B3. Markdown 內容（建議）
+```md
+# Commit 建議（commit_20251224_1305）
+
+## 建議 Commit Message
+feat(triage): add suggestions for 12 inbox prompts
+
+## 變更摘要
+- …
+- …
+
+## 風險與注意事項
+- …
+
+## 受影響專案
+- …
+```
+
+#### B4. 成功判準
+- 提供 1~3 個 commit message 方案（保守/標準/精簡）
+- 摘要需可直接貼入週報
+
+#### B5. Codex 指令模板
+- 「讀取 staged diff，產出 commit message 建議（3 版本）＋變更摘要＋風險註記，輸出到 `ops/commit_*.md`。」
+
+---
+
+### 任務 C：Snippet Candidates Mining（常用片語候選挖掘）
+
+**目的**：從 prompts 內容找出高頻重複段落，生成候選 snippets 清單，供 Web UI 一鍵建立到 `/snippets/`。
+
+#### C1. 輸入
+- 範圍：
+  - 預設：`/projects/**/prompts/**/*.md`
+  - 可選：只掃指定專案
+
+#### C2. 輸出
+- `/ops/snippet_candidates_YYYYMMDD.json`
+- `/ops/snippet_candidates_YYYYMMDD.md`
+
+#### C3. JSON Schema（建議）
+```json
+{
+  "runId": "snip_20251224_001",
+  "items": [
+    {
+      "candidateName": "角色設定－資深系統分析顧問",
+      "category": "role",
+      "content": "…",
+      "frequency": 18,
+      "sourceRefs": ["projects/.../a.md#L1-L20", "projects/.../b.md#L5-L25"],
+      "confidence": 0.82
+    }
+  ]
+}
+```
+
+#### C4. 成功判準
+- 每筆候選至少附 2 個 `sourceRefs`
+- `content` 需為可直接用作 snippet 的完整段落
+
+#### C5. Codex 指令模板
+- 「掃描 prompts，找出重複段落（角色設定/輸出格式/限制條款優先），為每段落產生候選 snippet（名稱、類別、內容、出現次數、來源），輸出到 ops。」
+
+
+---
+
+### 任務 D：Similarity / Duplicate Detection（相似提示詞與重複偵測）
+
+**目的**：找出高度相似的 prompts，協助你判斷是否要：
+- 合併為模板
+- 抽出 snippet
+- 標記 `duplicateOf`
+
+#### D1. 輸入
+- `/projects/**/prompts/**/*.md`
+
+#### D2. 輸出
+- `/ops/similarity_YYYYMMDD.json`
+- `/ops/similarity_YYYYMMDD.md`
+
+#### D3. JSON Schema（建議）
+```json
+{
+  "pairs": [
+    {
+      "a": "projects/x/prompts/a.md",
+      "b": "projects/y/prompts/b.md",
+      "similarity": 0.87,
+      "overlapSummary": ["共有段落：角色設定…", "共同限制條款…"],
+      "recommendation": "extract_template",
+      "confidence": 0.78
+    }
+  ]
+}
+```
+
+#### D4. 成功判準
+- 列出 Top N（例如 30 組）最相似 pair
+- 每組含 recommendation 與 overlapSummary
+
+
+---
+
+### 任務 E：Tag Normalization Plan & Apply（標籤規範化：先計畫、再套用）
+
+**目的**：解決標籤漂移（大小寫、同義字、重複概念）。
+
+#### E1. 兩階段流程
+1) **Plan**：只盤點 tags、提出 mapping、計算影響範圍  
+2) **Apply**：依 mapping 批次修改檔案 tags（可選：只改 `status=active`）
+
+#### E2. 輸入
+- 所有含 `tags:` frontmatter 的檔案（prompts + snippets）
+
+#### E3. 輸出
+- Plan：
+  - `/ops/tag_normalize_plan_YYYYMMDD.json`
+  - `/ops/tag_normalize_plan_YYYYMMDD.md`
+- Apply：
+  - `/ops/tag_normalize_apply_YYYYMMDD.md`（記錄實際改動）
+  - 可選：`/reports/tag_normalize_YYYYMMDD.md`
+
+#### E4. Plan JSON Schema（建議）
+```json
+{
+  "mapping": [
+    { "from": ["內訓","講座","教學"], "to": "課程與內訓", "confidence": 0.84 }
+  ],
+  "impact": [
+    { "tag": "內訓", "files": 12 },
+    { "tag": "講座", "files": 5 }
+  ]
+}
+```
+
+#### E5. 成功判準
+- Plan 報表列出：
+  - mapping 清單
+  - 影響檔案數
+  - 風險提示（例如「此 mapping 可能過度合併」）
+
+#### E6. Codex 指令模板
+- Plan：「盤點全 repo tags，提出 normalize mapping 與影響範圍，輸出 plan（不改檔）。」
+- Apply：「依已確認的 mapping 批次更新 tags，先產出 diff 概要，再實際改檔並輸出 apply 報告。」
+
+
+---
+
+### 任務 F：Prompt Linter（提示詞品質規範檢查）
+
+**目的**：檢查是否符合你固定的提示詞結構與規範（例如：需包含角色/任務/輸出格式、需有資料來源要求、需用繁體中文等）。
+
+#### F1. 輸入
+- `/projects/**/prompts/**/*.md`
+
+#### F2. 輸出
+- `/ops/lint_YYYYMMDD.json`
+- `/ops/lint_YYYYMMDD.md`
+
+#### F3. Lint 規則（示例）
+- 缺少「回覆格式」段落
+- 缺少「不知道就說不知道」限制
+- 缺少「需附資料來源」要求
+- 語氣不符合（可選）
+- 標題過長/命名不一致（可選）
+
+#### F4. 成功判準
+- 報表能列出：
+  - 問題類型統計
+  - 每個檔案的違規項目與建議修正句
+
+
+---
+
+### 任務 G：Index Generator（索引頁生成）
+
+**目的**：生成 Web UI 或人工瀏覽用索引檔。
+
+#### G1. 輸入
+- prompts/snippets 的 frontmatter（project/type/tags/status）
+
+#### G2. 輸出
+- `/indexes/project_index.md`
+- `/indexes/tag_index.md`
+- `/indexes/inbox_queue.md`（可選）
+
+#### G3. 成功判準
+- 索引可被 Web UI 讀取或直接用 Markdown 瀏覽
+- 每個條目含路徑與簡短摘要（可選）
+
+
+---
+
+## 4. VS Code 任務編排（建議）
+
+> 實作方式不限定，但建議讓每個任務有清楚入口，便於你在 VS Code Command Palette 一鍵觸發。
+
+### 4.1 建議的 Task 名稱（概念）
+- `Triage Inbox`
+- `Generate Commit Summary`
+- `Mine Snippet Candidates`
+- `Detect Similar Prompts`
+- `Tag Normalize (Plan)`
+- `Tag Normalize (Apply)`
+- `Prompt Lint`
+- `Generate Indexes`
+
+### 4.2 產物一致性
+- 所有任務的輸出都必須落在 `/ops/`（或 `/indexes/`）並帶日期時間戳
+- Web UI 只需要監控這些輸出檔案即可呈現建議
+
+---
+
+## 5. Web 介面對接注意事項（給 AI Coding 的交接點）
+
+1. **Web UI 讀取 `/ops/*.json` 作為「建議清單」資料來源**
+2. **Web UI 採用後，才做：**
+   - 寫入正式 frontmatter：`project/type/tags/status`
+   - 搬移檔案到 `suggestions.moveTo`
+   - 回寫 `audit.lastReviewedAt/By`
+3. 建議保留 `suggestions` 作為歷史參考，或採用後清空（由你決策）
+
+---
+
+## 6. 驗收清單（你可以用來檢查 AI 產出的品質）
+
+- [ ] 任務 A：`ops/triage_*.json` 存在，且每筆含 confidence/rationale/evidence/moveTo
+- [ ] 任務 B：`ops/commit_*.md` 可直接複製 commit message 與週報摘要
+- [ ] 任務 C：候選 snippets 具體可用，且附來源
+- [ ] 任務 E：normalize 必須先 plan 後 apply，且 plan 有 impact
+- [ ] 所有輸出都有日期戳、runId、scope
+
+---
+
+## 7. 建議的最小可用版本（MVP 順序）
+
+1. **Inbox Triage（任務 A）**：立即解決「未歸檔」痛點  
+2. **Commit Summary（任務 B）**：降低版本控管心智負擔  
+3. **Snippet Candidates（任務 C）**：建立剪貼簿資產池  
+4. **Tag Normalize Plan/Apply（任務 E）**：長期維護品質  
+5. **Lint + Index（任務 F/G）**：規模變大後再上
+
+"""
+path = Path("/mnt/data/VSCode_Codex_Workplan_for_PromptHub.md")
+path.write_text(md, encoding="utf-8")
+str(path)
+```
+
+## AI
+
+以下依你列的三點逐一回覆，並把「VS Code + Codex（產出建議）」與「Web（人類確認＋落地執行）」的分工明確化，讓整體變成可長期運作的流程。
+
+---
+
+## 1) Codex 只給建議、Web 做確認：Web 確實需要「管理介面」
+
+你的判斷是對的：**只要決策與落地在 Web，就必須有一個可審核、可追蹤、可回滾的管理介面**，不然 Codex 的建議會散落在檔案裡，很快就變成新一輪混亂。
+
+### 建議的最小可行管理介面（Web 管理台）
+核心概念：把 Codex 產出的「建議」當成一種 **Ops Queue（待處理工單）**。
+
+**(A) Ops Queue 清單頁（Triage / Review Inbox）**
+- 來源：`/ops/*.json`（或每個 prompt frontmatter 的 `suggestions`）
+- 欄位：檔名、摘要、建議專案、建議 tags、建議 moveTo、信心分數、產生時間、狀態（待審核/已採用/已忽略/需人工）
+- 篩選：信心分數、建議專案、tags、是否含搬檔、是否疑似重複
+
+**(B) 單筆審核頁（Decision Panel）**
+- 左：原文預覽（Markdown）
+- 中：差異預覽（採用後會寫入哪些 frontmatter、是否搬路徑）
+- 右：建議卡（可微調）＋按鈕：
+  - 採用（Apply）
+  - 部分採用（只採 tags / 只改 status）
+  - 忽略（Ignore）
+  - 標記人工（Manual）
+
+**(C) Audit Log（稽核與回溯）**
+- Web 每次採用/忽略，都寫入：
+  - `audit.lastReviewedAt / lastReviewedBy`
+  - `decision: applied|ignored|manual`
+  - （可選）`decisionNote`
+- 這樣你後續做 Git 比對會很清楚「這次整理是人做的決策」。
+
+> 這套管理介面的價值在於：Codex 只負責產出「建議」、Web 負責「決策＋落地」，責任鏈清晰，且流程可審核。
+
+補充：Codex 在 IDE 內「看 repo、協助整理/修改」的定位可參考 OpenAI 的 Codex IDE extension 說明。 citeturn0search12turn0search20
+
+---
+
+## 2) 版本控管可以做在 Web 嗎？應該用 Git 做版控嗎？如何方便比對？
+
+### 2.1 是否應該用 Git：建議「是」，而且是主幹
+你的資料是 Markdown 檔，Git 非常適合：Git 是分散式版本控制系統（DVCS），可以完整保留歷史、支援分支、回滾。 citeturn0search1turn0search4  
+Git 內部也屬於內容定址（content-addressable）的物件儲存設計，對「長文字檔的版本快照與追蹤」很有利。 citeturn0search7
+
+### 2.2 版本控管「做在 Web」可行，但我建議分兩層
+**層級 A：Web 只做「檢視與比對」；Commit/Push 仍在 VS Code**
+- 最低風險、最容易落地，且你已習慣在 VS Code 做 Git 操作。
+- VS Code 內建 Source Control、staging、diff 檢視、commit 與同步遠端（push/pull）。 citeturn0search0turn0search3
+
+**層級 B：Web 也能做「Commit/Push」，但要承擔權限與安全成本**
+- 技術上可透過 GitHub REST API 建立/修改 repo 內容、或直接操作 commits。 citeturn0search5turn0search11turn0search15  
+- 但你需要在 Web 端管理 Token/權限、處理分支策略、衝突、憑證安全；對「個人自用」通常不划算。
+
+### 2.3 你要的「方便比對」：建議 Web 做這 4 種比較最有用
+1) **同一份 Prompt：比較任兩個版本**
+- UI：版本下拉（commit / tag / 里程碑）→ 顯示 unified diff
+- 目的：快速回答「我改了什麼」而不是去翻 Git log
+
+2) **提示詞 vs 模板（Template / Snippet）**
+- UI：左是專案版 prompt，右是 shared template/snippet
+- 目的：維持一致性、避免模板演進後專案版落後
+
+3) **批次整理前後（Ops Apply 前後）**
+- UI：顯示「本次採用的 ops 對哪些檔案造成哪些變更」
+- 目的：你在 Web 做的決策，要能一眼回顧（也利於 commit message）
+
+4) **語意比對（可選，但很實用）**
+- 不是 Git diff（逐行），而是「段落層級的變更摘要」：
+  - 角色設定變更
+  - 輸出格式變更
+  - 限制條款新增/刪除
+- 這層可以交給 Codex 產生摘要，VS Code 端或 Web 端皆可；但 Git 仍是事實來源。
+
+> 建議落地策略：**Git 負責真實版本；Web 做 “Prompt-centric diff 視角”**，把 Git 的 diff 轉成你看得懂、好決策的介面。
+
+---
+
+## 3) 專案對應實體資料夾、又有共用檔案：建議怎麼處理？
+
+這裡我給你三種成熟做法，按「自用」優先度排序。
+
+### 方案 A（最推薦）：單一 Repo（Monorepo）＋ Shared Library
+適用：你主要是自己用，重點是「找得到、改得動、別重複」。
+
+**結構建議**
+- `/projects/<project>/prompts/…`
+- `/shared/snippets/…`
+- `/shared/templates/…`
+- `/inbox/…`
+- `/ops/…`
+
+**共用檔案使用策略**
+- Shared 檔案只維護一份（Single Source of Truth）
+- 專案要客製時，用 **Copy-on-write**：
+  - 預設引用 shared（Web UI 可顯示「來源：shared/template-x」）
+  - 一旦專案需要改，才複製一份到專案資料夾，並在 frontmatter 記錄 `derivedFrom`
+
+好處：不需要處理跨 repo 同步問題，Git history 也集中。
+
+### 方案 B：共用庫獨立 Repo（shared-prompts repo）＋ 各專案 repo 以 Submodule / Subtree 引入
+適用：你確定未來 shared 會被多個完全不同 repo 使用，且需要清楚版本邊界。
+
+- 優點：shared 可獨立版本化、可被多專案引用
+- 代價：submodule/subtree 管理門檻較高（尤其你要在 Web 端顯示與操作時）
+
+如果你沒有「多人協作與跨 repo 共用」的硬需求，通常不建議一開始就走這條。
+
+### 方案 C：專案在實體資料夾外部、提示詞 repo 只存「指標檔」
+適用：你有一些「既存專案資料夾」不想搬進提示詞 repo（例如公司既有 repo/資料夾），但又想在提示詞系統中建立關聯。
+
+做法：
+- 在提示詞 repo 的專案資料夾內放一個 `project.link.md`，內容記錄：
+  - 外部路徑（本機路徑/Repo URL）
+  - 專案簡述
+  - 相關 prompts/snippets 對應
+- Web UI 顯示「開啟外部資料夾」的捷徑（對你本機而言是 UX 提升）
+
+好處：不碰外部資料夾的結構；缺點：外部內容不在同一套 Git history 內（但你的 prompts 還是在）。
+
+---
+
+## 綜合建議（結論）
+1. **Web 一定要有 Ops 管理介面**：因為你把「決策與落地」放在 Web，Web 就必須提供審核、批次採用、稽核紀錄。  
+2. **版本控管建議以 Git 為主幹**，Web 先做「檢視與比對」即可；commit/push 仍由 VS Code 進行最穩。VS Code 的 staging/commit/diff 工作流已相當成熟。 citeturn0search0turn0search3  
+3. **共用檔案建議先用 Monorepo + shared library + copy-on-write**：對你「個人自用、管理查找為重」的目標最貼合。
+
+如果你同意以上方向，我下一步可以把「Web 管理介面」具體化成 2～3 個頁面規格（欄位、按鈕、狀態流、批次操作），並把 Ops JSON/Frontmatter 的欄位定義成你可以直接交給 Codex/AI coding 工具使用的規格稿。
+
+## AI
+
+from pathlib import Path
+
+md = """# VS Code Insiders + Codex 端自動化工作說明（給 AI Coding 使用）
+
+> 目的：在 **VS Code Insiders** 內，使用 **Codex**（或等效的 AI Coding Agent）對整個提示詞專案 Repo 進行「分析、產出建議、產出操作清單」；**不直接**替你做不可逆操作（搬檔、刪檔、覆寫正式欄位），由 Web 介面進行人工確認後再套用。
+
+---
+
+## 1. 總體原則（務必遵守）
+
+1. **只做「建議」與「可逆」變更**  
+   - Codex 端可寫入：`suggestions`、報表檔（`/ops/*.json|md`）、索引檔（`/indexes/*.md`）  
+   - Codex 端避免直接做：搬移檔案、刪除檔案、批次改寫正式 tags/project/type（除非是明確的「Normalize 任務」且先產出影響清單）
+
+2. **每次任務都要輸出可審核的結果檔**  
+   - 輸出到 `/ops/`：JSON（供 Web UI 讀取）＋可讀的 Markdown 報表（供人工快速檢閱）
+
+3. **所有建議要附：信心分數（0~1）＋理由（rationale）＋依據關鍵字（evidence）**  
+   - 讓 Web UI 可以依門檻批次採用（例如 `confidence >= 0.80`）
+
+4. **任何批次改寫（例如 tag normalize）都必須：先產出 mapping 與影響範圍 → 再套用**  
+   - 兩階段：`plan`（只產出計畫）→ `apply`（套用）
+
+---
+
+## 2. Repo 基本約定（路徑與資料流）
+
+### 2.1 目錄結構（建議）
+- `/inbox/`：未歸檔草稿（Web 新增預設寫入）
+- `/projects/<project>/prompts/`：正式提示詞
+- `/snippets/`：常用片語（剪貼簿）
+- `/ops/`：Codex 任務輸出（Web UI 讀取）
+- `/reports/`：日報/週報/變更摘要（可選）
+- `/indexes/`：索引頁（可選，如 tags index、project index）
+
+### 2.2 Markdown Frontmatter（建議格式）
+每個 prompt 檔案最上方可含 YAML frontmatter：
+
+```yaml
+---
+id: "p_20251224_001"          # 可由 Web 產生
+status: "inbox"               # inbox | active | archived | deprecated
+project: null                 # Web 套用後寫入正式 project
+type: null                    # Web 套用後寫入正式 type
+tags: []                      # Web 套用後寫入正式 tags
+suggestions:
+  project: "ai-workflow-course"
+  type: "RAG-調教"
+  tags: ["RAG","課程簡報","n8n"]
+  moveTo: "projects/ai-workflow-course/prompts/rag/"
+  confidence: 0.86
+  rationale: "內容包含...關鍵字...且與專案描述一致"
+  evidence: ["AI Workflow","n8n","RAG","課程"]
+audit:
+  lastReviewedAt: null
+  lastReviewedBy: null
+---
+```
+
+> Codex 端主要寫入 `suggestions`（或更新其中部分欄位），正式欄位由 Web UI 套用。
+
+---
+
+## 3. 任務清單（VS Code + Codex 端要做什麼）
+
+本節每一項任務都定義：**輸入範圍**、**輸出檔案**、**資料格式**、**成功判準**。
+
+---
+
+### 任務 A：Inbox Triage（未歸檔草稿分析與歸檔建議）
+
+**目的**：掃描 `/inbox/*.md`，為每個檔案產出「專案/類型/tags/歸檔路徑」建議，並寫入 frontmatter 的 `suggestions` 與輸出 `/ops/triage_YYYYMMDD.json`。
+
+#### A1. 輸入
+- 目錄：`/inbox/`
+- 參照資料（用來判斷專案與資料夾）：
+  - `/projects/**/README.md`（如有）
+  - `/projects/**/project.meta.json`（如有）
+  - `/indexes/project_index.md`（如有）
+
+#### A2. 輸出
+- `/ops/triage_YYYYMMDD.json`
+- `/ops/triage_YYYYMMDD.md`（人類可讀報表）
+- 可選：更新每篇 inbox 檔案 frontmatter 的 `suggestions`
+
+#### A3. JSON Schema（建議）
+```json
+{
+  "runId": "triage_20251224_001",
+  "createdAt": "2025-12-24T13:00:00+08:00",
+  "scope": { "path": "inbox/", "count": 12 },
+  "items": [
+    {
+      "path": "inbox/xxx.md",
+      "id": "p_20251224_001",
+      "title": "…",
+      "suggestions": {
+        "project": "ai-workflow-course",
+        "type": "RAG-調教",
+        "tags": ["RAG","課程簡報","n8n"],
+        "moveTo": "projects/ai-workflow-course/prompts/rag/",
+        "confidence": 0.86,
+        "rationale": "…",
+        "evidence": ["…","…"]
+      },
+      "flags": ["low_confidence", "missing_title"]
+    }
+  ]
+}
+```
+
+#### A4. 成功判準
+- 每個 inbox 檔案都有一筆 `items[]`
+- 每筆皆含 `confidence`、`rationale`、`moveTo`
+- Markdown 報表中，至少列出：檔名、建議專案、建議路徑、信心、理由摘要
+
+#### A5. Codex 指令模板（給 AI Agent 的 Prompt）
+- 「掃描 `inbox/` 下所有 markdown，根據內容推論 project/type/tags，並依 `projects/` 既有結構建議 moveTo。輸出 JSON 與 Markdown 報表到 `ops/`，並在各檔 frontmatter 填入 suggestions（不改正式欄位）。」
+
+---
+
+### 任務 B：Changes Summary & Commit Assistant（變更摘要與 Commit 訊息建議）
+
+**目的**：對本次變更（建議以 **staged changes** 為準）產出：
+- 建議 commit message
+- 變更摘要（release note 風格）
+- 風險註記（例如大量搬檔、標籤規則改動）
+
+#### B1. 輸入
+- Git staged diff（或 working tree diff）
+- 目錄結構與命名規範（可從 `/README.md` 或 `/indexes/` 取得）
+
+#### B2. 輸出
+- `/ops/commit_YYYYMMDD_HHMM.md`
+- `/ops/commit_YYYYMMDD_HHMM.json`（可選）
+
+#### B3. Markdown 內容（建議）
+```md
+# Commit 建議（commit_20251224_1305）
+
+## 建議 Commit Message
+feat(triage): add suggestions for 12 inbox prompts
+
+## 變更摘要
+- …
+- …
+
+## 風險與注意事項
+- …
+
+## 受影響專案
+- …
+```
+
+#### B4. 成功判準
+- 提供 1~3 個 commit message 方案（保守/標準/精簡）
+- 摘要需可直接貼入週報
+
+#### B5. Codex 指令模板
+- 「讀取 staged diff，產出 commit message 建議（3 版本）＋變更摘要＋風險註記，輸出到 `ops/commit_*.md`。」
+
+---
+
+### 任務 C：Snippet Candidates Mining（常用片語候選挖掘）
+
+**目的**：從 prompts 內容找出高頻重複段落，生成候選 snippets 清單，供 Web UI 一鍵建立到 `/snippets/`。
+
+#### C1. 輸入
+- 範圍：
+  - 預設：`/projects/**/prompts/**/*.md`
+  - 可選：只掃指定專案
+
+#### C2. 輸出
+- `/ops/snippet_candidates_YYYYMMDD.json`
+- `/ops/snippet_candidates_YYYYMMDD.md`
+
+#### C3. JSON Schema（建議）
+```json
+{
+  "runId": "snip_20251224_001",
+  "items": [
+    {
+      "candidateName": "角色設定－資深系統分析顧問",
+      "category": "role",
+      "content": "…",
+      "frequency": 18,
+      "sourceRefs": ["projects/.../a.md#L1-L20", "projects/.../b.md#L5-L25"],
+      "confidence": 0.82
+    }
+  ]
+}
+```
+
+#### C4. 成功判準
+- 每筆候選至少附 2 個 `sourceRefs`
+- `content` 需為可直接用作 snippet 的完整段落
+
+#### C5. Codex 指令模板
+- 「掃描 prompts，找出重複段落（角色設定/輸出格式/限制條款優先），為每段落產生候選 snippet（名稱、類別、內容、出現次數、來源），輸出到 ops。」
+
+---
+
+### 任務 D：Similarity / Duplicate Detection（相似提示詞與重複偵測）
+
+**目的**：找出高度相似的 prompts，協助你判斷是否要：
+- 合併為模板
+- 抽出 snippet
+- 標記 `duplicateOf`
+
+#### D1. 輸入
+- `/projects/**/prompts/**/*.md`
+
+#### D2. 輸出
+- `/ops/similarity_YYYYMMDD.json`
+- `/ops/similarity_YYYYMMDD.md`
+
+#### D3. JSON Schema（建議）
+```json
+{
+  "pairs": [
+    {
+      "a": "projects/x/prompts/a.md",
+      "b": "projects/y/prompts/b.md",
+      "similarity": 0.87,
+      "overlapSummary": ["共有段落：角色設定…", "共同限制條款…"],
+      "recommendation": "extract_template",
+      "confidence": 0.78
+    }
+  ]
+}
+```
+
+#### D4. 成功判準
+- 列出 Top N（例如 30 組）最相似 pair
+- 每組含 recommendation 與 overlapSummary
+
+---
+
+### 任務 E：Tag Normalization Plan & Apply（標籤規範化：先計畫、再套用）
+
+**目的**：解決標籤漂移（大小寫、同義字、重複概念）。
+
+#### E1. 兩階段流程
+1) **Plan**：只盤點 tags、提出 mapping、計算影響範圍  
+2) **Apply**：依 mapping 批次修改檔案 tags（可選：只改 `status=active`）
+
+#### E2. 輸入
+- 所有含 `tags:` frontmatter 的檔案（prompts + snippets）
+
+#### E3. 輸出
+- Plan：
+  - `/ops/tag_normalize_plan_YYYYMMDD.json`
+  - `/ops/tag_normalize_plan_YYYYMMDD.md`
+- Apply：
+  - `/ops/tag_normalize_apply_YYYYMMDD.md`（記錄實際改動）
+  - 可選：`/reports/tag_normalize_YYYYMMDD.md`
+
+#### E4. Plan JSON Schema（建議）
+```json
+{
+  "mapping": [
+    { "from": ["內訓","講座","教學"], "to": "課程與內訓", "confidence": 0.84 }
+  ],
+  "impact": [
+    { "tag": "內訓", "files": 12 },
+    { "tag": "講座", "files": 5 }
+  ]
+}
+```
+
+#### E5. 成功判準
+- Plan 報表列出：
+  - mapping 清單
+  - 影響檔案數
+  - 風險提示（例如「此 mapping 可能過度合併」）
+
+#### E6. Codex 指令模板
+- Plan：「盤點全 repo tags，提出 normalize mapping 與影響範圍，輸出 plan（不改檔）。」
+- Apply：「依已確認的 mapping 批次更新 tags，先產出 diff 概要，再實際改檔並輸出 apply 報告。」
+
+---
+
+### 任務 F：Prompt Linter（提示詞品質規範檢查）
+
+**目的**：檢查是否符合你固定的提示詞結構與規範（例如：需包含角色/任務/輸出格式、需有資料來源要求、需用繁體中文等）。
+
+#### F1. 輸入
+- `/projects/**/prompts/**/*.md`
+
+#### F2. 輸出
+- `/ops/lint_YYYYMMDD.json`
+- `/ops/lint_YYYYMMDD.md`
+
+#### F3. Lint 規則（示例）
+- 缺少「回覆格式」段落
+- 缺少「不知道就說不知道」限制
+- 缺少「需附資料來源」要求
+- 語氣不符合（可選）
+- 標題過長/命名不一致（可選）
+
+#### F4. 成功判準
+- 報表能列出：
+  - 問題類型統計
+  - 每個檔案的違規項目與建議修正句
+
+---
+
+### 任務 G：Index Generator（索引頁生成）
+
+**目的**：生成 Web UI 或人工瀏覽用索引檔。
+
+#### G1. 輸入
+- prompts/snippets 的 frontmatter（project/type/tags/status）
+
+#### G2. 輸出
+- `/indexes/project_index.md`
+- `/indexes/tag_index.md`
+- `/indexes/inbox_queue.md`（可選）
+
+#### G3. 成功判準
+- 索引可被 Web UI 讀取或直接用 Markdown 瀏覽
+- 每個條目含路徑與簡短摘要（可選）
+
+---
+
+## 4. VS Code 任務編排（建議）
+
+> 實作方式不限定，但建議讓每個任務有清楚入口，便於你在 VS Code Command Palette 一鍵觸發。
+
+### 4.1 建議的 Task 名稱（概念）
+- `Triage Inbox`
+- `Generate Commit Summary`
+- `Mine Snippet Candidates`
+- `Detect Similar Prompts`
+- `Tag Normalize (Plan)`
+- `Tag Normalize (Apply)`
+- `Prompt Lint`
+- `Generate Indexes`
+
+### 4.2 產物一致性
+- 所有任務的輸出都必須落在 `/ops/`（或 `/indexes/`）並帶日期時間戳
+- Web UI 只需要監控這些輸出檔案即可呈現建議
+
+---
+
+## 5. Web 介面對接注意事項（給 AI Coding 的交接點）
+
+1. **Web UI 讀取 `/ops/*.json` 作為「建議清單」資料來源**
+2. **Web UI 採用後，才做：**
+   - 寫入正式 frontmatter：`project/type/tags/status`
+   - 搬移檔案到 `suggestions.moveTo`
+   - 回寫 `audit.lastReviewedAt/By`
+3. 建議保留 `suggestions` 作為歷史參考，或採用後清空（由你決策）
+
+---
+
+## 6. 驗收清單（你可以用來檢查 AI 產出的品質）
+
+- [ ] 任務 A：`ops/triage_*.json` 存在，且每筆含 confidence/rationale/evidence/moveTo
+- [ ] 任務 B：`ops/commit_*.md` 可直接複製 commit message 與週報摘要
+- [ ] 任務 C：候選 snippets 具體可用，且附來源
+- [ ] 任務 E：normalize 必須先 plan 後 apply，且 plan 有 impact
+- [ ] 所有輸出都有日期戳、runId、scope
+
+---
+
+## 7. 建議的最小可用版本（MVP 順序）
+
+1. **Inbox Triage（任務 A）**：立即解決「未歸檔」痛點  
+2. **Commit Summary（任務 B）**：降低版本控管心智負擔  
+3. **Snippet Candidates（任務 C）**：建立剪貼簿資產池  
+4. **Tag Normalize Plan/Apply（任務 E）**：長期維護品質  
+5. **Lint + Index（任務 F/G）**：規模變大後再上
+"""
+
+path = Path("/mnt/data/VSCode_Codex_Workplan_for_PromptHub.md")
+path.write_text(md, encoding="utf-8")
+path
+
+## AI
+
+已為你獨立產出「VS Code + Codex 端要做什麼」的 AI Coding 說明文件（Markdown）。
+
+[下載 Markdown 檔案：VSCode_Codex_Workplan_for_PromptHub.md](sandbox:/mnt/data/VSCode_Codex_Workplan_for_PromptHub.md)
+

@@ -1,12 +1,15 @@
 ---
 id: 230a7d8d-4cab-4b01-bdfc-fd94d255d11c
-type: AUTOMATION
-status: in_progress
-description: Auto-created by Antigravity
-createdAt: '2026-01-11T09:06:42.812Z'
-updatedAt: '2026-01-11T09:06:42.812Z'
 slug: file-search-automation
-title: 檔案查找與轉換流程
+title: 玉山-人資自動化
+createdAt: '2026-01-11T09:06:42.812Z'
+updatedAt: '2026-01-11T13:41:14.105Z'
+summary: ''
+status: in_progress
+type: AUTOMATION
+tags: []
+archived: false
+description: Auto-created by Antigravity
 ---
 # 檔案查找與轉換流程
 
