@@ -9,6 +9,11 @@
     "chat.tools.terminal.autoApprove": {
         ".specify/scripts/bash/": true,
         ".specify/scripts/powershell/": true
-    }
+    },
+    "gemini.contextFiles": [
+        ".gemini/instructions.md",
+        "knowledge-base/patterns/*.md"
+    ],
+    "gemini.chat.temperature": 0.7,
+    "gemini.chat.customPrompt": "請參考 .gemini/instructions.md 中 Wilson 的分類偏好來回答問題。"
 }
-
