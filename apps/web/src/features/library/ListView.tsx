@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { PromptEntity, ProjectEntity } from '@pah/contracts';
 import { FileText, Folder, Plus } from 'lucide-react';
-import { MOCK_PROMPTS, MOCK_PROJECTS } from '../../data/mockData';
 import { Badge, StatusBadge } from '../../ui/PrototypeBadges';
 import { formatDate } from '../../utils/date';
 
 type ViewMode = 'list' | 'board';
+import { getPrompts, getProjects } from './api';
 
 interface ListViewProps {
   viewMode: ViewMode;
@@ -13,8 +13,6 @@ interface ListViewProps {
   onSelectPrompt: (prompt: PromptEntity | null) => void;
   selectedPromptId: string | null;
 }
-
-const USE_MOCK_DATA = true; // Set to false to use real API
 
 export function ListView({
   viewMode,
@@ -27,38 +25,30 @@ export function ListView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch prompts from server or use mock data
+  // Fetch prompts from server
   useEffect(() => {
-    const fetchPrompts = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-
-        if (USE_MOCK_DATA) {
-          // Use mock data for visual comparison
-          await new Promise(resolve => setTimeout(resolve, 300)); // Simulate loading
-          setPrompts(MOCK_PROMPTS);
-          setProjects(MOCK_PROJECTS);
-        } else {
-          // Use real API
-          const response = await fetch('http://localhost:3001/api/prompts');
-          const projResponse = await fetch('http://localhost:3001/api/projects');
-
-          if (!response.ok || !projResponse.ok) {
-            throw new Error(`Failed to fetch data`);
-          }
-          const data = await response.json();
-          const projData = await projResponse.json();
-          setPrompts(data);
-          setProjects(projData);
-        }
+        const [promptsData, projectsData] = await Promise.all([
+          getPrompts(),
+          getProjects()
+        ]);
+        setPrompts(promptsData);
+        setProjects(projectsData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load prompts');
+        setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPrompts();
+    fetchData();
+
+    // Listen for global updates (from SidePanel)
+    const handleEntityChange = () => fetchData();
+    window.addEventListener('entity-change', handleEntityChange);
+    return () => window.removeEventListener('entity-change', handleEntityChange);
   }, []);
 
   // Filter prompts by search query

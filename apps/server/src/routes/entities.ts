@@ -376,20 +376,57 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
         ...existing,
         ...request.body,
         id, // ID cannot be changed
-        projectId: existing.projectId, // ProjectId cannot be changed
         updatedAt: new Date().toISOString(),
       };
+
+      // Handle projectId change (Move prompt to another project)
+      let currentProjectId = existing.projectId;
+      let currentProjectSlug = project.slug;
+
+      if (request.body.projectId && request.body.projectId !== existing.projectId) {
+        // Find new project
+        const newProject = scanResult.projects.find((p) => p.id === request.body.projectId);
+        if (!newProject) {
+          return reply.code(400).send({ error: 'Target project not found' });
+        }
+
+        // Move file
+        const oldPath = getPromptFilePath(rootPath, currentProjectSlug, existing.slug);
+        const newPath = getPromptFilePath(rootPath, newProject.slug, existing.slug); // Assuming slug doesn't change simultaneously yet
+
+        // Ensure destination doesn't exist (unless overwrite is desired? For now, fail if exists)
+        try {
+          await fs.access(newPath);
+          return reply.code(409).send({ error: 'Prompt with this slug already exists in target project' });
+        } catch {
+          // OK
+        }
+
+        // Prepare directory if needed (should exist if project exists)
+        const newDir = path.dirname(newPath);
+        await fs.mkdir(newDir, { recursive: true });
+
+        await fs.rename(oldPath, newPath);
+
+        // Update references for subsequent operations
+        updated.projectId = newProject.id;
+        currentProjectId = newProject.id;
+        currentProjectSlug = newProject.slug;
+      }
 
       // Validate against schema
       PromptFrontmatterSchema.parse(updated);
 
-      // Handle slug rename
-      let filePath = getPromptFilePath(rootPath, project.slug, existing.slug);
+      // Handle slug rename (if slug changed, or if just moved)
+      // Note: If we moved above, the file is at newPath (with existing.slug).
+      // If request.body.slug is also different, we need to rename AGAIN from the new location.
+
+      let filePath = getPromptFilePath(rootPath, currentProjectSlug, existing.slug);
 
       if (request.body.slug && request.body.slug !== existing.slug) {
         // Rename file if slug changed
-        const oldPath = getPromptFilePath(rootPath, project.slug, existing.slug);
-        const newPath = getPromptFilePath(rootPath, project.slug, request.body.slug);
+        const oldPath = filePath;
+        const newPath = getPromptFilePath(rootPath, currentProjectSlug, request.body.slug);
 
         await fs.rename(oldPath, newPath);
         filePath = newPath;

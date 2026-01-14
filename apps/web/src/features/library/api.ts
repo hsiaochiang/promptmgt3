@@ -19,7 +19,7 @@ export async function getProjects(options: GetProjectsOptions = {}): Promise<Pro
     if (options.status) params.set('status', options.status);
     if (options.archived !== undefined) params.set('archived', String(options.archived));
 
-    const response = await fetch(`${API_BASE}/projects?${params}`);
+    const response = await fetch(`${API_BASE}/projects?${params}`, { cache: 'no-store' });
     if (!response.ok) {
         throw new Error('Failed to fetch projects');
     }
@@ -88,7 +88,7 @@ export async function getPrompts(options: GetPromptsOptions = {}): Promise<Promp
     if (options.project) params.set('project', options.project);
     if (options.archived !== undefined) params.set('archived', String(options.archived));
 
-    const response = await fetch(`${API_BASE}/prompts?${params}`);
+    const response = await fetch(`${API_BASE}/prompts?${params}`, { cache: 'no-store' });
     if (!response.ok) {
         throw new Error('Failed to fetch prompts');
     }
