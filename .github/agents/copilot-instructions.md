@@ -35,3 +35,20 @@ TypeScript 5.x（前後端共用），Node.js 20 LTS: Follow standard convention
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+<!-- Added by Copilot: Wilson classification rules summary -->
+## Wilson 分類規則（摘要）
+
+以下為從已分類提示詞樣本（初次 52 筆）歸納出的初版規則摘要，供 Copilot Chat / 分類建議使用：
+
+- 規則 #001（HIGH）：標題/內容含「業務、客戶、拜訪、商機、會議」 → biz-operations
+- 規則 #002（HIGH）：含 Git、DDD、程式碼、架構、教學 → code-best-practices
+- 規則 #003（HIGH）：含前端、UI、UX、React、style、Notion → wos-frontend
+- 規則 #004（HIGH）：含 RFP、標案、招標、政府機關 → gov-rfp-helper
+- 規則 #005（MEDIUM-HIGH）：含 Gemini/Copilot/GPT 或平台整合 → gen-ai-guidelines
+- 規則 #006（MEDIUM）：含檔案轉換、流程自動化、Power Automate → file-search-automation / hackmd-automation
+- 規則 #007（MEDIUM）：個人備註 / Web clip / 翻譯 → personal-notes
+- 規則 #008（MEDIUM-HIGH）：銀行、資金、詢價 → fin-inquiry-bot
+
+參考完整規則與案例：knowledge-base/patterns/wilson-classification-rules.md
+
