@@ -13,14 +13,15 @@ export const PromptFrontmatterSchema = z.object({
   title: z.string().min(1),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-  
+
   // Optional fields with defaults
   status: z.enum(['draft', 'needs_review', 'ready', 'deprecated']).default('draft'),
   priority: z.enum(['high', 'medium', 'low']).default('medium'),
   tags: z.array(z.string()).default([]),
   archived: z.boolean().default(false),
   notes: z.string().default(''),
-  
+  category: z.string().default(''),
+
   // Optional fields
   sourceLink: z.string().optional(),
 });

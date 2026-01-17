@@ -71,8 +71,6 @@ export function HistoryView() {
   };
 
   const handleRestore = async (versionId: string) => {
-    if (!confirm('Are you sure you want to restore this version? Current changes will be overwritten.')) return;
-
     try {
       setRestoringId(versionId);
       const res = await fetch(`/api/versions/${versionId}/restore`, {

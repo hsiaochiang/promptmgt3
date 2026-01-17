@@ -1,19 +1,18 @@
 ---
 id: eed224b1-62d4-4e89-808f-86f6e83943f8
-title: Git 教學與範例
-importedAt: '2026-01-10T13:07:10.520Z'
-suggestedTags: []
-sourceLink: 'wos://archive/69570515-d534-8322-a5ef-1b63a230264a'
-sourcePlatform: chatgpt-export
-notes: ''
-status: draft
-category: '#Cat/PROMPT_DRAFT'
-tags:
-  - '#Stage/IDEA'
 slug: git-教學與範例
 projectId: 4fe6bce0-4b07-43b6-a108-3febb7183d6a
-updatedAt: '2026-01-11T13:29:25.686Z'
+title: Git 教學與範例
 createdAt: '2026-01-10T13:07:10.520Z'
+updatedAt: '2026-01-16T15:00:04.248Z'
+status: needs_review
+priority: medium
+tags:
+  - '#Stage/IDEA'
+archived: false
+notes: ''
+category: '#Cat/PROMPT_DRAFT'
+sourceLink: 'wos://archive/69570515-d534-8322-a5ef-1b63a230264a'
 ---
 # Git 教學與範例
 
@@ -208,4 +207,3 @@ git branch -D spike/ui-board-component
 
 如果你願意，我可以再用同樣的教學方式回答下一題：  
 **「分支要怎麼命名才不會亂、怎麼搭配 PR 規範（含 commit message 規範）」**，並給你一套可直接貼進專案 README 的規範模板。
-

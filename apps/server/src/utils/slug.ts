@@ -33,7 +33,9 @@ export function normalizeSlug(input: string): string {
     .replace(/^-+|-+$/g, '');
 
   if (!slug) {
-    throw new Error('Slug normalization resulted in empty string');
+    // Fallback for non-ASCII titles (e.g. Chinese) that result in empty slug
+    // Use a timestamp-based slug
+    return `untitled-${Date.now().toString(36)}`;
   }
 
   return slug;

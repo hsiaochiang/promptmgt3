@@ -73,9 +73,10 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
       await fs.writeFile(filePath, fileContent, 'utf-8');
 
       const entity: InboxItemEntity = {
-        ...frontmatter,
         rawContent
       };
+
+      invalidateCache(); // Invalidate cache after creating inbox item
 
       reply.code(201).send(entity);
     } catch (error) {
@@ -157,6 +158,9 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
       }
 
       await fs.rm(targetPath, { force: true });
+
+      invalidateCache(); // Invalidate cache after deleting inbox item
+
       reply.code(200).send({ message: 'Deleted' });
 
     } catch (error) {
@@ -237,6 +241,8 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
           // ATOMIC: Only delete from inbox AFTER verification succeeded
           await fs.rm(targetPath, { force: true });
 
+          invalidateCache(); // Invalidate cache after promotion
+
           reply.code(200).send({
             id,
             ...frontmatter,
@@ -258,6 +264,8 @@ export async function registerInboxRoutes(server: FastifyInstance, rootPath: str
       }
 
       reply.code(200).send({ id, ...frontmatter, rawContent: newBody });
+
+      invalidateCache(); // Invalidate cache after updating inbox item
 
     } catch (error) {
       reply.code(500).send({ error: 'Failed to update inbox item', message: String(error) });

@@ -1,16 +1,18 @@
 ---
 id: 7a6c856b-bad5-4a47-a781-6089a141b6d9
 slug: a-w
-projectId: f4833e48-44ed-40fc-8484-b3da4f19ad3e
+projectId: 230a7d8d-4cab-4b01-bdfc-fd94d255d11c
 title: Shadow IT 風險解析
+createdAt: '2026-01-10T13:08:05.960Z'
+updatedAt: '2026-01-14T13:50:06.484Z'
 status: draft
 priority: medium
 tags:
   - '#Stage/IDEA'
-notes: ''
 archived: false
-createdAt: '2026-01-10T13:08:05.960Z'
-updatedAt: '2026-01-11T12:34:14.525Z'
+notes: ''
+link: ''
+category: ''
 ---
 # Shadow IT 風險解析
 

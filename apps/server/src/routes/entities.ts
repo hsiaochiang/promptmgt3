@@ -15,9 +15,10 @@ import {
   getPromptFilePath,
 } from '../fs-layout/index.js';
 import {
+  scanWorkspace,
   writeProjectFile,
   writePromptFile,
-  scanWorkspace,
+  invalidateCache,
 } from '../indexing/index.js';
 import { moveEntityToTrash } from '../trash/trashStore.js';
 import { normalizeSlug } from '../utils/slug.js';
@@ -79,7 +80,7 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
     Body: Partial<ProjectEntity>;
   }>('/api/projects', async (request, reply) => {
     try {
-      const { title, summary, status, tags, type } = request.body;
+      const { title, summary, status, tags, type, category } = request.body;
 
       if (!title) {
         return reply.code(400).send({ error: 'Title is required' });
@@ -103,6 +104,7 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
         createdAt: now,
         updatedAt: now,
         body: request.body.body || '',
+        category: category || '',
       };
 
       // Validate against schema
@@ -120,6 +122,9 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
       }
 
       await writeProjectFile(filePath, project);
+
+      // Invalidate cache
+      invalidateCache();
 
       return reply.code(201).send(project);
     } catch (error) {
@@ -171,6 +176,9 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
 
       await writeProjectFile(filePath, updated);
 
+      // Invalidate cache
+      invalidateCache();
+
       return updated;
     } catch (error) {
       reply.code(500).send({
@@ -208,6 +216,11 @@ export async function registerProjectRoutes(server: FastifyInstance, rootPath: s
         originalRelativePath,
         attachmentsEntityType: 'project',
       });
+
+
+
+      // Invalidate cache
+      invalidateCache();
 
       return item;
     } catch (error) {
@@ -289,7 +302,7 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
     Body: Partial<PromptEntity>;
   }>('/api/prompts', async (request, reply) => {
     try {
-      const { title, projectId, body, status, priority, tags, notes } = request.body;
+      const { title, projectId, body, status, priority, tags, notes, category } = request.body;
 
       if (!title || !projectId) {
         return reply.code(400).send({ error: 'Title and projectId are required' });
@@ -322,6 +335,7 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
         createdAt: now,
         updatedAt: now,
         body: body || '',
+        category: category || '',
       };
 
       // Validate against schema
@@ -339,6 +353,9 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
       }
 
       await writePromptFile(filePath, prompt);
+
+      // Invalidate cache
+      invalidateCache();
 
       return reply.code(201).send(prompt);
     } catch (error) {
@@ -434,6 +451,9 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
 
       await writePromptFile(filePath, updated);
 
+      // Invalidate cache
+      invalidateCache();
+
       return updated;
     } catch (error) {
       reply.code(500).send({
@@ -477,6 +497,11 @@ export async function registerPromptRoutes(server: FastifyInstance, rootPath: st
         originalRelativePath,
         attachmentsEntityType: 'prompt',
       });
+
+
+
+      // Invalidate cache
+      invalidateCache();
 
       return item;
     } catch (error) {

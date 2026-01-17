@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { TrashEntityType, TrashRestoreRequest } from '@pah/contracts';
 import { listTrash, purgeTrashItem, restoreTrashItem } from '../trash/trashStore.js';
+import { invalidateCache } from '../indexing/index.js';
 
 export async function registerTrashRoutes(server: FastifyInstance, rootPath: string) {
   server.get<{
@@ -20,6 +21,7 @@ export async function registerTrashRoutes(server: FastifyInstance, rootPath: str
   }>('/api/trash/:trashId', async (request, reply) => {
     const ok = await purgeTrashItem({ rootPath, trashId: request.params.trashId });
     if (!ok) return reply.code(404).send({ error: 'Not Found' });
+    invalidateCache(); // Invalidate cache after purge
     return reply.code(204).send();
   });
 
@@ -35,6 +37,9 @@ export async function registerTrashRoutes(server: FastifyInstance, rootPath: str
 
     if (out.notFound) return reply.code(404).send({ error: 'Not Found' });
     if (out.conflict) return reply.code(409).send(out.conflict);
+
+    invalidateCache(); // Invalidate cache after restore
+
     return out.result;
   });
 }

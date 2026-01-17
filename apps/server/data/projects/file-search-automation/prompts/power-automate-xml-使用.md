@@ -1,22 +1,22 @@
 ---
 id: 2d4288e4-8d78-476a-94e0-e28fbcf33a65
+slug: power-automate-xml-使用
+projectId: 230a7d8d-4cab-4b01-bdfc-fd94d255d11c
 title: Power Automate XML 使用
-importedAt: '2026-01-10T13:07:47.499Z'
+createdAt: '2026-01-10T13:07:47.499Z'
+updatedAt: '2026-01-14T13:51:34.103Z'
 status: draft
-category: '#Cat/KNOWLEDGE_PACK'
+priority: medium
 tags:
   - '#Plat/POWER_PLATFORM'
   - '#Out/CODE'
   - '#Aud/INTERNAL'
   - '#reusable'
-suggestedTags: []
-sourceLink: 'wos://archive/6944b86c-fd44-8322-b3cf-60c7b481b573'
-sourcePlatform: chatgpt-export
+archived: false
 notes: Auto-classified by Antigravity
-slug: power-automate-xml-使用
-projectId: ff774666-8425-401d-8260-4f3b475af4bd
-updatedAt: '2026-01-11T13:29:25.603Z'
-createdAt: '2026-01-10T13:07:47.499Z'
+sourceLink: 'wos://archive/6944b86c-fd44-8322-b3cf-60c7b481b573'
+link: ''
+category: ''
 ---
 # Power Automate XML 使用
 
@@ -547,4 +547,3 @@ Power Automate 支援「雲端流程觸發 Desktop flow」，可把雲端輸入�
 ---
 
 如果你願意，我可以直接把上述兩套架構各產出一份「一頁式方案」給你拿去跟主管/客戶討論，內容會包含：工具清單、流程圖、權限/治理要點、與你 PAD 規格逐項對照（P 欄、Q 欄、RootPath、UNC、取消、log）。
-

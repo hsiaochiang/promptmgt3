@@ -7,6 +7,7 @@ import { MarkdownEditor } from '../components/MarkdownEditor';
 import { HistoryView } from '../features/history/HistoryView';
 import { PROJECT_STATUSES, CATEGORIES, TAG_GROUPS } from '../features/inbox/taxonomy';
 import { formatDate } from '../utils/date';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 type EntityData = (ProjectEntity | PromptEntity) & { type: 'project' | 'prompt' };
 
@@ -33,6 +34,9 @@ export function SidePanel() {
 
   const [activeTab, setActiveTab] = useState<'editor' | 'history'>('editor');
 
+  // Delete confirmation dialog state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const loadData = useCallback(async () => {
     if (!selectedItem) {
       setData(null);
@@ -49,8 +53,6 @@ export function SidePanel() {
       } else if (selectedItem.type === 'prompt') {
         result = await getPrompt(selectedItem.id);
         result.type = 'prompt';
-        setEditCategory(result.category || '');
-        setEditLink(result.link || '');
 
         // Fetch project name
         if (result.projectId) {
@@ -65,11 +67,9 @@ export function SidePanel() {
       setEditBody(result.body || '');
       setEditStatus(result.status || '');
       setEditTags(result.tags || []);
-      // Should we load link/category for project too? Assuming prompt only for now based on req.
-      if (selectedItem.type === 'project') {
-        setEditLink(result.link || '');
-        setEditCategory(result.category || '');
-      }
+      // Initialize category and link for both project and prompt
+      setEditCategory(result.category || '');
+      setEditLink(result.link || '');
 
     } catch (err: any) {
       console.error(err);
@@ -96,10 +96,10 @@ export function SidePanel() {
         status: overrides.status ?? editStatus,
         tags: overrides.tags ?? editTags,
         link: overrides.link ?? editLink,
+        category: overrides.category ?? editCategory,
       };
 
       if (selectedItem.type === 'prompt') {
-        payload.category = overrides.category ?? editCategory;
         payload.projectId = overrides.projectId ?? projectId;
       }
 
@@ -123,8 +123,14 @@ export function SidePanel() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedItem || !confirm('Are you sure you want to move this to trash?')) return;
+  const handleDeleteClick = () => {
+    if (!selectedItem) return;
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedItem) return;
+    setShowDeleteConfirm(false);
     try {
       if (selectedItem.type === 'project') {
         await deleteProject(selectedItem.id);
@@ -185,7 +191,7 @@ export function SidePanel() {
         {/* Actions */}
         <div className="flex items-center gap-1">
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded text-gray-400 transition-colors"
             title="Move to Trash"
           >
@@ -444,6 +450,18 @@ export function SidePanel() {
           )
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="確認刪除"
+        message={`確定要將「${data?.title || '此項目'}」移至回收站嗎？`}
+        confirmText="確認刪除"
+        cancelText="取消"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }

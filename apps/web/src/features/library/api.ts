@@ -42,7 +42,7 @@ export async function createProject(data: Partial<ProjectEntity>): Promise<Proje
     });
     if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || 'Failed to create project');
+        throw new Error(err.message || err.error || 'Failed to create project');
     }
     return response.json();
 }
@@ -55,7 +55,7 @@ export async function updateProject(id: string, data: Partial<ProjectEntity>): P
     });
     if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || 'Failed to update project');
+        throw new Error(err.message || err.error || 'Failed to update project');
     }
     return response.json();
 }
@@ -66,7 +66,7 @@ export async function deleteProject(id: string): Promise<void> {
     });
     if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || 'Failed to delete project');
+        throw new Error(err.message || err.error || 'Failed to delete project');
     }
 }
 
@@ -111,7 +111,7 @@ export async function createPrompt(data: Partial<PromptEntity>): Promise<PromptE
     });
     if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || 'Failed to create prompt');
+        throw new Error(err.message || err.error || 'Failed to create prompt');
     }
     return response.json();
 }
@@ -124,7 +124,7 @@ export async function updatePrompt(id: string, data: Partial<PromptEntity>): Pro
     });
     if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || 'Failed to update prompt');
+        throw new Error(err.message || err.error || 'Failed to update prompt');
     }
     return response.json();
 }
@@ -135,6 +135,6 @@ export async function deletePrompt(id: string): Promise<void> {
     });
     if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || 'Failed to delete prompt');
+        throw new Error(err.message || err.error || 'Failed to delete prompt');
     }
 }

@@ -11,14 +11,15 @@ export const ProjectFrontmatterSchema = z.object({
   title: z.string().min(1),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-  
+
   // Optional fields with defaults
   summary: z.string().default(''),
   status: z.enum(['planned', 'in_progress', 'paused', 'done']).default('planned'),
   type: z.string().default(''),
   tags: z.array(z.string()).default([]),
   archived: z.boolean().default(false),
-  
+  category: z.string().default(''),
+
   // Optional fields
   description: z.string().optional(),
   relatedFiles: z.array(z.string()).optional(),

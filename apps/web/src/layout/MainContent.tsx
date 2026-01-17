@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
-import { Kanban, List as ListIcon, Search, X } from 'lucide-react';
+import { Kanban, List as ListIcon, Search, X, Plus, ChevronDown } from 'lucide-react';
+import { createProject, createPrompt, getProjects } from '../features/library/api';
 import { ProjectView } from './ProjectView';
 import { PromptView } from './PromptView';
 import { SettingsView } from '../features/settings/SettingsView';
@@ -109,8 +110,50 @@ export function MainContent({ activeSection }: MainContentProps) {
     setProjectSubView,
     setPromptSubView,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    setSelectedItem
   } = useUiStore();
+
+  const handleCreateProject = async () => {
+    try {
+      // Create new project with 'planned' status (default)
+      const newProject = await createProject({ title: '新增專案', status: 'planned' });
+      // Open in side panel
+      setSelectedItem({ type: 'project', id: newProject.id });
+      // Dispatch event to refresh lists
+      window.dispatchEvent(new CustomEvent('entity-change'));
+    } catch (err: any) {
+      alert('Failed to create project: ' + err.message);
+    }
+  };
+  const handleCreatePrompt = async () => {
+    try {
+      // Find a default project ID (first one available) for the new prompt
+      // We need to fetch projects here or assume we have them in store (store doesn't seem to have full list readily available without hook)
+      // Simpler: just fetch projects quickly
+      const projects = await getProjects();
+      const defaultProjectId = projects.length > 0 ? projects[0].id : '';
+
+      if (!defaultProjectId) {
+        alert('Please create a project first before adding prompts.');
+        return;
+      }
+
+      const newPrompt = await createPrompt({
+        title: '新增提示詞',
+        projectId: defaultProjectId,
+        tags: [],
+        status: 'draft',
+        priority: 'medium',
+        category: ''
+      });
+
+      setSelectedItem({ type: 'prompt', id: newPrompt.id });
+      window.dispatchEvent(new CustomEvent('entity-change'));
+    } catch (err: any) {
+      alert('Failed to create prompt: ' + err.message);
+    }
+  };
 
   const title =
     activeSection === 'projects'
@@ -162,21 +205,45 @@ export function MainContent({ activeSection }: MainContentProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <ExpandableSearch
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={`搜尋${title}...`}
             />
+            {/* Notion-style New Button */}
+            {activeSection === 'projects' && (
+              <div className="flex items-center">
+                <div className="h-4 w-px bg-gray-200 mx-2"></div>
+                <button
+                  onClick={handleCreateProject}
+                  className="flex items-center gap-1 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
+                >
+                  <Plus size={16} /> <span className="font-medium">新增</span>
+                  <div className="w-px h-3 bg-blue-400 mx-1.5"></div>
+                  <ChevronDown size={14} className="text-blue-100" />
+                </button>
+              </div>
+            )}
+            {activeSection === 'prompts' && (
+              <div className="flex items-center">
+                <div className="h-4 w-px bg-gray-200 mx-2"></div>
+                <button
+                  onClick={handleCreatePrompt}
+                  className="flex items-center gap-1 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
+                >
+                  <Plus size={16} /> <span className="font-medium">新增</span>
+                  <div className="w-px h-3 bg-blue-400 mx-1.5"></div>
+                  <ChevronDown size={14} className="text-blue-100" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div
-        className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar ${currentSubView === 'board' ? 'bg-[#F7F7F5] p-0' : 'bg-white px-8'
-          }`}
-      >
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-white">
         {activeSection === 'projects' && <ProjectView />}
         {activeSection === 'prompts' && <PromptView />}
         {activeSection === 'inbox' && <InboxView />}
