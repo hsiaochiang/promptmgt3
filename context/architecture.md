@@ -20,3 +20,4 @@
 - 修 bug 先寫 Bug Brief（/context/debugging_protocol.md）
 
 <!-- snapshot test: <今天日期> -->
+<!-- snapshot test 2 -->
