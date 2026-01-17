@@ -41,3 +41,6 @@ Thumbs.db
 test-results/
 playwright-report/
 blob-report/
+
+# Data Directory (tracked in separate repo)
+apps/server/data/
