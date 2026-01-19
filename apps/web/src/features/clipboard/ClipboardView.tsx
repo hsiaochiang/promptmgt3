@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Copy, Plus, Trash2 } from 'lucide-react';
+import { Copy, Plus, Trash2, FileText, Check, Search } from 'lucide-react';
 import type { SnippetEntity } from '@pah/contracts';
+import { Button } from '../../ui/Button';
 
 export function ClipboardView() {
   const [snippets, setSnippets] = useState<SnippetEntity[]>([]);
+  const [filteredSnippets, setFilteredSnippets] = useState<SnippetEntity[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState<{ title: string; content: string; tags: string }>({
@@ -12,14 +15,28 @@ export function ClipboardView() {
     tags: '',
   });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [savingStatus, setSavingStatus] = useState<'saved' | 'saving' | 'error' | 'idle'>('idle');
+  const [lastSavedForm, setLastSavedForm] = useState<{ title: string; content: string; tags: string } | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Load snippets
   useEffect(() => {
     loadSnippets();
   }, []);
+
+  // Search filter effect
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredSnippets(snippets);
+    } else {
+      const q = searchQuery.toLowerCase();
+      setFilteredSnippets(snippets.filter(s =>
+        s.title.toLowerCase().includes(q) ||
+        s.tags.some(t => t.toLowerCase().includes(q))
+      ));
+    }
+  }, [searchQuery, snippets]);
 
   const loadSnippets = async () => {
     try {
@@ -28,6 +45,7 @@ export function ClipboardView() {
       if (!res.ok) throw new Error('載入片段失敗');
       const data = await res.json();
       setSnippets(data.items || []);
+      setFilteredSnippets(data.items || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : '載入片段失敗');
     } finally {
@@ -38,11 +56,14 @@ export function ClipboardView() {
   const handleSelect = (snippet: SnippetEntity) => {
     setSelectedId(snippet.id);
     setIsCreating(false);
-    setForm({
+    const formData = {
       title: snippet.title,
       content: snippet.content,
       tags: snippet.tags.join(', '),
-    });
+    };
+    setForm(formData);
+    setLastSavedForm(formData); // Initialize last saved state
+    setSavingStatus('idle');
     setError(null);
     setSuccess(null);
   };
@@ -50,16 +71,42 @@ export function ClipboardView() {
   const handleNew = () => {
     setSelectedId(null);
     setIsCreating(true);
-    setForm({ title: '', content: '', tags: '' });
+    const formData = { title: '', content: '', tags: '' };
+    setForm(formData);
+    setLastSavedForm(formData);
+    setSavingStatus('idle');
     setError(null);
     setSuccess(null);
   };
 
-  const handleSave = async () => {
+  // Auto-save logic
+  useEffect(() => {
+    // Skip initial load or if no change
+    if (!lastSavedForm) return;
+
+    // Check if form actually changed
+    const isChanged =
+      form.title !== lastSavedForm.title ||
+      form.content !== lastSavedForm.content ||
+      form.tags !== lastSavedForm.tags;
+
+    if (!isChanged) return;
+
+    if (!form.title.trim()) return; // Don't auto-save if title is empty
+
+    const timer = setTimeout(() => {
+      saveSnippet();
+    }, 1000); // Debounce 1s
+
+    setSavingStatus('saving');
+
+    return () => clearTimeout(timer);
+  }, [form, lastSavedForm]);
+
+  const saveSnippet = async () => {
     try {
-      setSaving(true);
+      setSavingStatus('saving');
       setError(null);
-      setSuccess(null);
 
       const tags = form.tags
         .split(',')
@@ -86,7 +133,10 @@ export function ClipboardView() {
         setSnippets((prev) => [...prev, created]);
         setSelectedId(created.id);
         setIsCreating(false);
-        setSuccess('片段已建立');
+        // Update both form and lastSavedForm to match server response if needed, 
+        // but typically just sync our mental model
+        setLastSavedForm({ ...form });
+        setSavingStatus('saved');
       } else if (selectedId) {
         // Update existing snippet
         const res = await fetch(`http://localhost:3001/api/snippets/${selectedId}`, {
@@ -99,14 +149,16 @@ export function ClipboardView() {
 
         const updated = (await res.json()) as SnippetEntity;
         setSnippets((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-        setSuccess('片段已更新');
+        setLastSavedForm({ ...form });
+        setSavingStatus('saved');
       }
 
-      setTimeout(() => setSuccess(null), 3000);
+      // Reset status to idle after a while
+      setTimeout(() => setSavingStatus('idle'), 2000);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存片段失敗');
-    } finally {
-      setSaving(false);
+      setSavingStatus('error');
     }
   };
 
@@ -115,8 +167,7 @@ export function ClipboardView() {
     if (!confirm('確定要刪除此片段嗎？')) return;
 
     try {
-      setSaving(true);
-      setError(null);
+      setSavingStatus('saving');
 
       const res = await fetch(`http://localhost:3001/api/snippets/${selectedId}`, {
         method: 'DELETE',
@@ -128,12 +179,13 @@ export function ClipboardView() {
       setSelectedId(null);
       setIsCreating(false);
       setForm({ title: '', content: '', tags: '' });
+      setLastSavedForm(null);
       setSuccess('片段已刪除');
       setTimeout(() => setSuccess(null), 3000);
+      setSavingStatus('idle');
     } catch (err) {
       setError(err instanceof Error ? err.message : '刪除片段失敗');
-    } finally {
-      setSaving(false);
+      setSavingStatus('error');
     }
   };
 
@@ -149,149 +201,170 @@ export function ClipboardView() {
   };
 
   return (
-    <div className="pb-20 pt-2">
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-300 rounded text-xs text-blue-900">
-        💡 <span className="font-medium">說明：</span>剪貼簿儲存可重複使用的文字片段或範本，方便快速插入常用內容。
+    <div className="h-full flex flex-col bg-white">
+      {/* Header - A1: Single H1, No CTA here (C1/C2 fixed) */}
+      <div className="pt-8 pb-4 page-padding-x border-b border-subtle">
+        <h1 className="text-page-title mb-2">剪貼簿</h1>
+        <p className="text-muted">
+          儲存常用的文字片段或範本，方便隨時調用。
+        </p>
       </div>
 
-      <div className="flex gap-4 min-h-[400px]">
-        {/* List */}
-        <div className="w-1/3 border border-blue-300 rounded overflow-hidden flex flex-col bg-blue-50/30">
-          <div className="border-b border-blue-300 px-3 py-2 text-xs text-blue-900 flex justify-between items-center">
-            <span>片段列表</span>
-            <button
-              type="button"
-              onClick={handleNew}
-              className="p-1 hover:bg-blue-100 rounded transition-colors"
-              title="新增片段"
-            >
-              <Plus size={14} />
-            </button>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar List */}
+        <div className="w-80 bg-sidebar border-r border-subtle flex flex-col">
+          {/* List Header Toolbar - Integrated on single horizontal row (Notion-style) */}
+          <div className="px-3 py-2 border-b border-subtle" role="toolbar" aria-label="Snippet List Toolbar">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <h2 className="text-section-title">片段列表</h2>
+            </div>
+            {/* Search and New Button on same horizontal line */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 group">
+                <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
+                  <Search size={14} className="text-gray-400 group-hover:text-gray-500" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="搜尋片段..."
+                  className="w-full bg-white border border-subtle text-xs pl-7 pr-2 py-1.5 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 placeholder-gray-300 transition-colors"
+                />
+              </div>
+              {/* Primary CTA - Notion blue */}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleNew}
+                title="新增片段"
+                className="flex-shrink-0"
+              >
+                <Plus size={14} className="mr-1" />
+                新增
+              </Button>
+            </div>
           </div>
-          <div className="flex-1 overflow-auto divide-y divide-blue-200">
-            {loading && (
-              <div className="p-4 text-[11px] text-blue-900/70 text-center">載入片段中...</div>
-            )}
-            {!loading && snippets.length === 0 && (
-              <div className="p-4 text-[11px] text-blue-900/70 text-center">
-                目前沒有片段。點擊上方 + 按鈕新增。
+
+          <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+            {loading ? (
+              <div className="p-4 text-muted text-xs text-center">載入中...</div>
+            ) : filteredSnippets.length === 0 ? (
+              <div className="p-4 text-muted text-xs text-center">
+                {searchQuery ? '無搜尋結果' : '尚無片段，請新增。'}
+              </div>
+            ) : (
+              <div className="space-y-0.5" id="snippet-list">
+                {filteredSnippets.map((snippet) => (
+                  <button
+                    key={snippet.id}
+                    onClick={() => handleSelect(snippet)}
+                    /* Enhanced states: hover, selected, and keyboard focus-visible */
+                    className={`w-full text-left px-3 py-2 rounded-[3px] flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1 ${selectedId === snippet.id
+                      ? 'bg-item-active text-gray-900'
+                      : 'text-gray-600 hover:bg-item-hover'
+                      }`}
+                  >
+                    <FileText size={14} className={selectedId === snippet.id ? 'text-gray-700' : 'text-gray-400'} />
+                    <span className="truncate text-sm">{snippet.title}</span>
+                  </button>
+                ))}
               </div>
             )}
-            {snippets.map((snippet) => (
-              <button
-                key={snippet.id}
-                type="button"
-                onClick={() => handleSelect(snippet)}
-                className={`w-full text-left px-3 py-2 text-[11px] hover:bg-blue-50/60 transition-colors ${
-                  selectedId === snippet.id ? 'bg-blue-50 border-l-2 border-blue-400' : ''
-                }`}
-              >
-                <div className="font-medium truncate text-gray-900">{snippet.title}</div>
-                {snippet.tags.length > 0 && (
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    {snippet.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </button>
-            ))}
           </div>
         </div>
 
-        {/* Detail */}
-        <div className="flex-1 border border-gray-200 rounded p-4 flex flex-col bg-white">
-          {error && (
-            <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
-              {success}
-            </div>
-          )}
-
+        {/* Main Content (Editor) */}
+        <div className="flex-1 flex flex-col bg-white overflow-hidden">
           {!selectedId && !isCreating ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400 text-[11px]">
-              請從左側選擇一個片段進行編輯，或點擊 + 新增片段。
-            </div>
+            /* Empty state: blank right panel when no snippet selected */
+            <div className="flex-1 bg-white" data-testid="empty-state" />
           ) : (
-            <>
-              <div className="space-y-4 flex-1 overflow-auto">
-                <div>
-                  <label className="block text-xs font-medium mb-1 text-gray-600">標題</label>
-                  <input
-                    type="text"
-                    value={form.title}
-                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0"
-                    placeholder="片段標題"
-                  />
+            <div className="flex-1 flex flex-col h-full">
+              {/* Toolbar */}
+              <div className="h-10 border-b border-subtle flex items-center justify-between px-6 bg-white sticky top-0 z-10">
+                {/* C4: Auto-save status indicator */}
+                <div className="text-xs text-muted flex items-center gap-2">
+                  {savingStatus === 'saving' && <span className="text-gray-400">Saving...</span>}
+                  {savingStatus === 'saved' && <span className="text-gray-400 flex items-center gap-1"><Check size={12} /> Saved</span>}
+                  {savingStatus === 'error' && <span className="text-red-500">Save Failed</span>}
+
+                  {/* Separate success/error messages (e.g. copy) */}
+                  {success && <span className="text-green-600 flex items-center gap-1 ml-2">✓ {success}</span>}
+                  {error && <span className="text-red-600 flex items-center gap-1 ml-2">! {error}</span>}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium mb-1 text-gray-600">標籤</label>
-                  <input
-                    type="text"
-                    value={form.tags}
-                    onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0"
-                    placeholder="以逗號分隔，例如：sql, query, template"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium mb-1 text-gray-600">內容</label>
-                  <textarea
-                    rows={12}
-                    value={form.content}
-                    onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded text-[11px] focus:outline-none focus:ring-0 font-mono"
-                    placeholder="片段內容..."
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 border-t border-gray-100 pt-3 flex justify-between">
-                <div className="flex gap-2">
+                <div className="flex items-center gap-1">
                   {!isCreating && selectedId && (
                     <>
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleCopy(form.content)}
-                        className="px-3 py-2 bg-gray-100 text-gray-700 rounded text-[11px] hover:bg-gray-200 flex items-center gap-1"
+                        title="複製內容"
+                        className="text-muted hover:text-gray-900"
                       >
-                        <Copy size={12} />
-                        複製內容
-                      </button>
-                      <button
-                        type="button"
+                        <Copy size={14} className="mr-1" /> 複製
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={handleDelete}
-                        disabled={saving}
-                        className="px-3 py-2 bg-red-50 text-red-600 rounded text-[11px] hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        title="刪除"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
                       >
-                        <Trash2 size={12} />
-                        刪除
-                      </button>
+                        <Trash2 size={14} className="mr-1" /> 刪除
+                      </Button>
                     </>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving || !form.title.trim()}
-                  className="px-4 py-2 bg-gray-900 text-white rounded text-[11px] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? '保存中...' : isCreating ? '建立片段' : '保存變更'}
-                </button>
               </div>
-            </>
+
+              {/* Editor Form */}
+              <div className="flex-1 overflow-y-auto px-16 py-10 custom-scrollbar">
+                <div className="max-w-3xl mx-auto space-y-6">
+                  {/* Title */}
+                  <div>
+                    <input
+                      type="text"
+                      value={form.title}
+                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                      className="w-full text-3xl font-bold text-gray-900 placeholder-gray-200 border-none p-0 focus:ring-0 bg-transparent leading-tight"
+                      placeholder="Untitled"
+                    />
+                  </div>
+
+                  {/* Properties - F2: Lightweight property value */}
+                  <div className="flex items-center gap-4 text-sm group">
+                    <div className="flex items-center gap-2 text-muted w-24 shrink-0 select-none">
+                      <span className="text-xs opacity-70">🏷️</span> 標籤
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={form.tags}
+                        onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
+                        className="w-full bg-transparent border-b border-transparent group-hover:border-gray-100 focus:border-blue-400 focus:outline-none py-1 text-gray-800 placeholder-gray-200 transition-colors text-sm"
+                        placeholder="Empty"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Divider - D1: Very subtle divider */}
+                  <hr className="border-subtle my-8" />
+
+                  {/* Content - F3: Breathable spacing */}
+                  <div className="min-h-[500px]">
+                    <textarea
+                      value={form.content}
+                      onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                      className="w-full h-full min-h-[500px] resize-none border-none p-0 focus:ring-0 text-body font-mono text-gray-800 placeholder-gray-200 leading-relaxed"
+                      placeholder="輸入片段內容..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
