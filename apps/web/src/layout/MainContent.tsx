@@ -33,7 +33,7 @@ const GhostButton = ({
   <button
     onClick={onClick}
     title={title}
-    className={`flex items-center gap-2 px-2 py-1 rounded-[3px] text-sm transition-colors duration-200 
+    className={`flex items-center gap-2 px-2 py-1 rounded-[3px] text-base transition-colors duration-200 
       ${active ? 'bg-gray-200 text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'} 
       ${className}`}
   >
@@ -217,7 +217,7 @@ export function MainContent({ activeSection }: MainContentProps) {
                 <div className="h-4 w-px bg-gray-200 mx-2"></div>
                 <button
                   onClick={handleCreateProject}
-                  className="flex items-center gap-1 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
+                  className="flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
                 >
                   <Plus size={16} /> <span className="font-medium">新增</span>
                   <div className="w-px h-3 bg-blue-400 mx-1.5"></div>
@@ -230,7 +230,7 @@ export function MainContent({ activeSection }: MainContentProps) {
                 <div className="h-4 w-px bg-gray-200 mx-2"></div>
                 <button
                   onClick={handleCreatePrompt}
-                  className="flex items-center gap-1 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
+                  className="flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
                 >
                   <Plus size={16} /> <span className="font-medium">新增</span>
                   <div className="w-px h-3 bg-blue-400 mx-1.5"></div>

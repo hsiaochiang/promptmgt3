@@ -1,12 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Maximize2, Minimize2, ChevronRight, Save, Trash2, Folder, Link as LinkIcon, Calendar } from 'lucide-react';
+import {
+  Maximize2,
+  Minimize2,
+  ChevronRight,
+  Save,
+  Trash2,
+  Folder,
+  Link as LinkIcon,
+  Calendar,
+  CheckCircle,
+  Tag,
+  Hash,
+} from 'lucide-react';
 import { useUiStore } from '../state/uiStore';
 import { getProject, getPrompt, updateProject, updatePrompt, deleteProject, deletePrompt, getProjects } from '../features/library/api';
 import { ProjectEntity, PromptEntity } from '@pah/contracts';
 import { MarkdownEditor } from '../components/MarkdownEditor';
 import { HistoryView } from '../features/history/HistoryView';
 import { PROJECT_STATUSES, CATEGORIES, TAG_GROUPS } from '../features/inbox/taxonomy';
-import { formatDate } from '../utils/date';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 
 type EntityData = (ProjectEntity | PromptEntity) & { type: 'project' | 'prompt' };
@@ -20,21 +31,21 @@ export function SidePanel() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Local edit state
+  // 本地編輯狀態
   const [editTitle, setEditTitle] = useState('');
   const [editBody, setEditBody] = useState('');
   const [editStatus, setEditStatus] = useState('');
   const [editTags, setEditTags] = useState<string[]>([]);
-  // Use `any` for flexible metadata storage that both Project/Prompt support
+  // 使用 `any` 以支援 Project/Prompt 共用的彈性欄位
   const [editCategory, setEditCategory] = useState('');
   const [editLink, setEditLink] = useState('');
 
-  // Derived state
+  // 衍生狀態
   const [projectId, setProjectId] = useState<string>('');
 
   const [activeTab, setActiveTab] = useState<'editor' | 'history'>('editor');
 
-  // Delete confirmation dialog state
+  // 刪除確認對話框狀態
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const loadData = useCallback(async () => {
@@ -54,7 +65,7 @@ export function SidePanel() {
         result = await getPrompt(selectedItem.id);
         result.type = 'prompt';
 
-        // Fetch project name
+        // 讀取所屬專案
         if (result.projectId) {
           setProjectId(result.projectId);
         } else {
@@ -67,7 +78,7 @@ export function SidePanel() {
       setEditBody(result.body || '');
       setEditStatus(result.status || '');
       setEditTags(result.tags || []);
-      // Initialize category and link for both project and prompt
+      // 初始化 project / prompt 共用欄位（分類、連結）
       setEditCategory(result.category || '');
       setEditLink(result.link || '');
 
@@ -81,7 +92,7 @@ export function SidePanel() {
 
   useEffect(() => {
     loadData();
-    // Load projects for dropdown
+    // 讀取下拉選單用專案清單
     getProjects().then(setAllProjects).catch(console.error);
   }, [loadData]);
 
@@ -109,11 +120,10 @@ export function SidePanel() {
         await updatePrompt(selectedItem.id, payload);
       }
 
-      // Update local data partially to reflect change immediately in UI if needed, 
-      // but reloading is safer for consistency.
+      // 可做局部更新讓 UI 立即反映，但為了資料一致性，重新載入更安全。
       await loadData();
 
-      // Notify other views
+      // 通知其他視圖更新
       window.dispatchEvent(new CustomEvent('entity-change'));
     } catch (err: any) {
       console.error(err);
@@ -144,7 +154,7 @@ export function SidePanel() {
     }
   };
 
-  // Helper to format date only
+  // 僅顯示日期（YYYY-MM-DD）
   const formatDateOnly = (d?: string) => {
     if (!d) return '-';
     try {
@@ -162,25 +172,25 @@ export function SidePanel() {
         }`}
     >
       {/* Top Bar */}
-      <div className="h-12 flex items-center justify-between px-4 hover:bg-transparent border-b border-gray-100">
+      <div className="h-10 flex items-center justify-between px-3 hover:bg-transparent border-b border-gray-100">
         {/* Breadcrumbs / Title info */}
-        <div className="flex items-center gap-2 text-sm text-gray-400 transition-colors">
+        <div className="flex items-center gap-2 text-base text-gray-400 transition-colors">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-1 hover:bg-gray-100 hover:text-gray-600 rounded text-gray-400 transition-colors"
             title={isExpanded ? '還原' : '展開為全頁'}
           >
-            {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} className="rotate-45" />}
+            {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} className="rotate-45" />}
           </button>
 
           <div className="flex items-center gap-2 cursor-default">
-            <span className="hover:text-gray-900 cursor-pointer">
+            <span className="hover:text-gray-900">
               {data?.type === 'project' ? '專案' : '提示詞'}
             </span>
             {data && (
               <>
                 <span>/</span>
-                <span className="truncate max-w-[200px] text-gray-800 font-medium">
+                <span className="truncate max-w-[280px] text-gray-800 font-medium">
                   {data.title}
                 </span>
               </>
@@ -193,7 +203,7 @@ export function SidePanel() {
           <button
             onClick={handleDeleteClick}
             className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded text-gray-400 transition-colors"
-            title="Move to Trash"
+            title="移至回收站"
           >
             <Trash2 size={18} />
           </button>
@@ -204,16 +214,16 @@ export function SidePanel() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 px-4 gap-4 text-xs font-medium bg-gray-50/50">
+      <div className="flex border-b border-gray-100 px-3 gap-4 text-base font-medium bg-gray-50/50">
         <button
           onClick={() => setActiveTab('editor')}
-          className={`py-2 px-1 border-b-2 transition-colors ${activeTab === 'editor' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`py-1.5 px-1 border-b-2 transition-colors ${activeTab === 'editor' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           {data?.type === 'project' ? '專案詳情' : '提示詞詳情'}
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`py-2 px-1 border-b-2 transition-colors ${activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`py-1.5 px-1 border-b-2 transition-colors ${activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           歷史記錄
         </button>
@@ -223,7 +233,7 @@ export function SidePanel() {
       <div className="flex-1 overflow-y-auto px-12 py-8 custom-scrollbar relative bg-white">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
-            <div className="text-gray-400">Loading...</div>
+            <div className="text-gray-400">載入中…</div>
           </div>
         )}
 
@@ -244,18 +254,20 @@ export function SidePanel() {
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full text-4xl font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 focus:outline-none p-0 bg-transparent leading-tight mb-2"
-                  placeholder="Untitled"
+                  className={`w-full ${isExpanded ? 'text-2xl' : 'text-xl'} font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 focus:outline-none p-0 bg-transparent leading-tight tracking-tight mb-2`}
+                  placeholder="未命名"
                   onBlur={() => handleSave()}
                 />
               </div>
 
               {/* Constitutional Properties Table */}
-              <div className="mt-6 mb-8 space-y-1 text-sm text-gray-600">
+              <div className="mt-6 mb-8 space-y-1 text-base text-gray-600">
                 {/* Status Field */}
                 <div className="flex items-center h-8 group">
-                  <div className="w-32 flex items-center text-gray-500 gap-2 select-none">
-                    <span className="opacity-70 flex items-center justify-center w-4">📊</span>
+                  <div className="w-32 flex items-center text-gray-500 gap-2 select-none text-base">
+                    <span className="opacity-70 flex items-center justify-center w-4">
+                      <CheckCircle size={14} className="text-gray-400" />
+                    </span>
                     <span>狀態</span>
                   </div>
                   <div className="flex-1 flex items-center">
@@ -266,9 +278,9 @@ export function SidePanel() {
                         setEditStatus(val);
                         handleSave({ status: val });
                       }}
-                      className={`h-full w-full max-w-xs bg-transparent hover:bg-gray-100 px-2 rounded outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all ${editStatus ? 'text-gray-900' : 'text-gray-400'} appearance-none`}
+                      className={`h-full w-full max-w-xs bg-transparent hover:bg-gray-100 px-2 rounded outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all text-base ${editStatus ? 'text-gray-900' : 'text-gray-400'} appearance-none`}
                     >
-                      <option value="">Empty</option>
+                      <option value="">未設定</option>
                       {PROJECT_STATUSES.map(s => (
                         <option key={s.value} value={s.value}>
                           {s.label}
@@ -281,7 +293,7 @@ export function SidePanel() {
                 {/* Project Field (New) - Dropdown */}
                 {selectedItem.type === 'prompt' && (
                   <div className="flex items-center h-8 group">
-                    <div className="w-32 flex items-center text-gray-500 gap-2 select-none">
+                    <div className="w-32 flex items-center text-gray-500 gap-2 select-none text-base">
                       <span className="opacity-70 flex items-center justify-center w-4"><Folder size={14} /></span>
                       <span>專案</span>
                     </div>
@@ -293,9 +305,9 @@ export function SidePanel() {
                           setProjectId(val);
                           handleSave({ projectId: val });
                         }}
-                        className={`h-full w-full max-w-xs bg-transparent hover:bg-gray-100 px-2 rounded outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all ${projectId ? 'text-gray-900' : 'text-gray-400'} appearance-none`}
+                        className={`h-full w-full max-w-xs bg-transparent hover:bg-gray-100 px-2 rounded outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all text-base ${projectId ? 'text-gray-900' : 'text-gray-400'} appearance-none`}
                       >
-                        <option value="">No Project</option>
+                        <option value="">未指定</option>
                         {allProjects.map(p => (
                           <option key={p.id} value={p.id}>
                             {p.title}
@@ -309,8 +321,10 @@ export function SidePanel() {
                 {/* Category Field */}
                 {selectedItem.type === 'prompt' && (
                   <div className="flex items-center h-8 group">
-                    <div className="w-32 flex items-center text-gray-500 gap-2 select-none">
-                      <span className="opacity-70 flex items-center justify-center w-4">🏷️</span>
+                    <div className="w-32 flex items-center text-gray-500 gap-2 select-none text-base">
+                      <span className="opacity-70 flex items-center justify-center w-4">
+                        <Tag size={14} className="text-gray-400" />
+                      </span>
                       <span>分類</span>
                     </div>
                     <div className="flex-1 flex items-center">
@@ -321,9 +335,9 @@ export function SidePanel() {
                           setEditCategory(val);
                           handleSave({ category: val });
                         }}
-                        className={`h-full w-full max-w-xs bg-transparent hover:bg-gray-100 px-2 rounded outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all ${editCategory ? 'text-gray-900' : 'text-gray-400'} appearance-none`}
+                        className={`h-full w-full max-w-xs bg-transparent hover:bg-gray-100 px-2 rounded outline-none cursor-pointer border border-transparent hover:border-gray-200 transition-all text-base ${editCategory ? 'text-gray-900' : 'text-gray-400'} appearance-none`}
                       >
-                        <option value="">Empty</option>
+                        <option value="">未設定</option>
                         {CATEGORIES.map(c => (
                           <option key={c.value} value={c.value}>
                             {c.label}
@@ -336,7 +350,7 @@ export function SidePanel() {
 
                 {/* Link Field (New) */}
                 <div className="flex items-center h-8 group">
-                  <div className="w-32 flex items-center text-gray-500 gap-2 select-none">
+                  <div className="w-32 flex items-center text-gray-500 gap-2 select-none text-base">
                     <span className="opacity-70 flex items-center justify-center w-4"><LinkIcon size={14} /></span>
                     <span>連結</span>
                   </div>
@@ -347,15 +361,17 @@ export function SidePanel() {
                       onChange={e => setEditLink(e.target.value)}
                       onBlur={(e) => handleSave({ link: e.target.value })}
                       placeholder="https://..."
-                      className="h-full w-full max-w-md bg-transparent hover:bg-gray-100 px-2 rounded outline-none border border-transparent hover:border-gray-200 transition-all text-gray-900 placeholder-gray-300 truncate"
+                      className="h-full w-full max-w-md bg-transparent hover:bg-gray-100 px-2 rounded outline-none border border-transparent hover:border-gray-200 transition-all text-base text-gray-900 placeholder-gray-300 truncate"
                     />
                   </div>
                 </div>
 
                 {/* Tags Field */}
                 <div className="flex items-start py-1 group min-h-[32px]">
-                  <div className="w-32 flex items-center text-gray-500 gap-2 mt-1 select-none">
-                    <span className="opacity-70 flex items-center justify-center w-4">#</span>
+                  <div className="w-32 flex items-center text-gray-500 gap-2 mt-1 select-none text-base">
+                    <span className="opacity-70 flex items-center justify-center w-4">
+                      <Hash size={14} className="text-gray-400" />
+                    </span>
                     <span>標籤</span>
                   </div>
                   <div className="flex-1 flex flex-wrap gap-2 items-center">
@@ -384,9 +400,9 @@ export function SidePanel() {
                         setEditTags(newTags);
                         handleSave({ tags: newTags });
                       }}
-                      className="text-xs text-gray-400 hover:text-gray-600 bg-transparent outline-none cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded"
+                      className="text-base text-gray-400 hover:text-gray-600 bg-transparent outline-none cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded"
                     >
-                      <option value="">+ Add tag</option>
+                      <option value="">+ 新增標籤</option>
                       {Object.entries(TAG_GROUPS).map(([group, options]) => (
                         <optgroup key={group} label={group}>
                           {options.filter(opt => !editTags.includes(opt.value)).map(opt => (
@@ -402,11 +418,11 @@ export function SidePanel() {
 
                 {/* Updated Time Field (New) */}
                 <div className="flex items-center h-8 group">
-                  <div className="w-32 flex items-center text-gray-500 gap-2 select-none">
+                  <div className="w-32 flex items-center text-gray-500 gap-2 select-none text-base">
                     <span className="opacity-70 flex items-center justify-center w-4"><Calendar size={14} /></span>
                     <span>更新時間</span>
                   </div>
-                  <div className="flex-1 px-2 text-gray-500 font-mono text-xs">
+                  <div className="flex-1 px-2 text-gray-500 font-mono text-base">
                     {formatDateOnly(data.updatedAt)}
                   </div>
                 </div>
@@ -425,7 +441,7 @@ export function SidePanel() {
                     className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors ${isSaving ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-50'
                       }`}
                   >
-                    <Save size={12} /> {isSaving ? 'Saving...' : 'Save'}
+                    <Save size={12} /> {isSaving ? '儲存中…' : '儲存'}
                   </button>
                 </div>
                 <div className="flex-1 min-h-[500px]">
@@ -433,11 +449,9 @@ export function SidePanel() {
                     value={editBody}
                     onChange={(val) => {
                       setEditBody(val);
-                      // Auto save is handled by onBlur in textarea previously. 
-                      // MarkdownEditor doesn't have onBlur prop exposed simply here, 
-                      // so we might want to add a debounce or a manual save button (which we have).
-                      // For now, reliance on the manual 'Save' button or navigating away is safer than debouncing blindly.
-                      // Or we could implement a debounced save here.
+                      // 過去使用 textarea 的 onBlur 觸發自動儲存；MarkdownEditor 目前未直接提供 onBlur。
+                      // 目前先依賴手動「儲存」按鈕或離開頁面再觸發保存，較不容易產生過度頻繁的請求。
+                      // 後續如需要可再加入 debounce 自動儲存。
                     }}
                     entityType={selectedItem.type === 'project' ? 'project' : 'prompt'}
                     entityId={selectedItem.id}

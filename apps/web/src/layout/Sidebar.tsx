@@ -5,7 +5,7 @@ import { useUiStore } from '../state/uiStore';
 const NavItem = ({ icon: Icon, label, isActive, onClick, isCollapsed }: any) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-sm transition-colors ${
+    className={`w-full flex items-center gap-2 px-3 py-1 mb-0.5 rounded-[3px] text-base transition-colors ${
       isActive ? 'bg-[#E3E3E1] text-gray-900 font-medium' : 'text-gray-600 hover:bg-[#EAEAEA]'
     }`}
     title={isCollapsed ? label : ''}
@@ -18,7 +18,7 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, isCollapsed }: any) => 
 const SectionHeader = ({ label, isCollapsed }: any) => {
   if (isCollapsed) return <div className="h-4"></div>;
   return (
-    <div className="px-3 py-2 mt-4 mb-1 text-xs font-bold text-gray-500 uppercase tracking-wide">
+    <div className="px-3 py-2 mt-4 mb-1 text-base font-semibold text-gray-500 uppercase tracking-wide">
       {label}
     </div>
   );
@@ -42,9 +42,9 @@ export function Sidebar() {
         isSidebarOpen ? 'w-60' : 'w-12'
       } overflow-hidden border-r border-gray-200`}
     >
-      <div className="h-12 flex items-center px-4 hover:bg-gray-200/50 cursor-pointer transition-colors m-2 rounded">
+      <div className="h-12 flex items-center px-4 hover:bg-gray-200/50 transition-colors m-2 rounded">
         <div
-          className={`font-bold text-sm text-gray-800 flex items-center gap-2 truncate ${
+          className={`font-semibold text-base text-gray-800 flex items-center gap-2 truncate ${
             !isSidebarOpen && 'hidden'
           }`}
         >

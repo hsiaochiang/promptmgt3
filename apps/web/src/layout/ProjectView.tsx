@@ -73,37 +73,6 @@ export function ProjectView() {
 }
 
 
-// --- Constitutional Components ---
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const styles: Record<string, string> = {
-    in_progress: 'text-blue-700 bg-blue-50 border border-blue-100', // Blue: Rational/Active
-    planned: 'text-green-700 bg-green-50 border border-green-100', // Green: Now Planned (User Request)
-    done: 'text-gray-600 bg-gray-100 border border-gray-200',    // Gray: Now Done (User Request)
-    paused: 'text-yellow-700 bg-yellow-50 border border-yellow-100', // Yellow: Paused
-  };
-
-  const labels: Record<string, string> = {
-    in_progress: '進行中',
-    planned: '規劃中',
-    paused: '暫停',
-    done: '完成',
-  };
-
-  return (
-    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] || styles.planned}`}>
-      {labels[status] || status}
-    </span>
-  );
-};
-
-const TagPill = ({ text }: { text: string }) => (
-  // Colored pills for tags
-  <span className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600 rounded-md border border-gray-200 truncate">
-    {text}
-  </span>
-);
-
 // --- Nested Prompts Component ---
 import { getPrompts } from '../features/library/api';
 import { PromptEntity } from '@pah/contracts';
@@ -139,12 +108,12 @@ function ProjectPrompts({ projectId }: { projectId: string }) {
     return () => window.removeEventListener('entity-change', handleEntityChange);
   }, [projectId]);
 
-  if (loading) return <div className="py-2 pl-12 text-xs text-gray-400">Loading prompts...</div>;
+  if (loading) return <div className="py-2 pl-12 text-xs text-gray-400">載入提示詞中…</div>;
 
   if (prompts.length === 0) {
     return (
       <div className="py-2 pl-12 text-xs text-gray-400 italic">
-        No prompts in this project.
+        此專案尚無提示詞。
       </div>
     );
   }

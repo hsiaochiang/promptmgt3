@@ -70,13 +70,9 @@ export const useUiStore = create<UiState>()(persist((set, get) => ({
   setSelectedItem: (selectedItem) => set({ selectedItem }),
   closePanel: () => set({ selectedItem: null }),
   toggleSidebar: () => {
-    const nextFn = (s: UiState) => ({ isSidebarOpen: !s.isSidebarOpen });
-    set(nextFn);
-    // Need to get the new state
-    syncPreferences({ isSidebarOpen: !get().isSidebarOpen }); // Warning: get().isSidebarOpen might be old if set is async? No, zustand set is sync usually. 
-    // Actually set(fn) returns void. Let's safe bet.
-    const newState = get().isSidebarOpen;
-    syncPreferences({ isSidebarOpen: newState });
+    const next = !get().isSidebarOpen;
+    set({ isSidebarOpen: next });
+    syncPreferences({ isSidebarOpen: next });
   },
   setExpandedProjects: (expandedProjects) => set({ expandedProjects }),
   toggleProjectExpanded: (projectId) => {

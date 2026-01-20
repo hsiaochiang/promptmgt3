@@ -155,8 +155,7 @@ export function ListView({
           )}
 
           {/* Prompt Rows */}
-          {group.prompts.map((prompt, _index) => {
-            const _isLast = _index === group.prompts.length - 1;
+          {group.prompts.map((prompt) => {
             // Indent logic mainly applies if there is a project
             const hasIndent = !!group.project;
 
@@ -205,7 +204,6 @@ export function ListView({
               onClick={() => {
                 // Mock create action or open create modal with projectId preset
                 console.log('Create new prompt for project:', group.project?.id);
-                const _newId = 'new_' + Date.now();
                 // Ideally call a prop function here
               }}
             >
