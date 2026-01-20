@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import { Kanban, List as ListIcon, Search, X, Plus, ChevronDown } from 'lucide-react';
 import { createProject, createPrompt, getProjects } from '../features/library/api';
 import { ProjectView } from './ProjectView';
@@ -46,30 +46,65 @@ const ExpandableSearch = ({
   value,
   onChange,
   placeholder,
+  getScroller,
 }: {
   value: string;
   onChange: (next: string) => void;
   placeholder: string;
+  getScroller?: () => HTMLElement | null;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const preserveOuterScroll = useCallback(
+    (fn: () => void) => {
+      const scroller = getScroller?.() ?? null;
+      const top = scroller?.scrollTop ?? 0;
+      const docScroller = document.scrollingElement as HTMLElement | null;
+      const docTop = docScroller?.scrollTop ?? 0;
+
+      fn();
+
+      requestAnimationFrame(() => {
+        if (scroller) scroller.scrollTop = top;
+        if (docScroller) docScroller.scrollTop = docTop;
+      });
+    },
+    [getScroller],
+  );
+
   useEffect(() => {
     if (isExpanded && inputRef.current) {
-      inputRef.current.focus();
+      const scroller = getScroller?.() ?? null;
+      const top = scroller?.scrollTop ?? 0;
+      const docScroller = document.scrollingElement as HTMLElement | null;
+      const docTop = docScroller?.scrollTop ?? 0;
+
+      try {
+        inputRef.current.focus({ preventScroll: true });
+      } catch {
+        inputRef.current.focus();
+      }
+
+      requestAnimationFrame(() => {
+        if (scroller) scroller.scrollTop = top;
+        if (docScroller) docScroller.scrollTop = docTop;
+      });
     }
-  }, [isExpanded]);
+  }, [getScroller, isExpanded]);
 
   const handleBlur = () => {
     if (!value) {
-      setIsExpanded(false);
+      preserveOuterScroll(() => setIsExpanded(false));
     }
   };
 
   return (
-    <div className={`relative flex items-center transition-all duration-300 ${isExpanded ? 'w-48' : 'w-8'}`}>
+    <div
+      className={`flex items-center transition-all duration-300 ${isExpanded ? 'w-56' : 'w-8'} h-8`}
+    >
       {isExpanded ? (
-        <div className="absolute right-0 flex items-center bg-gray-100 rounded px-2 z-20">
+        <div className="flex items-center bg-gray-100 rounded px-2 w-full h-8">
           <Search size={14} className="text-gray-500 flex-shrink-0" />
           <input
             ref={inputRef}
@@ -77,24 +112,31 @@ const ExpandableSearch = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onBlur={handleBlur}
-            className="w-full bg-transparent border-none text-xs text-gray-700 focus:ring-0 px-2 py-1 placeholder-gray-400"
+            className="w-full bg-transparent border-none text-sm text-gray-700 focus:ring-0 px-2 py-1 placeholder-gray-400"
             placeholder={placeholder}
           />
           <button
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
-              onChange('');
-              setIsExpanded(false);
+              preserveOuterScroll(() => {
+                onChange('');
+                setIsExpanded(false);
+              });
             }}
             className="text-gray-400 hover:text-gray-600"
+            title="清除"
+            type="button"
           >
             <X size={12} />
           </button>
         </div>
       ) : (
         <button
-          onClick={() => setIsExpanded(true)}
-          className="p-1.5 text-gray-500 hover:bg-gray-100 rounded hover:text-gray-900 transition-colors"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => preserveOuterScroll(() => setIsExpanded(true))}
+          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded hover:text-gray-900 transition-colors"
           title="搜尋"
+          type="button"
         >
           <Search size={18} />
         </button>
@@ -174,9 +216,10 @@ export function MainContent({ activeSection }: MainContentProps) {
   const currentSubView = activeSection === 'projects' ? projectSubView : promptSubView;
   const setSubView = activeSection === 'projects' ? setProjectSubView : setPromptSubView;
   const showViewToggle = activeSection === 'projects' || activeSection === 'prompts';
+  const contentScrollRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <div className="h-full flex flex-col bg-white overflow-hidden">
+    <div className="h-full flex-1 min-w-0 flex flex-col bg-white overflow-hidden">
       {/* Header & Tabs - Prototype style */}
       <div className="px-8 pt-8 pb-4 flex-shrink-0">
         <div className="flex justify-between items-end mb-6">
@@ -210,6 +253,7 @@ export function MainContent({ activeSection }: MainContentProps) {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={`搜尋${title}...`}
+              getScroller={() => contentScrollRef.current}
             />
             {/* Notion-style New Button */}
             {activeSection === 'projects' && (
@@ -243,7 +287,7 @@ export function MainContent({ activeSection }: MainContentProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-white">
+      <div ref={contentScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-white">
         {activeSection === 'projects' && <ProjectView />}
         {activeSection === 'prompts' && <PromptView />}
         {activeSection === 'inbox' && <InboxView />}

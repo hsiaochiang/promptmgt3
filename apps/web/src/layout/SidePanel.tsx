@@ -230,7 +230,7 @@ export function SidePanel() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto px-12 py-8 custom-scrollbar relative bg-white">
+      <div className="flex-1 overflow-y-auto px-12 py-6 custom-scrollbar relative bg-white">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
             <div className="text-gray-400">載入中…</div>
@@ -249,7 +249,7 @@ export function SidePanel() {
           data && (
             <div className={`mx-auto ${isExpanded ? 'max-w-4xl' : ''}`}>
               {/* Constitutional Title Area (No Large Icon) */}
-              <div className="mb-6">
+              <div className="mb-3">
                 <input
                   type="text"
                   value={editTitle}
@@ -261,7 +261,7 @@ export function SidePanel() {
               </div>
 
               {/* Constitutional Properties Table */}
-              <div className="mt-6 mb-8 space-y-1 text-base text-gray-600">
+              <div className="mt-3 mb-4 space-y-1 text-base text-gray-600">
                 {/* Status Field */}
                 <div className="flex items-center h-8 group">
                   <div className="w-32 flex items-center text-gray-500 gap-2 select-none text-base">
@@ -429,22 +429,22 @@ export function SidePanel() {
 
               </div>
 
-              <hr className="border-gray-100 mb-8" />
+              <hr className="border-gray-100 mb-4" />
 
               {/* Editor */}
               <div className="h-full flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold text-gray-900">內容編輯</h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-base font-bold text-gray-900">內容編輯</h3>
                   <button
                     onClick={() => handleSave()}
                     disabled={isSaving}
-                    className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors ${isSaving ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-50'
+                    className={`text-base flex items-center gap-1 px-2 py-1 rounded transition-colors ${isSaving ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-50'
                       }`}
                   >
-                    <Save size={12} /> {isSaving ? '儲存中…' : '儲存'}
+                    <Save size={16} /> {isSaving ? '儲存中…' : '儲存'}
                   </button>
                 </div>
-                <div className="flex-1 min-h-[500px]">
+                <div className="flex-1 min-h-0">
                   <MarkdownEditor
                     value={editBody}
                     onChange={(val) => {
@@ -455,7 +455,7 @@ export function SidePanel() {
                     }}
                     entityType={selectedItem.type === 'project' ? 'project' : 'prompt'}
                     entityId={selectedItem.id}
-                    height="600px"
+                    height="100%"
                   />
                 </div>
               </div>

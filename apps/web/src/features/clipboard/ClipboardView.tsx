@@ -1,24 +1,67 @@
-import { useEffect, useState } from 'react';
-import { Copy, Plus, Trash2, FileText, Check, Search } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Copy, Plus, Trash2, FileText, Check, Tag, X } from 'lucide-react';
 import type { SnippetEntity } from '@pah/contracts';
 import { Button } from '../../ui/Button';
+import { useUiStore } from '../../state/uiStore';
 
 export function ClipboardView() {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const { searchQuery } = useUiStore();
   const [snippets, setSnippets] = useState<SnippetEntity[]>([]);
   const [filteredSnippets, setFilteredSnippets] = useState<SnippetEntity[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [form, setForm] = useState<{ title: string; content: string; tags: string }>({
+  const [form, setForm] = useState<{ title: string; content: string; tags: string[] }>({
     title: '',
     content: '',
-    tags: '',
+    tags: [],
   });
+  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingStatus, setSavingStatus] = useState<'saved' | 'saving' | 'error' | 'idle'>('idle');
-  const [lastSavedForm, setLastSavedForm] = useState<{ title: string; content: string; tags: string } | null>(null);
+  const [lastSavedForm, setLastSavedForm] = useState<{ title: string; content: string; tags: string[] } | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const findOuterScrollContainer = useCallback(() => {
+    let el = rootRef.current?.parentElement as HTMLElement | null;
+    while (el) {
+      if (el.classList?.contains('custom-scrollbar')) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }, []);
+
+  const preserveOuterScroll = useCallback((fn: () => void) => {
+    const scroller = findOuterScrollContainer();
+    const top = scroller?.scrollTop ?? 0;
+    const docScroller = document.scrollingElement as HTMLElement | null;
+    const docTop = docScroller?.scrollTop ?? 0;
+
+    fn();
+
+    requestAnimationFrame(() => {
+      if (scroller) scroller.scrollTop = top;
+      if (docScroller) docScroller.scrollTop = docTop;
+    });
+  }, [findOuterScrollContainer]);
+
+  const focusTitle = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          titleInputRef.current?.focus({ preventScroll: true });
+        } catch {
+          titleInputRef.current?.focus();
+        }
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isCreating) focusTitle();
+  }, [focusTitle, isCreating]);
 
   // Load snippets
   useEffect(() => {
@@ -53,31 +96,33 @@ export function ClipboardView() {
     }
   };
 
-  const handleSelect = (snippet: SnippetEntity) => {
+  const handleSelect = (snippet: SnippetEntity) => preserveOuterScroll(() => {
     setSelectedId(snippet.id);
     setIsCreating(false);
     const formData = {
       title: snippet.title,
       content: snippet.content,
-      tags: snippet.tags.join(', '),
+      tags: snippet.tags,
     };
     setForm(formData);
+    setTagInput('');
     setLastSavedForm(formData); // Initialize last saved state
     setSavingStatus('idle');
     setError(null);
     setSuccess(null);
-  };
+  });
 
-  const handleNew = () => {
+  const handleNew = () => preserveOuterScroll(() => {
     setSelectedId(null);
     setIsCreating(true);
-    const formData = { title: '', content: '', tags: '' };
+    const formData = { title: '', content: '', tags: [] };
     setForm(formData);
+    setTagInput('');
     setLastSavedForm(formData);
     setSavingStatus('idle');
     setError(null);
     setSuccess(null);
-  };
+  });
 
   // Auto-save logic
   useEffect(() => {
@@ -88,7 +133,7 @@ export function ClipboardView() {
     const isChanged =
       form.title !== lastSavedForm.title ||
       form.content !== lastSavedForm.content ||
-      form.tags !== lastSavedForm.tags;
+      JSON.stringify(form.tags) !== JSON.stringify(lastSavedForm.tags);
 
     if (!isChanged) return;
 
@@ -108,15 +153,10 @@ export function ClipboardView() {
       setSavingStatus('saving');
       setError(null);
 
-      const tags = form.tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t);
-
       const payload = {
         title: form.title,
         content: form.content,
-        tags,
+        tags: form.tags,
       };
 
       if (isCreating) {
@@ -162,24 +202,29 @@ export function ClipboardView() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedId) return;
+  const handleDelete = async (id?: string) => {
+    const targetId = typeof id === 'string' ? id : selectedId;
+    if (!targetId) return;
     if (!confirm('確定要刪除此片段嗎？')) return;
 
     try {
       setSavingStatus('saving');
 
-      const res = await fetch(`http://localhost:3001/api/snippets/${selectedId}`, {
+      const res = await fetch(`http://localhost:3001/api/snippets/${targetId}`, {
         method: 'DELETE',
       });
 
       if (!res.ok) throw new Error('刪除片段失敗');
 
-      setSnippets((prev) => prev.filter((s) => s.id !== selectedId));
-      setSelectedId(null);
-      setIsCreating(false);
-      setForm({ title: '', content: '', tags: '' });
-      setLastSavedForm(null);
+      setSnippets((prev) => prev.filter((s) => s.id !== targetId));
+      
+      if (selectedId === targetId) {
+        setSelectedId(null);
+        setIsCreating(false);
+        setForm({ title: '', content: '', tags: [] });
+        setLastSavedForm(null);
+      }
+      
       setSuccess('片段已刪除');
       setTimeout(() => setSuccess(null), 3000);
       setSavingStatus('idle');
@@ -200,53 +245,54 @@ export function ClipboardView() {
     }
   };
 
-  return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header - A1: Single H1, No CTA here (C1/C2 fixed) */}
-      <div className="pt-8 pb-4 page-padding-x border-b border-subtle">
-        <h1 className="text-page-title mb-2">剪貼簿</h1>
-        <p className="text-muted">
-          儲存常用的文字片段或範本，方便隨時調用。
-        </p>
-      </div>
+  const handleRemoveTag = (tagToRemove: string) => {
+    setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tagToRemove) }));
+  };
 
-      <div className="flex-1 flex overflow-hidden">
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const newTags = tagInput.split(/[,，]/).map(t => t.trim()).filter(Boolean);
+      if (newTags.length > 0) {
+        const uniqueNewTags = newTags.filter(t => !form.tags.includes(t));
+        if (uniqueNewTags.length > 0) {
+          setForm(prev => ({ ...prev, tags: [...prev.tags, ...uniqueNewTags] }));
+        }
+        setTagInput('');
+      }
+    }
+  };
+
+  return (
+    <div ref={rootRef} className="h-full min-h-0 flex flex-col bg-white">
+      <div className="flex-1 min-h-0 flex overflow-hidden">
         {/* Sidebar List */}
-        <div className="w-80 bg-sidebar border-r border-subtle flex flex-col">
+        <div className="w-[340px] shrink-0 border-r border-gray-100 bg-white flex flex-col">
           {/* List Header Toolbar - Integrated on single horizontal row (Notion-style) */}
-          <div className="px-3 py-2 border-b border-subtle" role="toolbar" aria-label="Snippet List Toolbar">
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <h2 className="text-section-title">片段列表</h2>
+          <div className="h-10 px-3 flex items-center justify-between border-b border-gray-100 whitespace-nowrap leading-none" role="toolbar">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs text-gray-400 font-medium leading-none whitespace-nowrap">片段</span>
+              <span className="text-xs text-gray-300 leading-none whitespace-nowrap">({filteredSnippets.length})</span>
             </div>
-            {/* Search and New Button on same horizontal line */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1 group">
-                <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
-                  <Search size={14} className="text-gray-400 group-hover:text-gray-500" />
-                </div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="搜尋片段..."
-                  className="w-full bg-white border border-subtle text-xs pl-7 pr-2 py-1.5 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 placeholder-gray-300 transition-colors"
-                />
-              </div>
-              {/* Primary CTA - Notion blue */}
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleNew}
-                title="新增片段"
-                className="flex-shrink-0"
-              >
-                <Plus size={14} className="mr-1" />
-                新增
-              </Button>
-            </div>
+            <button
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={(e) => {
+                handleNew();
+                (e.currentTarget as HTMLButtonElement).blur();
+              }}
+              className="flex items-center gap-1 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1"
+              title="新增片段"
+              type="button"
+            >
+              <Plus size={16} />
+              <span className="font-medium">新增</span>
+            </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+          <div
+            className="flex-1 overflow-y-auto pt-2 px-2 pb-2 custom-scrollbar"
+            style={{ scrollbarGutter: 'stable' } as any}
+          >
             {loading ? (
               <div className="p-4 text-muted text-xs text-center">載入中...</div>
             ) : filteredSnippets.length === 0 ? (
@@ -260,13 +306,31 @@ export function ClipboardView() {
                     key={snippet.id}
                     onClick={() => handleSelect(snippet)}
                     /* Enhanced states: hover, selected, and keyboard focus-visible */
-                    className={`w-full text-left px-3 py-2 rounded-[3px] flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1 ${selectedId === snippet.id
-                      ? 'bg-item-active text-gray-900'
-                      : 'text-gray-600 hover:bg-item-hover'
+                    className={`group w-full text-left h-9 px-2 rounded-md flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1 ${
+                      selectedId === snippet.id
+                        ? 'bg-blue-50 ring-1 ring-blue-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-50'
                       }`}
                   >
-                    <FileText size={14} className={selectedId === snippet.id ? 'text-gray-700' : 'text-gray-400'} />
-                    <span className="truncate text-sm">{snippet.title}</span>
+                    <FileText size={16} className={selectedId === snippet.id ? 'text-gray-900' : 'text-gray-400'} />
+                    <span className="truncate text-base">{snippet.title}</span>
+                    
+                    <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleCopy(snippet.content); }}
+                        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+                        title="複製"
+                      >
+                        <Copy size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDelete(snippet.id); }}
+                        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+                        title="刪除"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -275,23 +339,26 @@ export function ClipboardView() {
         </div>
 
         {/* Main Content (Editor) */}
-        <div className="flex-1 flex flex-col bg-white overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 bg-white">
           {!selectedId && !isCreating ? (
-            /* Empty state: blank right panel when no snippet selected */
-            <div className="flex-1 bg-white" data-testid="empty-state" />
+            <div className="flex-1 bg-white overflow-y-auto px-8 py-6">
+              <div className="w-full max-w-none">
+                <div className="border border-gray-100 rounded-md h-[260px] bg-white shadow-[0_1px_0_rgba(0,0,0,0.02)]" />
+              </div>
+            </div>
           ) : (
             <div className="flex-1 flex flex-col h-full">
               {/* Toolbar */}
-              <div className="h-10 border-b border-subtle flex items-center justify-between px-6 bg-white sticky top-0 z-10">
+              <div className="h-10 px-4 flex items-center justify-between border-b border-gray-100 bg-white sticky top-0 z-10">
                 {/* C4: Auto-save status indicator */}
-                <div className="text-xs text-muted flex items-center gap-2">
-                  {savingStatus === 'saving' && <span className="text-gray-400">Saving...</span>}
-                  {savingStatus === 'saved' && <span className="text-gray-400 flex items-center gap-1"><Check size={12} /> Saved</span>}
-                  {savingStatus === 'error' && <span className="text-red-500">Save Failed</span>}
+                <div className="text-sm text-gray-400 flex items-center gap-2 whitespace-nowrap overflow-hidden">
+                  {savingStatus === 'saving' && <span>儲存中…</span>}
+                  {savingStatus === 'saved' && <span className="flex items-center gap-1"><Check size={12} /> 已儲存</span>}
+                  {savingStatus === 'error' && <span className="text-red-500">儲存失敗</span>}
 
                   {/* Separate success/error messages (e.g. copy) */}
-                  {success && <span className="text-green-600 flex items-center gap-1 ml-2">✓ {success}</span>}
-                  {error && <span className="text-red-600 flex items-center gap-1 ml-2">! {error}</span>}
+                  {success && <span className="truncate max-w-[240px] text-green-600 flex items-center gap-1 ml-2">✓ {success}</span>}
+                  {error && <span className="truncate max-w-[240px] text-red-600 flex items-center gap-1 ml-2">! {error}</span>}
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -302,18 +369,18 @@ export function ClipboardView() {
                         size="sm"
                         onClick={() => handleCopy(form.content)}
                         title="複製內容"
-                        className="text-muted hover:text-gray-900"
+                        className="text-gray-500 hover:text-gray-900"
                       >
-                        <Copy size={14} className="mr-1" /> 複製
+                        <Copy size={16} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleDelete}
+                        onClick={() => handleDelete()}
                         title="刪除"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="text-gray-500 hover:text-red-600 hover:bg-red-50"
                       >
-                        <Trash2 size={14} className="mr-1" /> 刪除
+                        <Trash2 size={16} />
                       </Button>
                     </>
                   )}
@@ -321,45 +388,56 @@ export function ClipboardView() {
               </div>
 
               {/* Editor Form */}
-              <div className="flex-1 overflow-y-auto px-16 py-10 custom-scrollbar">
-                <div className="max-w-3xl mx-auto space-y-6">
+              <div
+                className="flex-1 min-h-0 overflow-y-auto px-8 py-6 custom-scrollbar"
+                style={{ scrollbarGutter: 'stable' } as any}
+              >
+                <div className="w-full max-w-none mx-0 h-full min-h-0 flex flex-col gap-1">
                   {/* Title */}
                   <div>
                     <input
+                      ref={titleInputRef}
                       type="text"
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                      className="w-full text-3xl font-bold text-gray-900 placeholder-gray-200 border-none p-0 focus:ring-0 bg-transparent leading-tight"
-                      placeholder="Untitled"
+                      className="w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-none p-0 focus:ring-0 bg-transparent leading-tight"
+                      placeholder="未命名"
                     />
                   </div>
 
                   {/* Properties - F2: Lightweight property value */}
-                  <div className="flex items-center gap-4 text-sm group">
-                    <div className="flex items-center gap-2 text-muted w-24 shrink-0 select-none">
-                      <span className="text-xs opacity-70">🏷️</span> 標籤
+                  <div className="grid grid-cols-[120px_1fr] items-center py-0.5">
+                    <div className="text-xs text-gray-400 flex items-center gap-2 select-none">
+                      <Tag size={14} /> 標籤
                     </div>
-                    <div className="flex-1">
+                    <div className="min-h-[28px] flex items-center gap-2 flex-wrap">
+                      {form.tags.map(tag => (
+                        <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                          {tag}
+                          <button onClick={() => handleRemoveTag(tag)} className="hover:text-red-500"><X size={12} /></button>
+                        </span>
+                      ))}
                       <input
                         type="text"
-                        value={form.tags}
-                        onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-                        className="w-full bg-transparent border-b border-transparent group-hover:border-gray-100 focus:border-blue-400 focus:outline-none py-1 text-gray-800 placeholder-gray-200 transition-colors text-sm"
-                        placeholder="Empty"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagInputKeyDown}
+                        className="h-7 w-32 bg-transparent hover:bg-gray-50 px-2 rounded text-base text-gray-700 outline-none border border-transparent hover:border-gray-100 focus:border-blue-200 placeholder-gray-400"
+                        placeholder="新增標籤…"
                       />
                     </div>
                   </div>
 
                   {/* Divider - D1: Very subtle divider */}
-                  <hr className="border-subtle my-8" />
+                  <hr className="border-gray-100 my-1" />
 
                   {/* Content - F3: Breathable spacing */}
-                  <div className="min-h-[500px]">
+                  <div className="flex-1 min-h-[240px] flex flex-col">
                     <textarea
                       value={form.content}
                       onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                      className="w-full h-full min-h-[500px] resize-none border-none p-0 focus:ring-0 text-body font-mono text-gray-800 placeholder-gray-200 leading-relaxed"
-                      placeholder="輸入片段內容..."
+                      className="flex-1 min-h-0 w-full resize-none border-none p-0 focus:ring-0 font-mono text-base text-gray-800 placeholder-gray-300 leading-7"
+                      placeholder="輸入片段內容…"
                     />
                   </div>
                 </div>
