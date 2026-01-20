@@ -102,7 +102,7 @@ export function TrashView() {
               <div className="py-2 px-3 flex justify-center items-center text-gray-400">
                 {item.entityType === 'project' ? <Folder size={14} /> : <File size={14} />}
               </div>
-              <div className="py-2 px-3 font-medium text-gray-900 truncate">
+              <div className="py-2 px-3 font-medium text-sm text-gray-900 truncate">
                 <div className="flex items-center gap-2">
                   <span className="truncate" title={item.titleSnapshot}>{item.titleSnapshot}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 capitalize flex-shrink-0">
@@ -111,10 +111,10 @@ export function TrashView() {
                 </div>
               </div>
               <div className="h-4 border-r border-gray-100"></div>
-              <div className="py-2 px-3 text-xs text-gray-400 truncate font-mono" title={item.originalRelativePath}>
+              <div className="py-2 px-3 text-sm text-gray-500 truncate font-mono" title={item.originalRelativePath}>
                 {item.originalRelativePath}
               </div>
-              <div className="py-2 px-3 text-xs text-gray-400 font-mono">
+              <div className="py-2 px-3 text-sm text-gray-500 font-mono">
                 {formatDate(item.deletedAt)}
               </div>
               <div className="py-2 px-3 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -208,6 +208,13 @@ export function MainContent({ activeSection }: MainContentProps) {
     window.dispatchEvent(new CustomEvent('clipboard-new'));
   };
 
+  const showSearch = activeSection !== 'settings';
+  const hasToolbarControls =
+    showSearch ||
+    activeSection === 'projects' ||
+    activeSection === 'prompts' ||
+    activeSection === 'clipboard';
+
   const title =
     activeSection === 'projects'
       ? '專案管理'
@@ -259,32 +266,36 @@ export function MainContent({ activeSection }: MainContentProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <ExpandableSearch
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={`搜尋${title}...`}
-              getScroller={() => contentScrollRef.current}
-            />
-            {activeSection === 'projects' && (
-              <button onClick={handleCreateProject} className={actionButtonClass}>
-                <Plus size={16} />
-                <span className="font-medium">新增</span>
-              </button>
-            )}
-            {activeSection === 'prompts' && (
-              <button onClick={handleCreatePrompt} className={actionButtonClass}>
-                <Plus size={16} />
-                <span className="font-medium">新增</span>
-              </button>
-            )}
-            {activeSection === 'clipboard' && (
-              <button onClick={handleClipboardNew} className={actionButtonClass}>
-                <Plus size={16} />
-                <span className="font-medium">新增</span>
-              </button>
-            )}
-          </div>
+          {hasToolbarControls && (
+            <div className="flex items-center gap-3">
+              {showSearch && (
+                <ExpandableSearch
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder={`搜尋${title}...`}
+                  getScroller={() => contentScrollRef.current}
+                />
+              )}
+              {activeSection === 'projects' && (
+                <button onClick={handleCreateProject} className={actionButtonClass}>
+                  <Plus size={16} />
+                  <span className="font-medium">新增</span>
+                </button>
+              )}
+              {activeSection === 'prompts' && (
+                <button onClick={handleCreatePrompt} className={actionButtonClass}>
+                  <Plus size={16} />
+                  <span className="font-medium">新增</span>
+                </button>
+              )}
+              {activeSection === 'clipboard' && (
+                <button onClick={handleClipboardNew} className={actionButtonClass}>
+                  <Plus size={16} />
+                  <span className="font-medium">新增</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

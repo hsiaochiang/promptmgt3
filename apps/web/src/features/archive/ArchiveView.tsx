@@ -124,22 +124,22 @@ export function ArchiveView() {
                     <FileText size={14} className="text-emerald-400" />
                   )}
                 </div>
-                <div className="py-2 px-3 font-medium text-gray-700 text-xs truncate">
-                  {item.title}
-                </div>
-                <div className="py-2 px-3 text-xs text-gray-500 capitalize">
-                  {item.type}
-                </div>
-                <div className="py-2 px-3 flex gap-1 overflow-hidden items-center">
-                  {item.tags.map(t => (
+              <div className="py-2 px-3 font-medium text-gray-700 text-sm truncate">
+                {item.title}
+              </div>
+              <div className="py-2 px-3 text-sm text-gray-500 capitalize">
+                {item.type}
+              </div>
+              <div className="py-2 px-3 flex gap-1 overflow-hidden items-center">
+                {item.tags.map(t => (
                     <span key={t} className="text-[10px] px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded-md border border-gray-200 truncate">
                       {t}
                     </span>
                   ))}
-                </div>
-                <div className="py-2 px-3 text-right text-xs text-gray-400 font-mono">
-                  {formatDate(item.updatedAt)}
-                </div>
+              </div>
+              <div className="py-2 px-3 text-right text-sm text-gray-500 font-mono">
+                {formatDate(item.updatedAt)}
+              </div>
               </div>
             ))}
           </div>

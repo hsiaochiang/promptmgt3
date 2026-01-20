@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Copy, Trash2, FileText, Check, Tag, X } from 'lucide-react';
+import { Copy, Plus, Trash2, FileText, Check, Tag, X } from 'lucide-react';
 import type { SnippetEntity } from '@pah/contracts';
 import { Button } from '../../ui/Button';
 import { useUiStore } from '../../state/uiStore';
@@ -330,6 +330,15 @@ export function ClipboardView() {
                 ))}
               </div>
             )}
+          </div>
+          <div className="px-3 py-2 border-t border-gray-100 bg-white">
+            <button
+              onClick={handleNew}
+              className="w-full rounded-md border border-blue-100 bg-blue-50/70 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+            >
+              <Plus size={14} />
+              新增+
+            </button>
           </div>
         </div>
 
