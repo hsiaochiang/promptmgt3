@@ -90,9 +90,9 @@ export function SettingsView() {
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-2xl mx-auto">
-        <h2 className="text-xl font-semibold mb-6">工作區設定</h2>
+    <div className="h-full overflow-y-auto px-6 py-4">
+      <div className="max-w-4xl mx-auto space-y-4">
+        <h2 className="text-xl font-semibold mb-4">工作區設定</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
@@ -106,7 +106,7 @@ export function SettingsView() {
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Root Path */}
           <div>
             <label className="block text-sm font-medium mb-1">資料根目錄</label>
@@ -138,7 +138,7 @@ export function SettingsView() {
           </div>
 
           {/* Tags Dictionary */}
-          <div className="border-t border-subtle pt-6">
+          <div className="border-t border-subtle pt-5">
             <h3 className="text-sm font-medium mb-3">標籤字典（tagsDict）</h3>
             <p className="text-xs text-secondary mb-2">
               用於建議/選單的全域標籤分類。重新命名類別時會將舊類別標籤合併到新類別。
@@ -243,7 +243,7 @@ export function SettingsView() {
           </div>
 
           {/* Common Options */}
-          <div className="border-t border-subtle pt-6">
+          <div className="border-t border-subtle pt-5">
             <h3 className="text-sm font-medium mb-3">常用選項（commonOptions）</h3>
             <p className="text-xs text-secondary mb-2">
               例如模型、來源等常用選項。重複項目將自動去重。
@@ -328,7 +328,7 @@ export function SettingsView() {
           </div>
 
           {/* Backup Settings */}
-          <div className="border-t border-subtle pt-6">
+          <div className="border-t border-subtle pt-5">
             <h3 className="text-sm font-medium mb-3">備份設定</h3>
             <div className="space-y-3">
               <label className="flex items-center gap-2">
@@ -367,7 +367,7 @@ export function SettingsView() {
           </div>
 
           {/* Trash Settings */}
-          <div className="border-t border-subtle pt-6">
+          <div className="border-t border-subtle pt-5">
             <h3 className="text-sm font-medium mb-3">回收站設定</h3>
             <div>
               <label className="block text-sm font-medium mb-1">回收站保留天數</label>
@@ -391,7 +391,7 @@ export function SettingsView() {
           </div>
 
           {/* Save Button */}
-          <div className="border-t border-subtle pt-6">
+          <div className="border-t border-subtle pt-5">
             <button
               onClick={handleSave}
               disabled={saving}
@@ -403,7 +403,7 @@ export function SettingsView() {
         </div>
 
         {/* Info */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md text-sm">
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md text-sm">
           <p className="text-blue-800">
             <strong>提示：</strong>變更路徑設定後，請確保目錄存在且具有讀寫權限。
             系統會自動驗證權限並在無法存取時提示錯誤。

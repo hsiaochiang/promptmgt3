@@ -80,12 +80,12 @@ export function ArchiveView() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-none px-4 py-3 flex gap-2 items-center border-b border-gray-100 bg-white">
+      <div className="flex-none px-6 py-2 flex items-center gap-3 border-b border-gray-100 bg-white">
         <Filter size={14} className="text-gray-400" />
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value as any)}
-          className="text-xs border-none bg-gray-50 rounded px-2 py-1 focus:ring-0 cursor-pointer text-gray-700"
+          className="text-xs border border-gray-200 bg-gray-50 rounded px-2 py-1 focus:ring-0 cursor-pointer text-gray-700"
         >
           <option value="all">所有類型</option>
           <option value="project">專案</option>
@@ -97,14 +97,14 @@ export function ArchiveView() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-20 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto pb-20 custom-scrollbar px-4 pt-2">
         {filteredItems.length === 0 ? (
           <div className="p-8 text-center text-gray-400 text-xs">
             沒有符合條件的封存項目
           </div>
         ) : (
           <div className="h-full px-6 pt-2">
-            <div className="grid grid-cols-[32px_minmax(400px,4fr)_120px_minmax(200px,2fr)_160px] gap-4 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
+            <div className="grid grid-cols-[32px_minmax(380px,5fr)_140px_minmax(220px,3fr)_160px] gap-3 text-xs font-medium text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-10 items-center">
               <div className="py-2 px-3"></div>
               <div className="py-2 px-3">名稱</div>
               <div className="py-2 px-3">類型</div>
@@ -113,10 +113,10 @@ export function ArchiveView() {
             </div>
 
             {filteredItems.map(item => (
-              <div
-                key={`${item.type}-${item.id}`}
-                className="grid grid-cols-[32px_minmax(400px,4fr)_120px_minmax(200px,2fr)_160px] gap-4 items-center hover:bg-gray-50 transition-colors group border-b border-gray-100 h-10"
-              >
+            <div
+              key={`${item.type}-${item.id}`}
+              className="grid grid-cols-[32px_minmax(380px,5fr)_140px_minmax(220px,3fr)_160px] gap-3 items-center hover:bg-gray-50 transition-colors group border-b border-gray-100 h-10"
+            >
                 <div className="py-2 px-3 flex justify-center items-center">
                   {item.type === 'project' ? (
                     <FolderOpen size={14} className="text-blue-400" />

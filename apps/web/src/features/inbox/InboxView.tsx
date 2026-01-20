@@ -132,9 +132,8 @@ export function InboxView() {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Alert Banner */}
-      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-start gap-2">
+    <div className="h-full flex flex-col gap-3 px-4 py-3 overflow-hidden">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-900 flex items-start gap-2 shadow-sm">
         <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
         <div>
           <span className="font-bold">暫存區說明：</span>
@@ -142,35 +141,42 @@ export function InboxView() {
         </div>
       </div>
 
-      <div className="flex gap-4 flex-1 min-h-0">
+      <div className="flex-1 min-h-0 flex gap-3 overflow-hidden">
         {/* List Column */}
-        <div className="w-1/3 flex flex-col border border-gray-200 rounded bg-gray-50/50">
-          <div className="p-2 border-b border-gray-200 flex justify-between items-center bg-gray-100/50">
-            <span className="text-xs font-bold text-gray-600">匯入清單 ({items.length})</span>
-            <button onClick={load} className="text-gray-500 hover:text-gray-800" title="重新整理">
+        <div className="w-[320px] min-w-[280px] flex flex-col border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
+          <div className="px-3 py-2 border-b border-gray-200 bg-gray-50 flex items-center justify-between text-xs font-semibold text-gray-600">
+            <span>匯入清單 ({items.length})</span>
+            <button
+              onClick={load}
+              className="text-sm text-gray-500 hover:text-gray-800"
+              title="重新整理"
+              type="button"
+            >
               <RefreshCw size={14} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-1 space-y-1">
-            {loading && <div className="text-center py-4 text-xs text-gray-500">載入中...</div>}
+          <div className="flex-1 overflow-y-auto px-2 py-1 space-y-2 custom-scrollbar">
+            {loading && (
+              <div className="text-center py-4 text-[12px] text-gray-500">載入中...</div>
+            )}
             {!loading && items.length === 0 && (
-              <div className="text-center py-8 text-xs text-gray-400">暫存區是空的</div>
+              <div className="text-center py-8 text-[12px] text-gray-400">暫存區是空的</div>
             )}
 
             {items.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleSelect(item)}
-                className={`w-full text-left p-3 rounded border text-xs transition-all ${selectedId === item.id
-                  ? 'bg-white border-amber-400 shadow-sm ring-1 ring-amber-400/30'
+                className={`w-full text-left px-3 py-2 rounded border transition-all text-sm ${selectedId === item.id
+                  ? 'bg-white border-amber-300 shadow-md ring-1 ring-amber-300/40'
                   : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                <div className="font-medium text-gray-900 mb-1 truncate">{item.title}</div>
-                <div className="flex justify-between items-center text-[10px] text-gray-500">
+                <div className="font-medium text-gray-900 leading-tight truncate">{item.title}</div>
+                <div className="flex justify-between items-center text-[11px] text-gray-500 mt-1">
                   <span>{formatDate(item.importedAt)}</span>
-                  <span className={`px-1.5 py-0.5 rounded-full ${item.cleanedState === 'cleaned' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                  <span className={`px-1.5 py-0.5 rounded-full text-[11px] ${item.cleanedState === 'cleaned' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                     }`}>
                     {item.cleanedState || 'new'}
                   </span>
@@ -181,26 +187,27 @@ export function InboxView() {
         </div>
 
         {/* Editor Column */}
-        <div className="flex-1 flex flex-col border border-gray-200 rounded bg-white overflow-hidden shadow-sm">
+        <div className="flex-1 flex flex-col border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden min-w-0">
           {!selectedId ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-300">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-2">
-                <RefreshCw size={24} />
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 px-4">
+              <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+                <RefreshCw size={22} />
               </div>
-              <p className="text-xs">請選擇項目以預覽或編輯</p>
+              <p className="text-[12px]">請選擇項目以預覽或編輯</p>
             </div>
           ) : (
             <>
               {/* Toolbar */}
-              <div className="h-10 border-b border-gray-200 flex items-center justify-between px-3 bg-gray-50/50">
-                <span className="text-xs font-mono text-gray-400 truncate max-w-[200px]">{selectedId}</span>
-                <div className="flex gap-2 items-center">
-                  {error && <span className="text-xs text-red-500">{error}</span>}
-                  {success && <span className="text-xs text-green-600 font-medium">已儲存</span>}
+              <div className="border-b border-gray-200 px-4 py-2 bg-gray-50 flex items-center justify-between gap-2">
+                <span className="font-mono text-[12px] text-gray-500 truncate max-w-[240px]">{selectedId}</span>
+                <div className="flex gap-2 items-center text-[12px]">
+                  {error && <span className="text-red-500">{error}</span>}
+                  {success && <span className="text-green-600 font-medium">已儲存</span>}
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                    type="button"
                   >
                     <Trash2 size={14} />
                     永久刪除
@@ -208,7 +215,8 @@ export function InboxView() {
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded shadow-sm transition-all"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded shadow-sm transition-all"
+                    type="button"
                   >
                     <Save size={14} />
                     {saving ? '保存中...' : '保存變更'}
@@ -219,7 +227,7 @@ export function InboxView() {
               {/* Content Area - Notion Style */}
               <div className="flex-1 overflow-y-auto bg-white">
                 {/* Header / Title Area */}
-                <div className="px-16 pt-12 pb-6 max-w-4xl mx-auto">
+                <div className="px-6 py-6 w-full">
                   {/* Icon placeholder removed per Constitution */}
                   <div className="mb-4"></div>
 
@@ -227,14 +235,14 @@ export function InboxView() {
                     type="text"
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    className="w-full text-4xl font-bold border-none outline-none placeholder-gray-300 py-2 bg-transparent text-gray-900"
+                    className="w-full text-3xl font-semibold border-none outline-none placeholder-gray-400 py-1 bg-transparent text-gray-900"
                     placeholder="無標題"
                   />
 
                   {/* Properties Table */}
-                  <div className="mt-6 space-y-1 text-sm text-gray-600">
+                  <div className="space-y-3 text-sm text-gray-600">
                     {/* Project Field */}
-                    <div className="flex items-center h-8 group">
+                    <div className="flex items-center gap-3">
                       <div className="w-32 flex items-center text-gray-500 gap-2">
                         <span className="opacity-70">📂</span>
                         <span>專案</span>
@@ -256,7 +264,7 @@ export function InboxView() {
                     </div>
 
                     {/* Status Field */}
-                    <div className="flex items-center h-8 group">
+                    <div className="flex items-center gap-3">
                       <div className="w-32 flex items-center text-gray-500 gap-2">
                         <span className="opacity-70">📊</span>
                         <span>狀態</span>
@@ -279,7 +287,7 @@ export function InboxView() {
                     </div>
 
                     {/* Category Field */}
-                    <div className="flex items-center h-8 group">
+                    <div className="flex items-center gap-3">
                       <div className="w-32 flex items-center text-gray-500 gap-2">
                         <span className="opacity-70">🏷️</span>
                         <span>分類</span>
@@ -302,7 +310,7 @@ export function InboxView() {
                     </div>
 
                     {/* Tags Field */}
-                    <div className="flex items-start py-1 group min-h-[32px]">
+                    <div className="flex items-start gap-3">
                       <div className="w-32 flex items-center text-gray-500 gap-2 mt-1">
                         <span className="opacity-70">#</span>
                         <span>標籤</span>
@@ -346,7 +354,7 @@ export function InboxView() {
                     </div>
 
                     {/* Source Link */}
-                    <div className="flex items-center h-8 group">
+                    <div className="flex items-center gap-3">
                       <div className="w-32 flex items-center text-gray-500 gap-2">
                         <span className="opacity-70">🔗</span>
                         <span>連結</span>
@@ -369,17 +377,17 @@ export function InboxView() {
                     </div>
 
                     {/* Notes */}
-                    <div className="flex items-start py-1 group">
+                    <div className="flex items-start gap-3">
                       <div className="w-32 flex items-center text-gray-500 gap-2 mt-1">
                         <span className="opacity-70">📝</span>
                         <span>備註</span>
                       </div>
                       <div className="flex-1">
                         <textarea
-                          rows={1}
+                          rows={2}
                           value={form.notes}
                           onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                          className="w-full bg-transparent hover:bg-gray-100 px-2 py-1 rounded text-sm text-gray-900 border-none outline-none resize-none overflow-hidden placeholder-gray-300 focus:bg-white focus:ring-1 focus:ring-amber-200 transition-all"
+                          className="w-full bg-transparent px-2 py-1 rounded border border-gray-200 text-sm text-gray-900 resize-none focus:border-blue-300 focus:outline-none transition-colors"
                           placeholder="Empty"
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
@@ -392,14 +400,14 @@ export function InboxView() {
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-gray-200 my-8"></div>
+                  <div className="border-t border-gray-200 my-6"></div>
 
                   {/* Content Section */}
                   {viewMode === 'edit' ? (
                     <textarea
                       value={form.rawContent}
                       onChange={e => setForm(f => ({ ...f, rawContent: e.target.value }))}
-                      className="w-full min-h-[500px] font-mono text-sm leading-relaxed outline-none resize-none text-gray-800"
+                      className="w-full min-h-[360px] font-mono text-sm leading-relaxed outline-none resize-none text-gray-800 bg-gray-50 border border-gray-100 px-3 py-3 rounded-lg focus:border-blue-300"
                       placeholder="輸入內容..."
                     />
                   ) : (

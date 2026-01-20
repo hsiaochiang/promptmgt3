@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Copy, Plus, Trash2, FileText, Check, Tag, X } from 'lucide-react';
+import { Copy, Trash2, FileText, Check, Tag, X } from 'lucide-react';
 import type { SnippetEntity } from '@pah/contracts';
 import { Button } from '../../ui/Button';
 import { useUiStore } from '../../state/uiStore';
@@ -112,17 +112,25 @@ export function ClipboardView() {
     setSuccess(null);
   });
 
-  const handleNew = () => preserveOuterScroll(() => {
-    setSelectedId(null);
-    setIsCreating(true);
-    const formData = { title: '', content: '', tags: [] };
-    setForm(formData);
-    setTagInput('');
-    setLastSavedForm(formData);
-    setSavingStatus('idle');
-    setError(null);
-    setSuccess(null);
-  });
+  const handleNew = useCallback(() => {
+    preserveOuterScroll(() => {
+      setSelectedId(null);
+      setIsCreating(true);
+      const formData = { title: '', content: '', tags: [] };
+      setForm(formData);
+      setTagInput('');
+      setLastSavedForm(formData);
+      setSavingStatus('idle');
+      setError(null);
+      setSuccess(null);
+    });
+  }, [preserveOuterScroll]);
+
+  useEffect(() => {
+    const handler = () => handleNew();
+    window.addEventListener('clipboard-new', handler);
+    return () => window.removeEventListener('clipboard-new', handler);
+  }, [handleNew]);
 
   // Auto-save logic
   useEffect(() => {
@@ -269,24 +277,11 @@ export function ClipboardView() {
         {/* Sidebar List */}
         <div className="w-[340px] shrink-0 border-r border-gray-100 bg-white flex flex-col">
           {/* List Header Toolbar - Integrated on single horizontal row (Notion-style) */}
-          <div className="h-10 px-3 flex items-center justify-between border-b border-gray-100 whitespace-nowrap leading-none" role="toolbar">
+          <div className="h-10 px-3 flex items-center border-b border-gray-100 whitespace-nowrap leading-none" role="toolbar">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs text-gray-400 font-medium leading-none whitespace-nowrap">片段</span>
               <span className="text-xs text-gray-300 leading-none whitespace-nowrap">({filteredSnippets.length})</span>
             </div>
-            <button
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={(e) => {
-                handleNew();
-                (e.currentTarget as HTMLButtonElement).blur();
-              }}
-              className="flex items-center gap-1 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1"
-              title="新增片段"
-              type="button"
-            >
-              <Plus size={16} />
-              <span className="font-medium">新增</span>
-            </button>
           </div>
 
           <div

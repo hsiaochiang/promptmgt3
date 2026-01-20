@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
-import { Kanban, List as ListIcon, Search, X, Plus, ChevronDown } from 'lucide-react';
+import { Kanban, List as ListIcon, Search, X, Plus } from 'lucide-react';
 import { createProject, createPrompt, getProjects } from '../features/library/api';
 import { ProjectView } from './ProjectView';
 import { PromptView } from './PromptView';
@@ -41,6 +41,9 @@ const GhostButton = ({
     {children}
   </button>
 );
+
+const actionButtonClass =
+  'flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1';
 
 const ExpandableSearch = ({
   value,
@@ -99,48 +102,52 @@ const ExpandableSearch = ({
     }
   };
 
+  const handleClear = () => {
+    preserveOuterScroll(() => {
+      onChange('');
+      setIsExpanded(false);
+    });
+  };
+
   return (
-    <div
-      className={`flex items-center transition-all duration-300 ${isExpanded ? 'w-56' : 'w-8'} h-8`}
-    >
-      {isExpanded ? (
-        <div className="flex items-center bg-gray-100 rounded px-2 w-full h-8">
-          <Search size={14} className="text-gray-500 flex-shrink-0" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onBlur={handleBlur}
-            className="w-full bg-transparent border-none text-sm text-gray-700 focus:ring-0 px-2 py-1 placeholder-gray-400"
-            placeholder={placeholder}
-          />
-          <button
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              preserveOuterScroll(() => {
-                onChange('');
-                setIsExpanded(false);
-              });
-            }}
-            className="text-gray-400 hover:text-gray-600"
-            title="清除"
-            type="button"
-          >
-            <X size={12} />
-          </button>
-        </div>
-      ) : (
+    <div className="relative h-8 w-56 flex-shrink-0">
+      <button
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => preserveOuterScroll(() => setIsExpanded(true))}
+        className={`absolute inset-0 rounded bg-gray-100 flex items-center justify-center transition-opacity duration-200 ${
+          isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        title="搜尋"
+        type="button"
+      >
+        <Search size={18} className="text-gray-500" />
+      </button>
+
+      <div
+        className={`absolute inset-0 flex items-center gap-2 px-2 bg-gray-100 rounded transition-opacity duration-200 ${
+          isExpanded ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <Search size={14} className="text-gray-500 flex-shrink-0" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={handleBlur}
+          className="w-full bg-transparent border-none text-sm text-gray-700 focus:ring-0 px-2 py-1 placeholder-gray-400"
+          placeholder={placeholder}
+        />
         <button
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => preserveOuterScroll(() => setIsExpanded(true))}
-          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded hover:text-gray-900 transition-colors"
-          title="搜尋"
+          onClick={handleClear}
+          className="text-gray-400 hover:text-gray-600"
+          title="清除"
           type="button"
         >
-          <Search size={18} />
+          <X size={12} />
         </button>
-      )}
+      </div>
     </div>
   );
 };
@@ -197,6 +204,10 @@ export function MainContent({ activeSection }: MainContentProps) {
     }
   };
 
+  const handleClipboardNew = () => {
+    window.dispatchEvent(new CustomEvent('clipboard-new'));
+  };
+
   const title =
     activeSection === 'projects'
       ? '專案管理'
@@ -248,39 +259,30 @@ export function MainContent({ activeSection }: MainContentProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ExpandableSearch
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={`搜尋${title}...`}
               getScroller={() => contentScrollRef.current}
             />
-            {/* Notion-style New Button */}
             {activeSection === 'projects' && (
-              <div className="flex items-center">
-                <div className="h-4 w-px bg-gray-200 mx-2"></div>
-                <button
-                  onClick={handleCreateProject}
-                  className="flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
-                >
-                  <Plus size={16} /> <span className="font-medium">新增</span>
-                  <div className="w-px h-3 bg-blue-400 mx-1.5"></div>
-                  <ChevronDown size={14} className="text-blue-100" />
-                </button>
-              </div>
+              <button onClick={handleCreateProject} className={actionButtonClass}>
+                <Plus size={16} />
+                <span className="font-medium">新增</span>
+              </button>
             )}
             {activeSection === 'prompts' && (
-              <div className="flex items-center">
-                <div className="h-4 w-px bg-gray-200 mx-2"></div>
-                <button
-                  onClick={handleCreatePrompt}
-                  className="flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
-                >
-                  <Plus size={16} /> <span className="font-medium">新增</span>
-                  <div className="w-px h-3 bg-blue-400 mx-1.5"></div>
-                  <ChevronDown size={14} className="text-blue-100" />
-                </button>
-              </div>
+              <button onClick={handleCreatePrompt} className={actionButtonClass}>
+                <Plus size={16} />
+                <span className="font-medium">新增</span>
+              </button>
+            )}
+            {activeSection === 'clipboard' && (
+              <button onClick={handleClipboardNew} className={actionButtonClass}>
+                <Plus size={16} />
+                <span className="font-medium">新增</span>
+              </button>
             )}
           </div>
         </div>
